@@ -74,7 +74,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'gestionposgrado.urls'
+ROOT_URLCONF = 'evalposgrado.urls'
 
 TEMPLATES = [
     {
@@ -92,7 +92,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'gestionposgrado.wsgi.application'
+WSGI_APPLICATION = 'evalposgrado.wsgi.application'
 
 
 # Database
