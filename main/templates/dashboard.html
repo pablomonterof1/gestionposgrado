@@ -1,0 +1,53 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+
+
+<main class="container py-5" >
+    <section class="card card-body">
+
+        <h5 class="display-6">Dashboard</h5>
+
+        <p class="lead">Seleccione un programa de posgrado</p>
+
+        <select id="selectorPrograma" class="form-select">
+            <option selected disabled>Seleccione una maestría</option>
+            {% for programa in programasdeposgrado_list %}
+            <option value="{{ programa.id }}">{{ programa.maestria }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- Contenido oculto inicialmente -->
+        <div id="contenidoPrograma" class="row d-none">
+
+            <div class="mb-3 text-center " style="padding-top: 2%;">
+
+                <a id="btnVer" class="btn btn-lg btn-success" href="#">Ver</a>
+            </div>
+
+            
+        </div>
+
+    </section>
+</main>
+
+<script>
+    const selector = document.getElementById('selectorPrograma');
+    const contenido = document.getElementById('contenidoPrograma');
+
+    const btnVer = document.getElementById('btnVer');
+
+    selector.addEventListener('change', function () {
+        const programaId = selector.value;
+        if (programaId) {
+            contenido.classList.remove('d-none');
+
+            btnVer.href = `/indicadoreseval/${programaId}/`;
+        }
+    });
+
+</script>
+
+
+{% endblock %}

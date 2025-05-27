@@ -1,0 +1,185 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<main class="container py-5">
+
+    <section class="card" style="padding: 2%;">
+
+        <h1 class="display-5">{{maestrianombre}}</h1>
+        <p class="lead">
+
+            <b>Periodo académico:</b> {{periodoacademiconombre}}
+            <br>
+            <b>Modalidad:</b> {{modalidadnombre}}
+        </p>
+
+        <div class="mb-3">
+
+            <a class="btn btn-sm btn-danger" href="{% url 'dashboard' %}">
+
+                Regresar
+
+            </a>
+        </div>
+
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark menuprogposgrado" style="border-radius: 5px;">
+            <div class="container-fluid">
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ">
+                        <div class="nav-divider"></div>
+                        <li class="nav-item">
+                            <a class="nav-link fs-5" aria-current="page" href="{% url 'reactivosprograma' programaposgrado.id %}">
+                                Reactivos
+                            </a>
+                        </li>
+                        <div class="nav-divider"></div>
+                        <li class="nav-item">
+                            <a class="nav-link fs-5" aria-current="page" href="#">
+                                Resultados
+                            </a>
+                        </li>
+                        <div class="nav-divider"></div>
+
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <br>
+        <hr style="border: 2px solid #cc9933;">
+        <div style="text-align: center;">
+            <p class="fs-3 ">
+                Evaluación del entorno de aprendizaje de los Programas de Posgrado
+            </p>
+
+        </div>
+        <div id="contenidoPrograma" class="row">
+            <!--------------------------------------------- Programa académico -------------------------------->
+            <div class="col-sm-4 my-3">
+                <div class="card h-100 text-white bg-dark">
+                    <div class="card-header" style="background-color: #cc9933;">Programa académico</div>
+                    <div class="card-body">
+                        <h4>Admisión</h4>
+                    </div>
+                    <div class="card-footer text-end">
+
+                        <a id="btnAdmision" class="btn btn-info" href="{% url 'admision' programaposgrado.id %}">Ingresar</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4 my-3">
+                <div class="card h-100 text-white bg-dark">
+                    <div class="card-header" style="background-color: #cc9933;">Programa académico</div>
+                    <div class="card-body">
+                        <h4>Diseño curricular e implementación</h4>
+                    </div>
+                    <div class="card-footer text-end">
+                        <a id="btnDisenoCurricular" class="btn btn-info"
+                            href="{% url 'disenocurricular' programaposgrado.id %}">Ingresar</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4 my-3">
+                <div class="card h-100 text-white bg-dark">
+                    <div class="card-header" style="background-color: #cc9933;">Programa académico</div>
+                    <div class="card-body">
+                        <h4>Titulación</h4>
+                    </div>
+                    <div class="card-footer text-end">
+                        <a id="btnTitulacion" class="btn btn-info"
+                            href="{% url 'titulacion' programaposgrado.id %}">Ingresar</a>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="border: 2px solid #0e1424;">
+            <!--------------------------------------------- Cuerpo académico -------------------------------->
+            <div class="col-sm-4 my-3">
+                <div class="card h-100 text-white bg-dark">
+                    <div class="card-header" style="background-color: #cc9933;">Cuerpo académico</div>
+                    <div class="card-body">
+                        <h4>Composición</h4>
+                    </div>
+                    <div class="card-footer text-end">
+
+                        <a id="btnAdmision" class="btn btn-info"
+                            href="{% url 'composicionca' programaposgrado.id %}">Ingresar</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4 my-3">
+                <div class="card h-100 text-white bg-dark">
+                    <div class="card-header" style="background-color: #cc9933;">Cuerpo académico</div>
+                    <div class="card-body">
+                        <h4>Gestión académica</h4>
+                    </div>
+                    <div class="card-footer text-end">
+                        <a id="btnDisenoCurricular" class="btn btn-info" href="#">Ingresar</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4 my-3">
+                <div class="card h-100 text-white bg-dark">
+                    <div class="card-header" style="background-color: #cc9933;">Cuerpo académico</div>
+                    <div class="card-body">
+                        <h4>Evaluación y satisfacción del profesor</h4>
+                    </div>
+                    <div class="card-footer text-end">
+                        <a id="btnTitulacion" class="btn btn-info" href="#">Ingresar</a>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="border: 2px solid #0e1424;">
+
+            <!--------------------------------------------- Estudiantes y graduados-------------------------------->
+            <div class="col-sm-4 my-3">
+                <div class="card h-100 text-white bg-dark">
+                    <div class="card-header" style="background-color: #cc9933;">Estudiantes y graduados</div>
+                    <div class="card-body">
+                        <h4>Gestión</h4>
+                    </div>
+                    <div class="card-footer text-end">
+
+                        <a id="btnAdmision" class="btn btn-info" href="#">Ingresar</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4 my-3">
+                <div class="card h-100 text-white bg-dark">
+                    <div class="card-header" style="background-color: #cc9933;">Estudiantes y graduados</div>
+                    <div class="card-body">
+                        <h4>Acompañamiento</h4>
+                    </div>
+                    <div class="card-footer text-end">
+                        <a id="btnDisenoCurricular" class="btn btn-info" href="#">Ingresar</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4 my-3">
+                <div class="card h-100 text-white bg-dark">
+                    <div class="card-header" style="background-color: #cc9933;">Estudiantes y graduados</div>
+                    <div class="card-body">
+                        <h4>Resultados</h4>
+                    </div>
+                    <div class="card-footer text-end">
+                        <a id="btnTitulacion" class="btn btn-info" href="#">Ingresar</a>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="border: 2px solid #0e1424;">
+        </div>
+
+    </section>
+
+</main>
+
+
+
+
+
+
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+
+<main class="container py-5 ">
+
+    <section class="card" style="padding: 2%;">
+
+        <h3 class="display-6"> Modalidades </h3>
+
+        <div class="row">
+
+            {% for modalidad in modalidad_list %}
+            <div class="card col-md-4" style="width: 25rem; margin: 0.5%;" > 
+                <div class="card-body">
+                    <h5 class="card-title">{{ modalidad.modalidad }}</h5>
+                    <p class="card-text">Descripción: {{ modalidad.descripcion }}</p>
+
+                </div>
+            </div>
+
+    
+            
+            {% endfor %}
+
+        </div>
+        <br>
+        <div style="text-align: right;">
+            <b>Importante:</b> Para agregar o editar una modalidad, por favor dirígete al <a href="/admin" target="_blank">Panel de
+                administración</a>.
+        </div>
+    </section>
+
+</main>
+
+
+{% endblock %}

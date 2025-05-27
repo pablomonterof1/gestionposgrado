@@ -1,0 +1,171 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<main class="container py-5 ">
+
+    <section class="card" style="padding: 2%;">
+
+        <div style="text-align: center;">
+            <p class="display-6" style="font-size: 2em;"> <b>Formulario de registro</b></p>
+            <p class="display-6" style="font-size: 1.5em;"> Programas de posgrado</p>
+        </div>
+
+        <br>
+
+       
+        {% if messages %}
+        <div class="mt-2">
+            {% for message in messages %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+
+        <form method="POST" action="{% url 'usuarioadmision' %}">
+
+            {% csrf_token %}
+
+            <div class="container ">
+                <div class="row">
+                    <div class="col">
+                        <label for="ci" class="form-label">Cédula de identidad</label>
+                        <input type="text" class="form-control" id="ci" name="ci" required>
+                    </div>
+                    <div class="col">
+                        <label for="first_name" class="form-label">Nombres</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name" required>
+
+                    </div>
+                    <div class="col">
+                        <label for="last_name" class="form-label">Apellidos</label>
+                        <input type="text" class="form-control" id="last_name" name="last_name" required>
+
+                    </div>
+                </div>
+            </div>
+            <br>
+            <div class="container ">
+                <div class="row">
+                    <div class="col">
+                        <label for="fecha_nacimiento" class="form-label">Fecha de nacimiento</label>
+                        <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento" required>
+                    </div>
+                    <div class="col">
+                        <label for="nacionalidad" class="form-label">Nacionalidad</label>
+                        <input type="text" class="form-control" id="nacionalidad" name="nacionalidad" required>
+                    </div>
+                    <div class="col">
+                        <label for="sexo" class="form-label">Sexo</label>
+                        <select name="sexo" id="sexo" class="form-select" required>
+                            <option value="">Seleccione una opción</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <div class="container ">
+                <div class="row">
+                    <div class="col">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+              
+                    </div>
+                    <div class="col">
+                        <label for="telefono" class="form-label">Teléfono</label>
+                        <input type="text" class="form-control" id="telefono" name="telefono" required>
+
+                    </div>
+                    <div class="col">
+                        <label for="provincia" class="form-label">Provincia</label>
+                        <select name="provincia" id="provincia" class="form-select" required>
+                            <option value="">Seleccione una provincia</option>
+                            <option value="Azuay">Azuay</option>
+                            <option value="Bolívar">Bolívar</option>
+                            <option value="Cañar">Cañar</option>
+                            <option value="Carchi">Carchi</option>
+                            <option value="Chimborazo">Chimborazo</option>
+                            <option value="Cotopaxi">Cotopaxi</option>
+                            <option value="El Oro">El Oro</option>
+                            <option value="Esmeraldas">Esmeraldas</option>
+                            <option value="Galápagos">Galápagos</option>
+                            <option value="Guayas">Guayas</option>
+                            <option value="Imbabura">Imbabura</option>
+                            <option value="Loja">Loja</option>
+                            <option value="Los Ríos">Los Ríos</option>
+                            <option value="Manabí">Manabí</option>
+                            <option value="Morona Santiago">Morona Santiago</option>
+                            <option value="Napo">Napo</option>
+                            <option value="Orellana">Orellana</option>
+                            <option value="Pastaza">Pastaza</option>
+                            <option value="Pichincha">Pichincha</option>
+                            <option value="Santa Elena">Santa Elena</option>
+                            <option value="Santo Domingo de los Tsáchilas">Santo Domingo de los Tsáchilas</option>
+                            <option value="Sucumbíos">Sucumbíos</option>
+                            <option value="Tungurahua">Tungurahua</option>
+                            <option value="Zamora-Chinchipe">Zamora-Chinchipe</option>
+                        </select>
+
+                    </div>
+                </div>
+            </div>
+            <br>
+            <div class="container">
+                <div class="row">
+                    <div class="col-8">
+                        <label for="titulotercernivel" class="form-label">Título de tercer nivel</label>
+                        <input type="text" class="form-control" id="titulotercernivel" name="titulotercernivel" required>
+                    </div>
+                    <div class="col">
+                        <label for="pregunta1" class="form-label">¿Cómo se enteró de nuestra oferta de Posgrado?</label>
+                        <select name="pregunta1" id="pregunta1" class="form-select" required>
+                            <option value="">Seleccione una opción</option>
+                            <option value="Sitio web">Sitio web</option>
+                            <option value="Redes Sociales">Redes Sociales</option>
+                            <option value="Correo electrónico">Correo electrónico</option>
+                            <option value="Recomendación">Recomendación</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                    </div>
+
+                </div>
+            </div>
+            <br>
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <label for="programadeposgrado" class="form-label">Programa de posgrado de interés</label>
+                        <select  name="" id="" class="form-select" required>
+                            <option value="">Seleccione un programa</option>
+                            {% for maestria in maestrias_list %}
+                            <option value="{{ maestria.id }}">{{ maestria.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <br>
+
+
+
+            <button type="submit" class="btn btn-primary">Enviar</button>
+            <a href="{% url 'usuarioadmision' %}" class="btn btn-secondary">Cancelar</a>
+            
+        </form>
+
+
+    </section>
+</main>
+
+
+
+
+{% endblock %}

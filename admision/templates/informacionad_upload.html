@@ -1,0 +1,110 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+
+
+       
+
+<main class="container py-5">
+    <section class="card p-4">
+
+        <h2 class="mb-4">Subir Información de Admisión</h2>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                {{ form.titulo3.label_tag }} {{ form.titulo3 }}
+            </div>
+            <div class="mb-3">
+                {{ form.solicitudinscripcion.label_tag }} {{ form.solicitudinscripcion }}
+            </div>
+            <div class="mb-3">
+                {{ form.experiencialaboral.label_tag }} {{ form.experiencialaboral }}
+            </div>
+            <div class="mb-3">
+                {{ form.comprobantepago.label_tag }} {{ form.comprobantepago }} 
+            </div>
+            <button type="submit" class="btn btn-primary">Subir Documentos</button>
+        </form>
+
+        <hr class="my-4">
+
+        <h4 class="mb-3">Estado de los Documentos</h4>
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Documento</th>
+                    <th>Subir</th>
+                    <th>Archivo Actual</th>
+                    <th>Estado</th>
+                    <th>Observación</th>
+                </tr>
+            </thead>
+  
+            <tbody>
+                <tr>
+                    <td>Título de Tercer Nivel</td>
+                    <td>{{ form.titulo3.as_field_group }} </td>
+                    <td>
+                        {% if documentos_usuario.titulo3 %}
+                            <a href="{{ documentos_usuario.titulo3.url }}" target="_blank">Ver archivo</a>
+                        {% else %}
+                            No subido
+                        {% endif %}
+                    </td>
+                    <td>{{ documentos_usuario.estado_titulo3}}</td>
+                    <td>{{ documentos_usuario.observaciontitulo3|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <td>Solicitud de Inscripción</td>
+                    <td>{{ form.solicitudinscripcion }}</td>
+                    <td>
+                        {% if documentos_usuario.solicitudinscripcion %}
+                            <a href="{{ documentos_usuario.solicitudinscripcion.url }}" target="_blank">Ver archivo</a>
+                        {% else %}
+                            No subido
+                        {% endif %}
+                    </td>
+                    <td>{{ documentos_usuario.estado_solicitudinscripcion|default:"Pendiente" }}</td>
+                    <td>{{ documentos_usuario.observacionsolicitudinscripcion|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <td>Experiencia Laboral</td>
+                    <td>{{ form.experiencialaboral }}</td>
+                    <td>
+                        {% if documentos_usuario.experiencialaboral %}
+                            <a href="{{ documentos_usuario.experiencialaboral.url }}" target="_blank">Ver archivo</a>
+                        {% else %}
+                            No subido
+                        {% endif %}
+                    </td>
+                    <td>{{ documentos_usuario.estado_experiencialaboral|default:"Pendiente" }}</td>
+                    <td>{{ documentos_usuario.observacionexperiencialaboral|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <td>Comprobante de Pago</td>
+                    <td>{{ form.comprobantepago }}</td>
+                    <td>
+                        {% if documentos_usuario.comprobantepago %}
+                            <a href="{{ documentos_usuario.comprobantepago.url }}" target="_blank">Ver archivo</a>
+                        {% else %}
+                            No subido
+                        {% endif %}
+                    </td>
+                    <td>{{ documentos_usuario.estado_comprobantepago|default:"Pendiente" }}</td>
+                    <td>{{ documentos_usuario.observacioncomprobantepago|default:"-" }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </section>
+</main>
+
+
+
+
+
+
+{% endblock %}

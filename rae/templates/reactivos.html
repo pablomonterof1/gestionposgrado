@@ -1,0 +1,60 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+
+<main class="container py-5 ">
+    <section class="card" style="padding: 2%;">
+        <h3 class="display-6"> Reactivos </h3>
+        <br>
+
+        <p class="lead">
+            <b>Programa:</b> {{maestrianombre}}
+            
+        </p>
+
+        <div class="mb-3">
+
+            <a class="btn btn-sm btn-danger" href="{% url 'indicadoreseval' programaposgrado.id %}">Regresar</a>
+        </div>
+
+        <p class="lead">
+            <b>
+                Seleccione un modulo para ver los reactivos disponibles:
+            </b>
+        </p>
+
+        <div class="row">
+
+
+  
+
+            {% for modulo in modulos_list %}
+                <div class="card mb-3" style="width: 18rem;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ modulo.nombre }}</h5>
+                    
+                </div>
+                <div class="card-footer" style="text-align: right;">
+                    <a href="{% url 'reactivosmodulo' programaposgrado.id modulo.id %}" class="btn btn-sm btn-info">Ver reactivos</a>
+                </div>
+            </div>
+            &nbsp;
+            &nbsp;
+   
+            {% endfor %}
+            
+
+        </div>
+        <br>
+        <div style="text-align: center;" >
+
+            <a href="" class="btn btn-primary" >Ver todos los reactivos del programa</a>
+        </div>
+
+
+
+
+    </section>
+
+</main>
+
+{% endblock %}
