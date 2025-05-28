@@ -251,6 +251,7 @@ def programadeposgrado_update(request, programadeposgrado_id):
     maestrias_list = Maestrias.objects.all().order_by('-created')
     periodoacademicos_list = PeriodosAcademicos.objects.all().order_by('fecha_inicio')
     modalidad_list = Modalidad.objects.all().order_by('-created')
+    cohorte = request.POST.get('cohorte')
     if request.method == 'POST':
         campoamplio_id = request.POST.get('campoamplio_id')
         maestria_id = request.POST.get('maestria_id')
@@ -258,7 +259,7 @@ def programadeposgrado_update(request, programadeposgrado_id):
         modalidad_id = request.POST.get('modalidad_id')
 
         # Validar duplicados si es necesario
-        if ProgramaPosgrado.objects.filter(campoamplio=campoamplio_id, maestria=maestria_id, periodoacademico=periodoacademico_id, modalidad=modalidad_id).exists():
+        if ProgramaPosgrado.objects.filter(campoamplio=campoamplio_id, maestria=maestria_id, periodoacademico=periodoacademico_id, modalidad=modalidad_id, cohorte=cohorte).exists():
             return render(request, 'programadeposgrado_update.html', {
                 'error': 'Ya existe un programa de posgrado con esta combinación.',
                 'programadeposgrado': programadeposgrado,
@@ -272,6 +273,7 @@ def programadeposgrado_update(request, programadeposgrado_id):
         programadeposgrado.maestria = maestria_id
         programadeposgrado.periodoacademico = periodoacademico_id
         programadeposgrado.modalidad = modalidad_id
+        programadeposgrado.cohorte = cohorte
         programadeposgrado.save()
         return redirect('programasdeposgrado')
     else:

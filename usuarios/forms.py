@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from .models import DocumentosUsuario
+from django.forms.widgets import ClearableFileInput
 
 User = get_user_model()
 
@@ -21,28 +22,23 @@ class CustomUserCreationForm(UserCreationForm):
 class DocumentoUsuarioForm(forms.ModelForm):
     class Meta:
         model = DocumentosUsuario
-        fields = [
-            'titulo3', 'observaciontitulo3',
-            'solicitudinscripcion', 'observacionsolicitudinscripcion',
-            'experiencialaboral', 'observacionexperiencialaboral',
-            'comprobantepago', 'observacioncomprobantepago'
-        ]
+        fields = ['titulo3', 'solicitudinscripcion', 'experiencialaboral', 'comprobantepago']
+        labels = {
+            'titulo3': 'Título de Tercer Nivel',
+            'solicitudinscripcion': 'Solicitud de Inscripción',
+            'experiencialaboral': 'Experiencia Laboral',
+            'comprobantepago': 'Comprobante de Pago',
+        }
         widgets = {
-            'titulo3': forms.ClearableFileInput(),
-            'solicitudinscripcion': forms.ClearableFileInput(),
-            'experiencialaboral': forms.ClearableFileInput(),
-            'comprobantepago': forms.ClearableFileInput(),
-            'observaciontitulo3': forms.Textarea(attrs={'rows': 2}),
-            'observacionsolicitudinscripcion': forms.Textarea(attrs={'rows': 2}),
-            'observacionexperiencialaboral': forms.Textarea(attrs={'rows': 2}),
-            'observacioncomprobantepago': forms.Textarea(attrs={'rows': 2}),
+            'titulo3': ClearableFileInput(attrs={'class': 'form-control'}),
+            'solicitudinscripcion': ClearableFileInput(attrs={'class': 'form-control'}),
+            'experiencialaboral': ClearableFileInput(attrs={'class': 'form-control'}),
+            'comprobantepago': ClearableFileInput(attrs={'class': 'form-control'}),
         }
 
-    def clean(self):
-        cleaned_data = super().clean()
-        # Validación opcional: asegúrate de que los archivos sean PDFs si quieres
-        for field in ['titulo3', 'solicitudinscripcion', 'experiencialaboral', 'comprobantepago']:
-            file = cleaned_data.get(field)
-            if file and not file.name.endswith('.pdf'):
-                self.add_error(field, 'El archivo debe ser un PDF.')
-        return cleaned_data
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            if isinstance(field.widget, ClearableFileInput):
+                # usamos solo el input, sin texts extra
+                field.widget.template_name = 'widgets/only_file_input.html'

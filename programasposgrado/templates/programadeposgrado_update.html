@@ -113,11 +113,13 @@
     const maestria = document.getElementById('maestriaSelect')
     const periodoacademico = document.getElementById('periodoacademicoSelect')
     const modalidad = document.getElementById('modalidadSelect')
+    const cohorte = document.getElementById('cohorte');
 
     const inputCampoamplio = document.getElementById('inputCampoamplio');
     const inputMaestria = document.getElementById('inputMaestria');
     const inputperiodoacademico = document.getElementById('inputperiodoacademico');
     const inputModalidad = document.getElementById('inputModalidad');
+    const inputCohorte = document.getElementById('inputCohorte');
 
     const btn = document.getElementById('editProgramaBtn');
 
@@ -126,12 +128,14 @@
         const mid = maestria.value;
         const cid = periodoacademico.value;
         const modid = modalidad.value;
+        const cohortValue = cohorte.value;
 
         if (mid && cid && modid && campid) {
             inputCampoamplio.value = campid;
             inputMaestria.value = mid;
             inputperiodoacademico.value = cid;
             inputModalidad.value = modid;
+            inputCohorte.value = cohortValue;
             btn.disabled = false;
             btn.classList.remove('disabled');
         } else {
@@ -144,6 +148,7 @@
     maestria.addEventListener('change', updateFormState);
     periodoacademico.addEventListener('change', updateFormState);
     modalidad.addEventListener('change', updateFormState);
+    cohorte.addEventListener('change', updateFormState);
 </script>
 
 {% endblock %}
