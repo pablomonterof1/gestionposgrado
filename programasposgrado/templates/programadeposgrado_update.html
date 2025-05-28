@@ -66,12 +66,32 @@
                 {% endfor %}
             </select>
             <br>
+            <div class="mb-3">
+                <label for="cohorte" class="form-label lead"><b>Cohorte actual:</b> {{ programadeposgrado.get_cohorte_display }} </label>
+            </div>
+            <select class="form-select" name="" id="cohorte">
+            <option value="" selected disabled>Seleccione una cohorte</option>
+            
+            <option value="1">Primera</option>
+            <option value="2">Segunda</option>
+            <option value="3">Tercera</option>
+            <option value="4">Cuarta</option>
+            <option value="5">Quinta</option>
+            <option value="6">Sexta</option>
+            <option value="7">Séptima</option>
+            <option value="8">Octava</option>
+            <option value="9">Novena</option>
+            <option value="10">Décima</option>
+             
+        </select>
+            <br>
             <br>
 
             <input type="hidden" name="campoamplio_id" id="inputCampoamplio">
             <input type="hidden" name="maestria_id" id="inputMaestria">
             <input type="hidden" name="periodoacademico_id" id="inputperiodoacademico">
             <input type="hidden" name="modalidad_id" id="inputModalidad">
+            <input type="hidden" name="cohorte" id="inputCohorte">
 
             <button class="btn btn-primary" id="editProgramaBtn" disabled> 
                 Modificar programa de posgrado
