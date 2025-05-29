@@ -6,46 +6,47 @@
 
     <section class="card" style="padding: 2%;">
 
-        <h3 class="display-6"> Modificar programa de posgrado </h3>
+        <h3 class="display-6"> Modificar programa de especialidad médica </h3>
 
         <p class="lead">
-            Modifique los datos del programa de posgrado
+            Modifique los datos del programa de especialidad médica
         </p>
         <p class="lead" style="color: red;">
-            Tienes que volver seleccionar un campo amplio, una maestría, un periodo académico, una modalidad y una cohorte para modificar el programa de posgrado.
+            Tienes que volver seleccionar un campo amplio, una especialidad médica, un periodo académico, una modalidad y una cohorte para modificar el programa de posgrado.
         </p>
         {{error}}
 
-        <form action="{% url 'programadeposgrado_update' programadeposgrado.id %}" method="POST" class="card card-body "
+        <form action="{% url 'programasdeespecialidadesmedicas_update' programadeespecialidadesmedicas.id %}" method="POST" class="card card-body "
             style="padding: 2%;">
 
             {% csrf_token %}
 
             <div class="mb-3">
-                <label for="campoamplio" class="form-label lead"><b>Campo amplio actual:</b> {{ programadeposgrado.campoamplio }} </label>
+                <label for="campoamplio" class="form-label lead"><b>Campo amplio actual:</b> {{ programadeespecialidadesmedicas.campoamplio }} </label>
             </div>
             <select class="form-select" name="" id="campoamplioSelect">
                 <option value="" selected disabled>Seleccione un campo amplio</option>
                 {% for campoamplio in campoamplio_list %}
+
                 <option value="{{campoamplio.id}}">{{campoamplio.nombre}}</option>
                 {% endfor %}
             </select>
             <br>
 
             <div class="mb-3">
-                <label  for="maestria" class="form-label lead"><b>Maestría actual:</b> {{ programadeposgrado.maestria }} </label>
+                <label  for="especialidad" class="form-label lead"><b>Especialidad actual:</b> {{ programadeespecialidadesmedicas.especialidad }} </label>
 
             </div>
 
-            <select class="form-select" name="" id="maestriaSelect">
-                <option value="" selected disabled>Seleccione una maestría</option>
-                {% for maestria in maestrias_list %}
-                <option value="{{maestria.id}}">{{maestria.nombre}}</option>
+            <select class="form-select" name="" id="especialidadSelect">
+                <option value="" selected disabled>Seleccione una especialidad</option>
+                {% for especialidad in especialidades_list %}
+                <option value="{{especialidad.id}}">{{especialidad.nombre}}</option>
                 {% endfor %}
             </select>
             <br>
             <div class="mb-3">
-                <label for="periodoacademico" class="form-label lead"><b>Periodo académico actual:</b> {{ programadeposgrado.periodoacademico }} </label>
+                <label for="periodoacademico" class="form-label lead"><b>Periodo académico actual:</b> {{ programadeespecialidadesmedicas.periodoacademico }} </label>
 
             </div>
             <select class="form-select" name="" id="periodoacademicoSelect">
@@ -56,7 +57,7 @@
             </select>
             <br>
             <div class="mb-3">
-                <label for="modalidad" class="form-label lead"><b>Modalidad actual:</b> {{ programadeposgrado.modalidad }} </label>
+                <label for="modalidad" class="form-label lead"><b>Modalidad actual:</b> {{ programadeespecialidadesmedicas.modalidad }} </label>
             </div>
 
             <select class="form-select" name="" id="modalidadSelect">
@@ -67,7 +68,7 @@
             </select>
             <br>
             <div class="mb-3">
-                <label for="cohorte" class="form-label lead"><b>Cohorte actual:</b> {{ programadeposgrado.get_cohorte_display }} </label>
+                <label for="cohorte" class="form-label lead"><b>Cohorte actual:</b> {{ programadeespecialidadesmedicas.get_cohorte_display }} </label>
             </div>
             <select class="form-select" name="" id="cohorte">
             <option value="" selected disabled>Seleccione una cohorte</option>
@@ -88,7 +89,7 @@
             <br>
 
             <input type="hidden" name="campoamplio_id" id="inputCampoamplio">
-            <input type="hidden" name="maestria_id" id="inputMaestria">
+            <input type="hidden" name="especialidad_id" id="inputespecialidad">
             <input type="hidden" name="periodoacademico_id" id="inputperiodoacademico">
             <input type="hidden" name="modalidad_id" id="inputModalidad">
             <input type="hidden" name="cohorte" id="inputCohorte">
@@ -99,7 +100,7 @@
         </form>
         <br>
         <div class="mb-3" style="text-align: right;">
-            <a href="{% url 'programasdeposgrado' %}" class="btn btn-danger">Cancelar</a>
+            <a href="{% url 'programasdeespecialidadesmedicas' %}" class="btn btn-danger">Cancelar</a>
         </div>
 
     </section>
@@ -110,13 +111,13 @@
 
 
     const campoamplio = document.getElementById('campoamplioSelect')
-    const maestria = document.getElementById('maestriaSelect')
+    const especialidad = document.getElementById('especialidadSelect')
     const periodoacademico = document.getElementById('periodoacademicoSelect')
     const modalidad = document.getElementById('modalidadSelect')
     const cohorte = document.getElementById('cohorte');
 
     const inputCampoamplio = document.getElementById('inputCampoamplio');
-    const inputMaestria = document.getElementById('inputMaestria');
+    const inputespecialidad = document.getElementById('inputespecialidad');
     const inputperiodoacademico = document.getElementById('inputperiodoacademico');
     const inputModalidad = document.getElementById('inputModalidad');
     const inputCohorte = document.getElementById('inputCohorte');
@@ -125,14 +126,14 @@
 
     function updateFormState() {
         const campid = campoamplio.value;
-        const mid = maestria.value;
+        const mid = especialidad.value;
         const cid = periodoacademico.value;
         const modid = modalidad.value;
         const cohortValue = cohorte.value;
 
         if (mid && cid && modid && campid && cohortValue) {
             inputCampoamplio.value = campid;
-            inputMaestria.value = mid;
+            inputespecialidad.value = mid;
             inputperiodoacademico.value = cid;
             inputModalidad.value = modid;
             inputCohorte.value = cohortValue;
@@ -145,7 +146,7 @@
     }
 
     campoamplio.addEventListener('change', updateFormState);
-    maestria.addEventListener('change', updateFormState);
+    especialidad.addEventListener('change', updateFormState);
     periodoacademico.addEventListener('change', updateFormState);
     modalidad.addEventListener('change', updateFormState);
     cohorte.addEventListener('change', updateFormState);

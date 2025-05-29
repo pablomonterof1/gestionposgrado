@@ -60,6 +60,21 @@ urlpatterns = [
     path('programadeposgrado/<int:programadeposgrado_id>/delete', programasposgrado_views.programadeposgrado_delete, name='programadeposgrado_delete'),
     path('programadeposgrado/<int:programadeposgrado_id>', programasposgrado_views.programadeposgrado_update, name='programadeposgrado_update'),
     path('campoamplio/', programasposgrado_views.campoamplio, name='campoamplio'),
+
+    #Especialidades Medicas
+    path('especialidadesmedicas/', programasposgrado_views.especialidadesmedicas, name='especialidadesmedicas'),
+    path('especialidadesmedicas/create', programasposgrado_views.especialidadesmedicas_create, name='especialidadesmedicas_create'),
+    path('especialidadesmedicas/<int:especialidadesmedicas_id>/', programasposgrado_views.especialidadesmedicas_detail, name='especialidadesmedicas_detail'),
+    path('especialidadesmedicas/<int:especialidadesmedicas_id>/delete', programasposgrado_views.especialidadesmedicas_delete, name='especialidadesmedicas_delete'),
+    path('modulosem/<int:especialidadesmedicas_id>', programasposgrado_views.modulosem, name='modulosem'),
+    path('modulosem/create/<int:especialidadesmedicas_id>', programasposgrado_views.modulosem_create, name='modulosem_create'),
+    path('modulosem/<int:moduloem_id>/', programasposgrado_views.modulosem_update, name='modulosem_update'),
+    path('modulosem/<int:moduloem_id>/delete', programasposgrado_views.modulosem_delete, name='modulosem_delete'),
+    path('programasdeespecialidadesmedicas/', programasposgrado_views.programasdeespecialidadesmedicas, name='programasdeespecialidadesmedicas'),
+    path('programasdeespecialidadesmedicas/select/', programasposgrado_views.programasdeespecialidadesmedicas_select, name='programasdeespecialidadesmedicas_select'),
+    path('programasdeespecialidadesmedicas/create/', programasposgrado_views.programasdeespecialidadesmedicas_create, name='programasdeespecialidadesmedicas_create'),
+    path('programasdeespecialidadesmedicas/<int:programadeespecialidadesmedicas_id>', programasposgrado_views.programasdeespecialidadesmedicas_update, name='programasdeespecialidadesmedicas_update'),
+    path('programasdeespecialidadesmedicas/<int:programadeespecialidadesmedicas_id>/delete', programasposgrado_views.programasdeespecialidadesmedicas_delete, name='programasdeespecialidadesmedicas_delete'),
    
 
     #Programa academico

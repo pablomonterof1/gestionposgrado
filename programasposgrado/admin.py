@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import Maestrias, PeriodosAcademicos, PerfildeIngreso, Modalidad, ProgramaPosgrado, CampoAmplio, Modulos
+from .models import Maestrias, PeriodosAcademicos, PerfildeIngreso, Modalidad, ProgramaPosgrado, CampoAmplio, Modulos, EspecialidadesMedicas, ModulosEM, ProgramaPosgradoEM
 
 class MaestriasAdmin(admin.ModelAdmin):
     readonly_fields = ('created',)
@@ -71,6 +71,51 @@ class ModulosAdmin(admin.ModelAdmin):
     list_display = ('maestria', 'nombre', 'codificacion', 'created')
 
 
+class EspecialidadesMedicasAdmin(admin.ModelAdmin):
+    readonly_fields = ('created',)
+    list_display = ('nombre', 'descripcion', 'created')
+
+class ModulosEMAdmin(admin.ModelAdmin):
+    readonly_fields = ('created',)
+    list_display = ('especialidad', 'nombre', 'codificacion', 'created')
+
+
+class ProgramaPosgradoEMAdmin(admin.ModelAdmin):
+    readonly_fields = ('created',)
+    list_display = ('get_especialidad_nombre', 'get_periodo_nombre', 'get_modalidad_nombre','get_campoamplio_nombre', 'cohorte' , 'created')
+
+    def get_especialidad_nombre(self, obj):
+        from .models import EspecialidadesMedicas
+        try:
+            return EspecialidadesMedicas.objects.get(id=obj.especialidad).nombre
+        except EspecialidadesMedicas.DoesNotExist:
+            return f'ID {obj.especialidad}'
+    get_especialidad_nombre.short_description = 'EspecialidadesMedicas'
+
+    def get_campoamplio_nombre(self, obj):
+        from .models import CampoAmplio
+        try:
+            return CampoAmplio.objects.get(id=obj.campoamplio).nombre
+        except CampoAmplio.DoesNotExist:
+            return f'ID {obj.campoamplio}'
+    get_campoamplio_nombre.short_description = 'Campo amplio'
+
+    def get_periodo_nombre(self, obj):
+        from .models import PeriodosAcademicos
+        try:
+            return PeriodosAcademicos.objects.get(id=obj.periodoacademico).nombre
+        except PeriodosAcademicos.DoesNotExist:
+            return f'ID {obj.periodoacademico}'
+    get_periodo_nombre.short_description = 'Periodo académico'
+
+    def get_modalidad_nombre(self, obj):
+        from .models import Modalidad
+        try:
+            return Modalidad.objects.get(id=obj.modalidad).modalidad
+        except Modalidad.DoesNotExist:
+            return f'ID {obj.modalidad}'
+    get_modalidad_nombre.short_description = 'Modalidad'
+
 
 admin.site.register(Maestrias, MaestriasAdmin)
 admin.site.register(PeriodosAcademicos, PeriodosAcademicosAdmin)
@@ -79,4 +124,8 @@ admin.site.register(Modalidad, ModalidadAdmin)
 admin.site.register(ProgramaPosgrado, ProgramaPosgradoAdmin)
 admin.site.register(CampoAmplio, CampoAmplioAdmin)
 admin.site.register(Modulos, ModulosAdmin)
+admin.site.register(EspecialidadesMedicas, EspecialidadesMedicasAdmin)
+admin.site.register(ModulosEM, ModulosEMAdmin)
+admin.site.register(ProgramaPosgradoEM, ProgramaPosgradoEMAdmin)
+
 

@@ -9,7 +9,7 @@
 
 
         <div style="text-align: right; padding-right: 2%;" class="mb-3">
-            <a class="btn btn-lg btn-success" href="/maestrias/create">Agregar</a>
+            <a class="btn btn-lg btn-success" href="{% url 'maestrias_create' %}">Agregar</a>
 
         </div>
 
@@ -74,8 +74,7 @@
                             <div class="d-flex gap-2">
                                 <a href="{% url 'maestrias_detail' maestria.id %}" class="btn btn-warning">Editar</a>
 
-                                <form id="form-borrar-{{ maestria.id }}"
-                                    action="{% url 'maestrias_delete' maestria.id %}" method="POST" class="form-borrar">
+                                <form id="form-borrar-{{ maestria.id }}" action="{% url 'maestrias_delete' maestria.id %}" method="POST" class="form-borrar">
                                     {% csrf_token %}
 
                                     <button type="button" class="btn btn-danger"
