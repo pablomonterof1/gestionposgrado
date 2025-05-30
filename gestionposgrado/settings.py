@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'rae',
     'tinymce',
     'datosposgrado',
-    'admision',
+    'postulacion',
     'seleccionperfiles'
 ]
 

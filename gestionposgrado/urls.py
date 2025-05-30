@@ -21,7 +21,7 @@ from usuarios import views as user_views
 from programaacademico import views as programaacademico_views
 from programasposgrado import views as programasposgrado_views
 from cuerpoacademico import views as cuerpoacademico_views
-from admision import views as admision_views
+from postulacion import views as postulacion_views
 from rae import views as rae_views
 from django.conf.urls.static import static
 from django.conf import settings
@@ -121,10 +121,10 @@ urlpatterns = [
 
 
 
-    #ADMISION
-    #UsuarioAdmision
-    path('usuarioadmision/', admision_views.usuarrioad_create, name='usuarioadmision'),
-    path('informacionad/upload/<int:user_id>', admision_views.informacionad_upload, name='informacionad_upload'),
+    #POSTULACION
+    #UsuarioPostulacion
+    path('usuariopostulacion/', postulacion_views.usuarriops_create, name='usuariopostulacion'),
+    path('informacionps/upload/<int:user_id>', postulacion_views.informacionps_upload, name='informacionps_upload'),
 
     ############################
     path('tinymce/', include('tinymce.urls')),

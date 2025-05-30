@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
-from programasposgrado.models import Maestrias
+from programasposgrado.models import Maestrias, EspecialidadesMedicas
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
@@ -13,8 +13,8 @@ from django.conf import settings
 # Create your views here.
 
 
-def usuarrioad_create(request):
-    maestrias_list = Maestrias.objects.all()
+def usuarriops_create(request):
+    especialidadesmedicas_list = EspecialidadesMedicas.objects.all()
     if request.method == 'POST':
         first_name = request.POST.get('first_name', '').strip()
         last_name = request.POST.get('last_name', '').strip()
@@ -29,25 +29,25 @@ def usuarrioad_create(request):
 
         if not (first_name and last_name and email and ci and telefono and fecha_nacimiento and nacionalidad and sexo and titulotercernivel and provincia):
             messages.error(request, 'Todos los campos son obligatorios.')
-            return render(request, 'usuarioad_create.html', {
-                'maestrias_list': maestrias_list,
+            return render(request, 'usuariops_create.html', {
+                'especialidadesmedicas_list': especialidadesmedicas_list,
             })
         try:
             validate_email(email)
         except ValidationError:
             messages.error(request, 'Correo electrónico no válido.')
-            return render(request, 'usuarioad_create.html', {
-                'maestrias_list': maestrias_list,
+            return render(request, 'usuariops_create.html', {
+                'especialidadesmedicas_list': especialidadesmedicas_list,
             })
         if User.objects.filter(email=email).exists():
             messages.error(request, 'El correo electrónico ya está registrado.')
-            return render(request, 'usuarioad_create.html', {
-                'maestrias_list': maestrias_list,
+            return render(request, 'usuariops_create.html', {
+                'especialidadesmedicas_list': especialidadesmedicas_list,
             })
         if User.objects.filter(username=ci).exists():
             messages.error(request, 'El número de cédula ya está registrado.')
-            return render(request, 'usuarioad_create.html', {
-                'maestrias_list': maestrias_list,
+            return render(request, 'usuariops_create.html', {
+                'especialidadesmedicas_list': especialidadesmedicas_list,
             })
         user = User.objects.create_user(
             username=ci,
@@ -72,15 +72,15 @@ def usuarrioad_create(request):
         return redirect('perfil')
     else:
        
-        return render(request, 'usuarioad_create.html', {
+        return render(request, 'usuariops_create.html', {
 
-            'maestrias_list': maestrias_list,
+            'especialidadesmedicas_list': especialidadesmedicas_list,
             'error': 'Error al crear el usuario. Por favor, verifica los datos.',
         })
 
 
 
-def informacionad_upload(request, user_id):
+def informacionps_upload(request, user_id):
     user = get_object_or_404(User, id=user_id)
     perfil_usuario = get_object_or_404(PerfilUsuario, user=user)
 
@@ -133,7 +133,7 @@ def informacionad_upload(request, user_id):
     else:
         form = DocumentoUsuarioForm(instance=documentos_usuario)
 
-    return render(request, 'informacionad_upload.html', {
+    return render(request, 'informacionps_upload.html', {
         'user': user,
         'perfil_usuario': perfil_usuario,
         'form': form,
