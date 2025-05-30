@@ -25,7 +25,7 @@
         {% endif %}
 
 
-        <form method="POST" action="{% url 'usuarioadmision' %}">
+        <form method="POST" action="{% url 'usuariopostulacion' %}">
 
             {% csrf_token %}
 
@@ -143,8 +143,8 @@
                         <label for="programadeposgrado" class="form-label">Programa de posgrado de interés</label>
                         <select  name="" id="" class="form-select" required>
                             <option value="">Seleccione un programa</option>
-                            {% for maestria in maestrias_list %}
-                            <option value="{{ maestria.id }}">{{ maestria.nombre }}</option>
+                            {% for especialidadmedica in especialidadesmedicas_list %}
+                            <option value="{{ especialidadmedica.id }}">{{ especialidadmedica.nombre }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -157,7 +157,7 @@
 
 
             <button type="submit" class="btn btn-primary">Enviar</button>
-            <a href="{% url 'usuarioadmision' %}" class="btn btn-secondary">Cancelar</a>
+            <a href="{% url 'usuariopostulacion' %}" class="btn btn-secondary">Cancelar</a>
             
         </form>
 
