@@ -44,7 +44,7 @@ def signup(request):
             )
             user.save()
             login(request, user)
-            return redirect('perfil')
+            return redirect('home')
         except IntegrityError:
             return render(request, 'signup.html', {
                 'form': CustomUserCreationForm(),
@@ -67,7 +67,7 @@ def signin(request):
             })
         else:
             login(request, user)
-            return redirect('perfil')
+            return redirect('home')
 
 
 @login_required

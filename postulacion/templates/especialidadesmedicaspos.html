@@ -1,0 +1,59 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<main class="container" style="padding: 1%">
+
+    <section class="card" style="padding: 1%;">
+
+        <h1 class="display-4">Especialidades médicas</h1>
+        <p class="lead" style="text-align: justify;">
+            Especialidades médicas disponibles
+        </p>
+        {% if tiene_permiso_coordinador %}
+        <div style="text-align: right;">
+            <a id="btnAdmision" class="btn btn-warning" href="{% url 'documentospsenviados' %}">Validar
+                postulaciones</a>
+        </div>
+        {% endif %}
+
+        <hr style="border: 1px solid #000;">
+        <p class="lead" style="text-align: justify;">
+            Para postular a una especialidad médica debes contar con un usuario registrado. Si aún no lo has creado, por
+            favor regístrate <a href="{% url 'signup' %}"><b>aquí</b></a>.
+            <br>
+            <br>
+            Si ya dispones de un usuario, <a href="{% url 'signin' %}"><b>inicia sesión</b></a>. Una vez iniciada tu
+            sesión, podrás postular al programa de
+            especialidades médicas que más se ajuste a tus intereses.
+        </p>
+        <hr style="border: 1px solid #000;">
+
+
+        <div id="contenidoPrograma" class="row">
+
+            {% for especialidadmedica in ppespecialidadesmedicas_list %}
+            <div class="py-2">
+                <div class="card h-100 text-white bg-dark">
+                    <div class="card-header" style="background-color: #cc9933;">Especialidad médica en</div>
+                    <div class="card-body">
+                        <h4>{{especialidadmedica.nombre}}</h4>
+                    </div>
+                    <div class="card-footer text-end">
+
+                        <a id="btnAdmision" class="btn btn-info"
+                            href="{% url 'usuariopostulacion' especialidadmedica.id %}">Postulación</a>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </section>
+
+</main>
+
+
+
+{% endblock %}

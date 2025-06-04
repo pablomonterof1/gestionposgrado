@@ -122,9 +122,17 @@ urlpatterns = [
 
 
     #POSTULACION
-    #UsuarioPostulacion
-    path('usuariopostulacion/', postulacion_views.usuarriops_create, name='usuariopostulacion'),
-    path('informacionps/upload/<int:user_id>', postulacion_views.informacionps_upload, name='informacionps_upload'),
+    #UsuarioPostulacionEspecialidadesMédicas
+
+    path('especialidadesmedicaspos/', postulacion_views.especialidadesmedicaspos, name='especialidadesmedicaspos'),
+    path('usuariopostulacion/<int:em_id>/', postulacion_views.usuarriops_create, name='usuariopostulacion'),
+    path('informacionps/upload/<int:em_id>/', postulacion_views.informacionps_upload, name='informacionps_upload'),
+    path('documentospsenviados/', postulacion_views.documentosps_enviados, name='documentospsenviados'),
+    path('documentospsvalidados/<int:em_id>/', postulacion_views.documentosps_validados, name='documentospsvalidados'),
+    path('documentospsporvalidar/<int:em_id>/', postulacion_views.documentosps_porvalidar, name='documentospsporvalidar'),
+    path('documentospsvalidar/<int:doc_id>/<int:em_id>/', postulacion_views.documentosps_validar, name='documentospsvalidar'),
+    path('documentospsnovalidar/', postulacion_views.documentosps_novalidar, name='documentospsnovalidar'),
+
 
     ############################
     path('tinymce/', include('tinymce.urls')),

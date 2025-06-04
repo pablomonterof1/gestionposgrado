@@ -7,8 +7,8 @@
     <section class="card" style="padding: 2%;">
 
         <div style="text-align: center;">
-            <p class="display-6" style="font-size: 2em;"> <b>Formulario de registro</b></p>
-            <p class="display-6" style="font-size: 1.5em;"> Programas de posgrado</p>
+            <p class="display-6" style="font-size: 2em;"> <b>Formulario de postulación</b></p>
+            <p class="display-6" style="font-size: 1.5em;"> Programas de especialidades médicas</p>
         </div>
 
         <br>
@@ -25,7 +25,7 @@
         {% endif %}
 
 
-        <form method="POST" action="{% url 'usuariopostulacion' %}">
+        <form method="POST" action="{% url 'usuariopostulacion' especialidademedica.id %}">
 
             {% csrf_token %}
 
@@ -37,12 +37,14 @@
                     </div>
                     <div class="col">
                         <label for="first_name" class="form-label">Nombres</label>
-                        <input type="text" class="form-control" id="first_name" name="first_name" required>
+                        <input type="text" class="form-control" id="first_name" name="first_name" placeholder="{{ usuario.first_name }}" disabled>
+                        
+                
 
                     </div>
                     <div class="col">
                         <label for="last_name" class="form-label">Apellidos</label>
-                        <input type="text" class="form-control" id="last_name" name="last_name" required>
+                        <input type="text" class="form-control" id="last_name" name="last_name" placeholder="{{ usuario.last_name }}" disabled>
 
                     </div>
                 </div>
@@ -74,7 +76,7 @@
                 <div class="row">
                     <div class="col">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="{{ usuario.email }}" disabled>
               
                     </div>
                     <div class="col">
@@ -122,42 +124,18 @@
                         <label for="titulotercernivel" class="form-label">Título de tercer nivel</label>
                         <input type="text" class="form-control" id="titulotercernivel" name="titulotercernivel" required>
                     </div>
-                    <div class="col">
-                        <label for="pregunta1" class="form-label">¿Cómo se enteró de nuestra oferta de Posgrado?</label>
-                        <select name="pregunta1" id="pregunta1" class="form-select" required>
-                            <option value="">Seleccione una opción</option>
-                            <option value="Sitio web">Sitio web</option>
-                            <option value="Redes Sociales">Redes Sociales</option>
-                            <option value="Correo electrónico">Correo electrónico</option>
-                            <option value="Recomendación">Recomendación</option>
-                            <option value="Otros">Otros</option>
-                        </select>
-                    </div>
+                   
 
                 </div>
             </div>
             <br>
-            <div class="container">
-                <div class="row">
-                    <div class="col">
-                        <label for="programadeposgrado" class="form-label">Programa de posgrado de interés</label>
-                        <select  name="" id="" class="form-select" required>
-                            <option value="">Seleccione un programa</option>
-                            {% for especialidadmedica in especialidadesmedicas_list %}
-                            <option value="{{ especialidadmedica.id }}">{{ especialidadmedica.nombre }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                </div>
-            </div>
+            
 
-            <br>
+            
 
 
-
-            <button type="submit" class="btn btn-primary">Enviar</button>
-            <a href="{% url 'usuariopostulacion' %}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-primary">Continuar</button>
+            <a href="{% url 'especialidadesmedicaspos'  %}" class="btn btn-secondary">Cancelar</a>
             
         </form>
 

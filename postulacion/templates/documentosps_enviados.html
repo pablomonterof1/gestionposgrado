@@ -1,0 +1,40 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<main class="container py-5">
+    <section class="card p-4">
+
+        <p class="display-6" style="font-size: 2em;"> <b>Especialidades médicas</b></p>
+
+
+        <div style="text-align: right;" >
+            <a class="btn btn-danger" href="{% url 'especialidadesmedicaspos' %}">Regresar</a>
+
+        </div>
+        <div id="contenidoPrograma" class="row">
+            {% for especialidadmedica in especialidadesmedicas_list %}
+            <div class="py-2">
+                <div class="card h-100 text-white bg-dark">
+                    <div class="card-header" style="background-color: #cc9933;">Especilidad</div>
+                    <div class="card-body">
+                        <h4>{{especialidadmedica.nombre}}</h4>
+                    </div>
+                    <div class="card-footer text-end">
+
+                         <a id="btnAdmision" class="btn btn-info"
+                            href="{% url 'documentospsvalidados' especialidadmedica.id %}">Validados</a>
+                        <a id="btnAdmision" class="btn btn-warning"
+                            href="{% url 'documentospsporvalidar' especialidadmedica.id %}">Por validar</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </section>
+
+</main>
+
+
+{% endblock %}

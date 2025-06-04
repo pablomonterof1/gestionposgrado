@@ -33,24 +33,22 @@ class PerfilUsuario(models.Model):
         return f"{self.user.get_full_name} - {self.rol} - {self.telefono} - {self.ci}"
     
 
-class DocumentosUsuario(models.Model):
+class DocumentosUsuarioPEM(models.Model):
+    
     usuario = models.ForeignKey(PerfilUsuario, on_delete=models.CASCADE)
 
-    titulo3 = models.FileField(upload_to='documentos/', blank=True, null=True)
-    observaciontitulo3 = models.TextField(blank=True, null=True)
-    estado_titulo3 = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='Pendiente')
+    especialidadmedica = models.BigIntegerField()
+    
+    docidentificacion = models.FileField(upload_to='documentospem/', blank=True, null=True)
+    observaciondocidentificacion = models.TextField(blank=True, null=True)
+    estado_docidentificacion = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='Pendiente')
 
-    solicitudinscripcion = models.FileField(upload_to='documentos/', blank=True, null=True)
-    observacionsolicitudinscripcion = models.TextField(blank=True, null=True)
-    estado_solicitudinscripcion = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='Pendiente')
+    titulosenescyt = models.FileField(upload_to='documentospem/', blank=True, null=True)
+    observaciontitulosenescyt = models.TextField(blank=True, null=True)
+    estado_titulosenescyt = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='Pendiente')
 
-    experiencialaboral = models.FileField(upload_to='documentos/', blank=True, null=True)
-    observacionexperiencialaboral = models.TextField(blank=True, null=True)
-    estado_experiencialaboral = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='Pendiente')
+    descripcion = models.TextField(blank=True, null=True)
 
-    comprobantepago = models.FileField(upload_to='documentos/', blank=True, null=True)
-    observacioncomprobantepago = models.TextField(blank=True, null=True)
-    estado_comprobantepago = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='Pendiente')
 
     fecha_subida = models.DateTimeField(auto_now=True)
 

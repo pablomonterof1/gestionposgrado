@@ -1,16 +1,20 @@
 
-
-def permiso_edision(request):
+def permisos_usuario(request):
     user = request.user
-    tiene_permiso = False
+    permisos = {
+        'tiene_permiso_edision': False,
+        'tiene_permiso_coordinador': False
+    }
 
     if user.is_authenticated:
         if user.is_superuser:
-            tiene_permiso = True
+            permisos['tiene_permiso_edision'] = True
+            permisos['tiene_permiso_coordinador'] = True
         elif hasattr(user, 'perfilusuario'):
-            if user.perfilusuario.rol == 4:
-                tiene_permiso = True
+            rol = user.perfilusuario.rol
+            if rol == 4:
+                permisos['tiene_permiso_edision'] = True
+            elif rol == 3:
+                permisos['tiene_permiso_coordinador'] = True
 
-    return {
-        'tiene_permiso_edision': tiene_permiso
-    }
+    return permisos

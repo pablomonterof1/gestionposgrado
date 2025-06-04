@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
-from .models import DocumentosUsuario
+from .models import DocumentosUsuarioPEM
 from django.forms.widgets import ClearableFileInput
 
 User = get_user_model()
@@ -21,19 +21,16 @@ class CustomUserCreationForm(UserCreationForm):
 
 class DocumentoUsuarioForm(forms.ModelForm):
     class Meta:
-        model = DocumentosUsuario
-        fields = ['titulo3', 'solicitudinscripcion', 'experiencialaboral', 'comprobantepago']
+        model = DocumentosUsuarioPEM
+        fields = ['docidentificacion', 'titulosenescyt', ]
         labels = {
-            'titulo3': 'Título de Tercer Nivel',
-            'solicitudinscripcion': 'Solicitud de Inscripción',
-            'experiencialaboral': 'Experiencia Laboral',
-            'comprobantepago': 'Comprobante de Pago',
+            'docidentificacion': 'Copia de cédula de ciudadanía y certificado de votación vigentes',
+            'titulosenescyt': 'Certificado de registro del título de tercer nivel expedido por la Secretaría de Educación Superior, Ciencia, Tecnología e Innovación (SENESCYT)',
         }
         widgets = {
-            'titulo3': ClearableFileInput(attrs={'class': 'form-control'}),
-            'solicitudinscripcion': ClearableFileInput(attrs={'class': 'form-control'}),
-            'experiencialaboral': ClearableFileInput(attrs={'class': 'form-control'}),
-            'comprobantepago': ClearableFileInput(attrs={'class': 'form-control'}),
+            'docidentificacion': ClearableFileInput(attrs={'class': 'form-control'}),
+            'titulosenescyt': ClearableFileInput(attrs={'class': 'form-control'}),
+           
         }
 
     def __init__(self, *args, **kwargs):
@@ -42,3 +39,17 @@ class DocumentoUsuarioForm(forms.ModelForm):
             if isinstance(field.widget, ClearableFileInput):
                 # usamos solo el input, sin texts extra
                 field.widget.template_name = 'widgets/only_file_input.html'
+    
+    def clean(self):
+        cleaned_data = super().clean()
+
+        docidentificacion = cleaned_data.get('docidentificacion')
+        titulosenescyt = cleaned_data.get('titulosenescyt')
+
+        instance = self.instance  # Documento existente
+
+        if not docidentificacion and not instance.docidentificacion:
+            self.add_error('docidentificacion', 'Este documento es obligatorio.')
+
+        if not titulosenescyt and not instance.titulosenescyt:
+            self.add_error('titulosenescyt', 'Este documento es obligatorio.')
