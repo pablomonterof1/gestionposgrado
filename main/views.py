@@ -19,6 +19,17 @@ def dashboard(request):
         'programasdeposgrado_list': programasdeposgrado_list
     })
 
+def programasdemaestria(request):
+    programasdeposgrado_list = ProgramaPosgrado.objects.all().order_by('-created')
+    for programa in programasdeposgrado_list:
+
+        programa.maestria = Maestrias.objects.get(id=programa.maestria)
+        programa.periodoacademico = PeriodosAcademicos.objects.get(id=programa.periodoacademico)
+        programa.modalidad = Modalidad.objects.get(id=programa.modalidad)
+    return render(request, 'dashboard.html', {
+        'programasdeposgrado_list': programasdeposgrado_list
+    })
+
 
 @login_required
 def IndicadoresEvaluacion(request , programa_id):

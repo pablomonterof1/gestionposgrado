@@ -32,6 +32,7 @@ urlpatterns = [
     path('', main_views.home, name='home'),
     path('dashboard/', main_views.dashboard, name='dashboard'),
     path('indicadoreseval/<int:programa_id>/', main_views.IndicadoresEvaluacion, name='indicadoreseval'),
+    path('programasdemaestria/', main_views.programasdemaestria, name='programasdemaestria'),
     
     #Gestion de usuarios
     path('signup/', user_views.signup, name='signup'),
