@@ -11,7 +11,6 @@ def home(request):
 def dashboard(request):
     programasdeposgrado_list = ProgramaPosgrado.objects.all().order_by('-created')
     for programa in programasdeposgrado_list:
-
         programa.maestria = Maestrias.objects.get(id=programa.maestria)
         programa.periodoacademico = PeriodosAcademicos.objects.get(id=programa.periodoacademico)
         programa.modalidad = Modalidad.objects.get(id=programa.modalidad)
@@ -22,17 +21,21 @@ def dashboard(request):
 def programasdemaestria(request):
     programasdeposgrado_list = ProgramaPosgrado.objects.all().order_by('-created')
     for programa in programasdeposgrado_list:
-
         programa.maestria = Maestrias.objects.get(id=programa.maestria)
         programa.periodoacademico = PeriodosAcademicos.objects.get(id=programa.periodoacademico)
         programa.modalidad = Modalidad.objects.get(id=programa.modalidad)
+    programasdeposgrado_list = sorted(
+        programasdeposgrado_list,
+        key=lambda p: p.periodoacademico.nombre,
+        reverse=False
+    )
     return render(request, 'dashboard.html', {
         'programasdeposgrado_list': programasdeposgrado_list
     })
 
 
 @login_required
-def IndicadoresEvaluacion(request , programa_id):
+def ProgramaMaestria(request , programa_id):
     programaposgrado = ProgramaPosgrado.objects.get(id=programa_id)
     maestria = programaposgrado.maestria
     maestrianombre = Maestrias.objects.get(id=maestria)
@@ -41,7 +44,7 @@ def IndicadoresEvaluacion(request , programa_id):
     modalidad = programaposgrado.modalidad
     modalidadnombre = Modalidad.objects.get(id=modalidad)
 
-    return render(request, 'indicadoreseval.html', {
+    return render(request, 'programamaestria.html', {
         'programaposgrado': programaposgrado,
         'maestrianombre': maestrianombre,
         'periodoacademiconombre': periodoacademiconombre,

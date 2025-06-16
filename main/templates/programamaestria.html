@@ -16,7 +16,7 @@
 
         <div class="mb-3">
 
-            <a class="btn btn-sm btn-danger" href="{% url 'dashboard' %}">
+            <a class="btn btn-sm btn-danger" href="{% url 'programasdemaestria' %}">
 
                 Regresar
 
@@ -28,6 +28,18 @@
 
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ">
+                        <div class="nav-divider"></div>
+                        <li class="nav-item">
+                            <a class="nav-link fs-5" aria-current="page" href="{% url 'usuariosmatriculadosprogramam' programaposgrado.id %}">
+                                Estudiantes
+                            </a>
+                        </li>
+                        <div class="nav-divider"></div>
+                        <li class="nav-item">
+                            <a class="nav-link fs-5" aria-current="page" href="{% url 'docentesmatriculadosmodulom' programaposgrado.id %}">
+                                Docentes
+                            </a>
+                        </li>
                         <div class="nav-divider"></div>
                         <li class="nav-item">
                             <a class="nav-link fs-5" aria-current="page" href="{% url 'reactivosprograma' programaposgrado.id %}">

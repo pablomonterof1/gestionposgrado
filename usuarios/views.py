@@ -6,11 +6,14 @@ from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
 from .forms import CustomUserCreationForm
 from django.contrib.auth.decorators import login_required
-from .models import PerfilUsuario
+from .models import PerfilUsuario, MatriculaUsuario, MatriculaDocenteModulo
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+from programasposgrado.models import ProgramaPosgrado, ProgramaPosgradoEM, Maestrias, Modulos, ModulosEM
+from django.contrib.contenttypes.models import ContentType
+from django.http import HttpResponseRedirect
 
 # Create your views here.
 
@@ -146,3 +149,171 @@ def docentedp_create(request, periodo_id):
 
     return render(request, 'docentedp_create.html',
                   {'periodo_id': periodo_id})
+
+
+@login_required
+def UsuariosMatriculadosProgramaM(request, programa_id):
+    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    maestria = get_object_or_404(Maestrias, id=programa.maestria)
+
+    # Obtener el ContentType correspondiente a ProgramaPosgrado
+    programa_ct = ContentType.objects.get_for_model(ProgramaPosgrado)
+
+    # Filtrar las matrículas que corresponden a ese ContentType y programa_id
+    usuarios_matriculados_list = MatriculaUsuario.objects.filter(
+        content_type=programa_ct,
+        object_id=programa_id
+    )
+
+    return render(request, 'usuariosmatriculados_programam.html', {
+        'programa': programa,
+        'maestria': maestria,
+        'usuarios_matriculados_list': usuarios_matriculados_list
+    })
+
+
+
+
+@login_required
+def UsuariosMatricularProgramaM(request, programa_id):
+    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    maestria = get_object_or_404(Maestrias, id=programa.maestria)
+
+    if request.method == 'POST':
+        user_id = request.POST.get('usuario')  # Solo un usuario
+        user = get_object_or_404(User, id=user_id)
+        print(user_id)
+
+        # Verifica si ya está matriculado
+        exists = MatriculaUsuario.objects.filter(
+            usuario=user,
+            content_type=ContentType.objects.get_for_model(ProgramaPosgrado),
+            object_id=programa_id
+        ).exists()
+
+        if not exists:
+            MatriculaUsuario.objects.create(
+                usuario=user,
+                content_type=ContentType.objects.get_for_model(
+                    ProgramaPosgrado),
+                object_id=programa_id,
+                rol_en_programa='Estudiante'
+            )
+            messages.success(
+                request, f'{user.get_full_name()} matriculado exitosamente.')
+        else:
+            messages.warning(
+                request, f'{user.get_full_name()} ya estaba matriculado.')
+
+        return redirect('usuariosmatricularprogramam', programa_id=programa_id)
+
+    # Mostrar usuarios no matriculados aún
+    usuarios = User.objects.filter(is_active=True).exclude(
+        matriculausuario__content_type=ContentType.objects.get_for_model(
+            ProgramaPosgrado),
+        matriculausuario__object_id=programa_id
+    )
+
+
+    return render(request, 'usuariosmatricular_programam.html', {
+        'usuarios': usuarios,
+        'programa': programa,
+        'maestria': maestria
+    })
+
+@login_required
+def BorrarUsuariosMatricularProgramaM(request, programa_id, usuario_id):
+    usuario = get_object_or_404(User, id=usuario_id)
+    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+
+    # Obtener el ContentType correspondiente a ProgramaPosgrado
+    programa_ct = ContentType.objects.get_for_model(ProgramaPosgrado)
+
+    try:
+        matricula = MatriculaUsuario.objects.get(
+            usuario=usuario,
+            content_type=programa_ct,
+            object_id=programa_id
+        )
+        matricula.delete()
+        messages.warning(request, "Matrícula eliminada exitosamente.")
+    except MatriculaUsuario.DoesNotExist:
+        messages.error(request, "No se encontró la matrícula.")
+
+    return redirect('usuariosmatriculadosprogramam', programa_id)
+
+@login_required
+def DocentesMatriculadosModuloM(request, programa_id):
+    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    modulos = Modulos.objects.filter(maestria=programa.maestria)
+
+    docentes_por_modulo = {}
+    modulo_ct = ContentType.objects.get_for_model(Modulos)
+
+    for modulo in modulos:
+        docentesmatriculados = MatriculaDocenteModulo.objects.filter(
+            content_type=modulo_ct,
+            object_id=modulo.id
+        )
+        docentes_por_modulo[modulo] = docentesmatriculados
+
+    return render(request, 'docentesmatriculados_modulom.html', {
+        'programa': programa,
+        'docentes_por_modulo': docentes_por_modulo
+    })
+
+
+@login_required
+def DocentesMatricularModuloM(request, programa_id):
+    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    modulos = Modulos.objects.filter(maestria=programa.maestria)
+    docentes = User.objects.filter(perfilusuario__rol=2)
+
+    if request.method == 'POST':
+        docente_id = request.POST.get('docente_id')
+        modulo_id = request.POST.get('modulo_id')
+
+        docente = get_object_or_404(User, id=docente_id)
+        modulo = get_object_or_404(Modulos, id=modulo_id)
+
+        modulo_ct = ContentType.objects.get_for_model(Modulos)
+
+        obj, created = MatriculaDocenteModulo.objects.get_or_create(
+            docente=docente,
+            content_type=modulo_ct,
+            object_id=modulo.id
+        )
+
+        if created:
+            messages.success(request, "Docente matriculado exitosamente.")
+        else:
+            messages.warning(request, "El docente ya está matriculado en este módulo.")
+
+        return HttpResponseRedirect(request.path)
+
+    return render(request, 'docentesmatricular_modulom.html', {
+        'programa': programa,
+        'modulos': modulos,
+        'docentes': docentes
+    })
+
+def BorrarDocentesMatricularModuloM(request,programa_id, docente_id, modulo_id):
+    docente = get_object_or_404(User, id=docente_id)
+    modulo = get_object_or_404(Modulos, id=modulo_id)
+
+    modulo_ct = ContentType.objects.get_for_model(Modulos)
+
+    try:
+        matricula = MatriculaDocenteModulo.objects.get(
+            docente=docente,
+            content_type=modulo_ct,
+            object_id=modulo.id
+        )
+        matricula.delete()
+        messages.success(request, "Matricula eliminada exitosamente.")
+    except MatriculaDocenteModulo.DoesNotExist:
+        messages.error(request, "No se encontró la matrícula.")
+
+    return redirect('docentesmatriculadosmodulom', programa_id)
+
+

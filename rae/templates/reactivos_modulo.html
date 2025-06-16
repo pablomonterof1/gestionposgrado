@@ -16,7 +16,16 @@
             <a class="btn btn-sm btn-danger" href="{% url 'reactivosprograma' programaposgrado.id %}">Regresar</a>
         </div>
 
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
         <div class="mb-3" style="text-align: right;">
+
             <a class="btn btn-info" href="{% url 'reactivosmc_create' programaposgrado.id modulo.id %}">Agregar un
                 reactivo</a>
         </div>
@@ -32,7 +41,7 @@
                     <th scope="col">Justificación</th>
                     <th scope="col">Creado por:</th>
                     <th scope="col">Estado</th>
-                    <th scope="col" style="text-align: center;" >Detalles</th>
+                    <th scope="col" style="text-align: center;">Detalles</th>
 
                 </tr>
             </thead>
@@ -54,20 +63,35 @@
                     <td>{{ reactivo.correcta }}</td>
                     <td>{{ reactivo.justificacion }}</td>
                     <td>{{ reactivo.usuario_obj.get_full_name }} </td>
-                    <td>{{ reactivo.get_estado_display }} </td>
-                    <td >
+                    {% if reactivo.estado == 2 %}
+                    <td class="text-success">
+                        {% elif reactivo.estado == 3 %}
+                    <td class="text-danger">
+                        {% else %}
+                    <td>
+                        {% endif %}
+
+                        {{ reactivo.get_estado_display }}
+                    </td>
+                    <td>
 
                         <div class="d-flex gap-2">
+                            {% if reactivo.estado == 1 %}
                             <a href="{% url 'reactivosmc_update' reactivo.id %}" class="btn btn-sm
-                            btn-warning">Ver</a>
-
-
+                            btn-warning">Editar</a>
+                            {% endif %}
+                            {% if tiene_permiso_edision %}
+                            <a class="btn btn-success" href="{% url 'reactivosmc_validate' reactivo.id %}"> Validar </a>
+                            {% endif %}
+                            {% if reactivo.estado == 1 %}
                             <form id="form-borrar-{{ reactivo.id }}" action="{% url 'reactivosmc_delete' reactivo.id %}"
                                 method="POST" class="form-borrar">
                                 {% csrf_token %}
                                 <button type="button" class="btn btn-danger"
                                     onclick="confirmarBorrado('{{ reactivo.id }}')">Borrar</button>
                             </form>
+                             {% endif %}
+
                         </div>
 
 

@@ -49,4 +49,9 @@ class ReactivosMultipleChoiceForm(forms.ModelForm):
             'tiempo_estimado' : 'Tiempo estimado',
             # Add other labels as needed
         }
+        def clean_enunciado(self):
+            enunciado = self.cleaned_data.get('enunciado')
+            if ReactivosMultipleChoice.objects.filter(enunciado=enunciado).exists():
+                raise forms.ValidationError("Ya existe un reactivo con este enunciado.")
+            return enunciado
     

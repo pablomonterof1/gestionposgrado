@@ -8,7 +8,7 @@ from tinymce.models import HTMLField
 
 class ReactivosMultipleChoice(models.Model):
 
-    enunciado = HTMLField()
+    enunciado = HTMLField(unique=True)
     contribucion = models.IntegerField(
         choices=[(1, 'Alto'), (2, 'Medio'), (3, 'Bajo')])
     opciona = models.TextField()
@@ -21,7 +21,7 @@ class ReactivosMultipleChoice(models.Model):
     palabras_clave = models.TextField()
     tiempo_estimado = models.IntegerField()
     estado = models.IntegerField(
-        choices=[(1, 'Enviado'), (2, 'Validado'), (3, 'No validado')], default=1)
+        choices=[(1, 'Enviado'), (2, 'Validado'), (3, 'Rechazado')], default=1)
     created = models.DateTimeField(auto_now_add=True)
     programadeposgrado = models.ForeignKey(
         ProgramaPosgrado, on_delete=models.CASCADE, related_name='programa_reactivos')

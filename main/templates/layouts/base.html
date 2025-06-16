@@ -15,8 +15,11 @@
         crossorigin="anonymous"></script>
     <link rel="stylesheet" href="{% static 'styles/main.css' %}">
     <link rel="icon" href="{% static 'favicon.ico' %}">
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" />
-    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <!-- jQuery y DataTables JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
@@ -52,7 +55,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
                     </li>
-                    
+
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown"
                             role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -97,16 +100,18 @@
 
         <ul class="navbar-nav ms-auto">
 
-             <hr>
+            <hr>
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'programasdeespecialidadesmedicas' %}" style="color: #ad2323 !important;">Programas de especialidades médicas</a>
+                <a class="nav-link" href="{% url 'programasdeespecialidadesmedicas' %}"
+                    style="color: #ad2323 !important;">Programas de especialidades médicas</a>
             </li>
             <hr>
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'programasdeposgrado' %}" style="color: #ad2323 !important;">Programas de maestría</a>
+                <a class="nav-link" href="{% url 'programasdeposgrado' %}" style="color: #ad2323 !important;">Programas
+                    de maestría</a>
             </li>
 
-            <hr> 
+            <hr>
             <br>
             <br>
 
@@ -118,10 +123,11 @@
                 <a class="nav-link" href="{% url 'gestionusuarios' %}" style="color: #ad2323 !important;">Gestión de
                     usuarios</a>
             </li>
-            
+
             <hr>
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'especialidadesmedicas' %}" style="color: #ad2323 !important;">Especialidades Médicas</a>
+                <a class="nav-link" href="{% url 'especialidadesmedicas' %}"
+                    style="color: #ad2323 !important;">Especialidades Médicas</a>
             </li>
             <hr>
             <li class="nav-item">
@@ -129,13 +135,14 @@
             </li>
             <hr>
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'periodosacademicos' %}" style="color: #ad2323 !important;">Periodos académicos</a>
+                <a class="nav-link" href="{% url 'periodosacademicos' %}" style="color: #ad2323 !important;">Periodos
+                    académicos</a>
             </li>
             <hr>
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'modalidad' %}" style="color: #ad2323 !important;">Modalidades</a>
             </li>
-             <hr>
+            <hr>
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'campoamplio' %}" style="color: #ad2323 !important;">Campo Amplio</a>
             </li>
@@ -150,7 +157,8 @@
 
             <hr style=" background-color: #ad2323; height: 4px;">
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'admin:index' %}" style="color: #ad2323 !important;">Panel de administración</a>
+                <a class="nav-link" href="{% url 'admin:index' %}" style="color: #ad2323 !important;">Panel de
+                    administración</a>
             </li>
             <hr style=" background-color: #ad2323; height: 4px;">
         </ul>

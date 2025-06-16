@@ -31,7 +31,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', main_views.home, name='home'),
     path('dashboard/', main_views.dashboard, name='dashboard'),
-    path('indicadoreseval/<int:programa_id>/', main_views.IndicadoresEvaluacion, name='indicadoreseval'),
+    path('programamaestria/<int:programa_id>/', main_views.ProgramaMaestria, name='programamaestria'),
     path('programasdemaestria/', main_views.programasdemaestria, name='programasdemaestria'),
     
     #Gestion de usuarios
@@ -108,6 +108,8 @@ urlpatterns = [
     path('reactivosmc/create/<int:programa_id>/<int:modulo_id>/', rae_views.reactivosmc_create, name='reactivosmc_create'),
     path('reactivosmc/<int:reactivo_id>/', rae_views.reactivosmc_update, name='reactivosmc_update'),
     path('reactivosmc/<int:reactivo_id>/delete', rae_views.reactivosmc_delete, name='reactivosmc_delete'),
+    path('reactivosmcvalidate/<int:reactivo_id>/', rae_views.reactivosmc_validate, name='reactivosmc_validate'),
+    path('reactivosprogramaposgrado/<int:programa_id>/', rae_views.reactivos_programaposgrado, name='reactivos_programaposgrado'),
 
 
     #DATOSPOSGRADO
@@ -135,6 +137,18 @@ urlpatterns = [
     path('documentospsnovalidar/', postulacion_views.documentosps_novalidar, name='documentospsnovalidar'),
 
 
+    #USUARIOSMATRICULADOS
+    path('usuariosmatriculadosprogramam/<int:programa_id>/', user_views.UsuariosMatriculadosProgramaM, name='usuariosmatriculadosprogramam'),
+    path('usuariosmatricularprogramam/<int:programa_id>/', user_views.UsuariosMatricularProgramaM, name='usuariosmatricularprogramam'),
+    path('borarusuariosmatriculadosprogramam/<int:programa_id>/<int:usuario_id>/', user_views.BorrarUsuariosMatricularProgramaM, name='borarusuariosmatriculadosprogramam'),
+    path('docentesmatriculadosmodulom/<int:programa_id>/', user_views.DocentesMatriculadosModuloM, name='docentesmatriculadosmodulom'),
+    path('docentesmatricularmodulom/<int:programa_id>/', user_views.DocentesMatricularModuloM, name='docentesmatricularmodulom'),
+    path('borardocentesmatriculadosmodulom/<int:programa_id>/<int:docente_id>/<int:modulo_id>/', user_views.BorrarDocentesMatricularModuloM, name='borardocentesmatriculadosmodulom'),
+
+    ############################
+
+
+    #TinyMCE
     ############################
     path('tinymce/', include('tinymce.urls')),
 

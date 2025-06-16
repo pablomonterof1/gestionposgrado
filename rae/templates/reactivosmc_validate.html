@@ -13,16 +13,8 @@
 
         </p>
 
-        {% if messages %}
-        {% for message in messages %}
-        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-            {{ message }}
-        </div>
-        {% endfor %}
-        {% endif %}
-
-    
-        <form action="{% url 'reactivosmc_create' programaposgrado.id modulo.id %}" method="POST">
+        {{error}}
+        <form action="{% url 'reactivosmc_validate' reactivo.id %}" method="POST">
 
             {% csrf_token %}
 
@@ -80,14 +72,14 @@
 
 
 
-
-
-            <button type="submit" class="btn btn-primary">Crear</button>
+            <button type="submit" name="action" value="validar" class="btn btn-success">Validar</button>
+            <button type="submit" name="action" value="rechazar" class="btn btn-danger">Rechazar</button>
         </form>
-        <div style="text-align: right;" class="mb-3">
-            <a class="btn btn-danger" href="{% url 'reactivosmodulo' programaposgrado.id modulo.id %}">Cancelar</a>
-        </div>
+        
 
+        <div style="text-align: right;" class="mb-3">
+            <a class="btn btn-danger" href="{% url 'reactivosmodulo' reactivo.programadeposgrado.id reactivo.modulo %}">Cancelar</a>
+        </div>
 
 
     </section>
@@ -95,3 +87,4 @@
 </main>
 
 {% endblock %}
+

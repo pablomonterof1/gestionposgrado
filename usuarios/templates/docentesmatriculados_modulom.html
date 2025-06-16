@@ -1,0 +1,97 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+
+<main class="container py-5">
+    <section class="card" style="padding: 2%;">
+
+        <h3 class="display-6"> Docentes matriculados en el programa de maestría</h3>
+        <br>
+
+        <h3> {{ programa }}</h3>
+
+        <div class="mb-3">
+            <a class="btn btn-sm btn-danger" href="{% url 'programamaestria' programa.id %}">Regresar</a>
+        </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-info">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="mb-3" style="text-align: right;">
+            <a class="btn btn-info" href="{% url 'docentesmatricularmodulom' programa.id %}">Matricular docente</a>
+
+        </div>
+
+        {% for modulo, docentesmatriculados in docentes_por_modulo.items %}
+        <h5>Módulo: {{ modulo.nombre }}</h5>
+        {% if docentesmatriculados %}
+        
+            {% for docentes in docentesmatriculados %}
+            <table class="table ">
+                <tr>
+                    <td>
+                        <p class="lead">
+                            {{ docentes.docente.get_full_name }}
+                        </p>
+                    </td>
+                    <td style="width: 30%;">
+                        <p class="lead">
+                            {{ docentes.docente.perfilusuario.ci }}
+                        </p>
+                    </td>
+
+                    <td style="width: 20%;" >
+                        <form method="POST" action="{% url 'borardocentesmatriculadosmodulom' programa.id docentes.docente.id modulo.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="docente_id" value="{{ docentes.docente.id }}">
+                            <input type="hidden" name="modulo_id" value="{{ modulo.id }}">
+                            <button type="submit" class="btn btn-danger">Dar de baja</button>
+
+                        </form>
+                    </td>
+                    
+                </tr>
+            </table>
+
+            {% endfor %}
+        <br>
+        {% else %}
+        <p class="lead"><em>No hay docentes asignados a este módulo.</em></p>
+        <br>
+        {% endif %}
+        {% endfor %}
+
+
+
+
+
+
+    </section>
+</main>
+
+<script>
+
+
+    function confirmarBorrado(id) {
+        Swal.fire({
+            title: '¿Estás seguro de borrar la maestría?',
+            text: "¡Esta acción no se puede deshacer!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, borrar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('form-borrar-' + id).submit();
+            }
+        })
+    }
+</script>
+
+{% endblock %}

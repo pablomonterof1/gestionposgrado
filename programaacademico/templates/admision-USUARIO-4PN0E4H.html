@@ -1,0 +1,43 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<main class="container py-5">
+    <div>
+        <h1 class="display-5">Admisión</h1>
+        <p class="lead">Bienvenido a la sección de admisión.....</p>
+
+        <div style="text-align: right;" class="mb-3">
+
+            <a class="btn btn-lg btn-info" href="/admision/create">Agregar</a>
+
+           
+        </div>
+
+        <ul class="list-group">
+            {% for admision in admision_list %}
+
+            <li class="list-group-item d-flex justify-content-between align-items-start" >
+                <div class="ms-4 me-auto">
+                    <div class="fw-bold display-6" >{{admision.nombre}}</div>
+                    {{admision.descripcion}}
+                </div>
+                <a class="btn btn-primary " href="{% url 'admision_detail' admision.id %}" >Ver</a>
+                &nbsp;
+                <form action="{% url 'admision_delete' admision.id %}" method="POST">
+                    {% csrf_token %}
+                    <button class="btn btn-danger" >Borrar</button>
+                </form>
+            </li>
+
+        
+
+            {% endfor %}
+        </ul>
+
+    </div>
+
+</main>
+
+
+{% endblock %}
