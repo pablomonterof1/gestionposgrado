@@ -152,6 +152,99 @@ def docentedp_create(request, periodo_id):
 
 
 @login_required
+def docentepm_create(request, programa_id):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre', '').strip()
+        apellido = request.POST.get('apellido', '').strip()
+        cedula = request.POST.get('cedula', '').strip()
+        correo = request.POST.get('correo', '').strip()
+
+        # Validación básica de campos vacíos
+        if not nombre or not apellido or not cedula or not correo:
+            messages.error(request, 'Todos los campos son obligatorios.')
+            return redirect('docentepm_create', programa_id=programa_id)
+
+        # Validación de formato de correo
+        try:
+            validate_email(correo)
+        except ValidationError:
+            messages.error(request, 'El correo electrónico no es válido.')
+            return redirect('docentepm_create', programa_id=programa_id)
+
+        # Verificar duplicados
+        if User.objects.filter(username=cedula).exists():
+            messages.error(request, 'Ya existe un usuario con esa cédula.')
+            return redirect('docentepm_create', programa_id=programa_id)
+
+        if User.objects.filter(email=correo).exists():
+            messages.error(
+                request, 'Ya existe un usuario con ese correo electrónico.')
+            return redirect('docentepm_create', programa_id=programa_id)
+
+        # Crear el usuario
+        user = User.objects.create_user(
+            username=cedula,
+            password=cedula,
+            first_name=nombre,
+            last_name=apellido,
+            email=correo
+        )
+        PerfilUsuario.objects.create(user=user, rol=2, ci=cedula)
+        messages.success(request, 'Docente creado exitosamente.')
+        return redirect('docentesmatricularmodulom', programa_id=programa_id)
+
+    return render(request, 'docentepm_create.html',
+                  {'programa_id': programa_id})
+
+
+@login_required
+def estudiantepm_create(request, programa_id):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre', '').strip()
+        apellido = request.POST.get('apellido', '').strip()
+        cedula = request.POST.get('cedula', '').strip()
+        correo = request.POST.get('correo', '').strip()
+
+        # Validación básica de campos vacíos
+        if not nombre or not apellido or not cedula or not correo:
+            messages.error(request, 'Todos los campos son obligatorios.')
+            return redirect('estudiantepm_create', programa_id=programa_id)
+
+        # Validación de formato de correo
+        try:
+            validate_email(correo)
+        except ValidationError:
+            messages.error(request, 'El correo electrónico no es válido.')
+            return redirect('estudiantepm_create', programa_id=programa_id)
+
+        # Verificar duplicados
+        if User.objects.filter(username=cedula).exists():
+            messages.error(request, 'Ya existe un usuario con esa cédula.')
+            return redirect('estudiantepm_create', programa_id=programa_id)
+
+        if User.objects.filter(email=correo).exists():
+            messages.error(
+                request, 'Ya existe un usuario con ese correo electrónico.')
+            return redirect('estudiantepm_create', programa_id=programa_id)
+
+        # Crear el usuario
+        user = User.objects.create_user(
+            username=cedula,
+            password=cedula,
+            first_name=nombre,
+            last_name=apellido,
+            email=correo
+        )
+        PerfilUsuario.objects.create(user=user, rol=1, ci=cedula)
+        messages.success(request, 'Estudiante creado exitosamente.')
+        return redirect('usuariosmatricularprogramam', programa_id=programa_id)
+
+    return render(request, 'estudiantepm_create.html',
+                  {'programa_id': programa_id})
+
+
+
+@login_required
 def UsuariosMatriculadosProgramaM(request, programa_id):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
     maestria = get_object_or_404(Maestrias, id=programa.maestria)
@@ -281,7 +374,8 @@ def DocentesMatricularModuloM(request, programa_id):
         obj, created = MatriculaDocenteModulo.objects.get_or_create(
             docente=docente,
             content_type=modulo_ct,
-            object_id=modulo.id
+            object_id=modulo.id,
+            programa=programa.id
         )
 
         if created:

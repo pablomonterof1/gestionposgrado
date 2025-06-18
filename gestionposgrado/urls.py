@@ -23,6 +23,7 @@ from programasposgrado import views as programasposgrado_views
 from cuerpoacademico import views as cuerpoacademico_views
 from postulacion import views as postulacion_views
 from rae import views as rae_views
+from aulavirtual import views as aulavirtual_views
 from django.conf.urls.static import static
 from django.conf import settings
 from datosposgrado import views as datosposgrado_views
@@ -42,7 +43,10 @@ urlpatterns = [
     path('gestionusuarios/', user_views.datosUsuario, name='gestionusuarios'),
     path('actualizar-rol/<int:usuario_id>/', user_views.actualizar_rol_usuario, name='actualizar_rol_usuario'),
     path('docentedp/create/<int:periodo_id>', user_views.docentedp_create, name='docentedp_create'),
-    
+    path('docentepm/create/<int:programa_id>', user_views.docentepm_create, name='docentepm_create'),
+    path('estudiantepm/create/<int:programa_id>', user_views.estudiantepm_create, name='estudiantepm_create'),
+
+
     #Gestion de programas de posgrado
     path('maestrias/', programasposgrado_views.maestrias, name='maestrias'),
     path('maestrias/create/', programasposgrado_views.maestrias_create, name='maestrias_create'),
@@ -105,9 +109,13 @@ urlpatterns = [
     #Reactivos
     path('reactivosprograma/<int:programa_id>/', rae_views.reactivosprograma, name='reactivosprograma'),
     path('reactivosmodulo/<int:programa_id>/<int:modulo_id>/', rae_views.reactivosmodulo, name='reactivosmodulo'),
+    path('reactivosmodulodocente/<int:programa_id>/<int:modulo_id>/', rae_views.reactivosmodulodocente, name='reactivosmodulodocente'),
     path('reactivosmc/create/<int:programa_id>/<int:modulo_id>/', rae_views.reactivosmc_create, name='reactivosmc_create'),
+    path('reactivosdocente/create/<int:programa_id>/<int:modulo_id>/', rae_views.reactivosdocente_create, name='reactivosdocente_create'),
     path('reactivosmc/<int:reactivo_id>/', rae_views.reactivosmc_update, name='reactivosmc_update'),
+    path('reactivosdocente/<int:reactivo_id>/', rae_views.reactivosdocente_update, name='reactivosdocente_update'),
     path('reactivosmc/<int:reactivo_id>/delete', rae_views.reactivosmc_delete, name='reactivosmc_delete'),
+    path('reactivosdocente/<int:reactivo_id>/delete', rae_views.reactivosdocente_delete, name='reactivosdocente_delete'),
     path('reactivosmcvalidate/<int:reactivo_id>/', rae_views.reactivosmc_validate, name='reactivosmc_validate'),
     path('reactivosprogramaposgrado/<int:programa_id>/', rae_views.reactivos_programaposgrado, name='reactivos_programaposgrado'),
 
@@ -141,9 +149,16 @@ urlpatterns = [
     path('usuariosmatriculadosprogramam/<int:programa_id>/', user_views.UsuariosMatriculadosProgramaM, name='usuariosmatriculadosprogramam'),
     path('usuariosmatricularprogramam/<int:programa_id>/', user_views.UsuariosMatricularProgramaM, name='usuariosmatricularprogramam'),
     path('borarusuariosmatriculadosprogramam/<int:programa_id>/<int:usuario_id>/', user_views.BorrarUsuariosMatricularProgramaM, name='borarusuariosmatriculadosprogramam'),
+    #DOCENTESMATRICULADOS
     path('docentesmatriculadosmodulom/<int:programa_id>/', user_views.DocentesMatriculadosModuloM, name='docentesmatriculadosmodulom'),
     path('docentesmatricularmodulom/<int:programa_id>/', user_views.DocentesMatricularModuloM, name='docentesmatricularmodulom'),
     path('borardocentesmatriculadosmodulom/<int:programa_id>/<int:docente_id>/<int:modulo_id>/', user_views.BorrarDocentesMatricularModuloM, name='borardocentesmatriculadosmodulom'),
+
+    #AULAS VIRTUALES
+    path('miscursos/', aulavirtual_views.MisCursos, name='miscursos'),
+    path('aulavirtualdocente/<int:programa_id>/<int:modulo_id>/', aulavirtual_views.AulaVirtual_Docente, name='aulavirtual_docente'),
+    path('aulavirtualestudiante/<int:programa_id>/', aulavirtual_views.AulaVirtual_Estudiante, name='aulavirtual_estudiante'),
+
 
     ############################
 

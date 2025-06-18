@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'tinymce',
     'datosposgrado',
     'postulacion',
-    'seleccionperfiles'
+    'seleccionperfiles',
+    'aulavirtual',
 ]
 
 MESSAGE_TAGS = {

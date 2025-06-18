@@ -1,0 +1,91 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<main class="container py-5 ">
+    <section class="card" style="padding: 2%;">
+
+        <h3 class="display-6"> Programas en los que te encuentras matriculado</h3>
+
+
+        <br>
+
+        {% if usuarioprogramaslist %}
+
+        <p class="lead">
+            <b>Estudiante</b>
+        </p>
+
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for programa in usuarioprogramaslist %}
+            <div class="col">
+                <div class="card h-100">
+
+                    <div class="card-header">
+                        <h5 class="card-title">Programa</h5>
+                        
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text"> <b>Período Académico:</b> {{ programa.periodoacademico }}</p>
+                        <p class="card-text lead"> <b>Maestría:</b> {{ programa.maestria }}</p>
+                        <p class="card-text"> <b>Modalidad:</b> {{ programa.modalidad }} - <b>Cohorte:</b> {{ programa.programa.get_cohorte_display }}</p>
+
+                    </div>
+                    <div class="card-footer text-bg-dark">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'aulavirtual_estudiante' programa.programa.id %}"
+                                class="btn btn-warning">Ingresar</a>
+                            <span class="badge bg-secondary">{{ programa.total_estudiantes }} Estudiantes</span>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+
+        </div>
+
+        {% endif %}
+
+        <br>
+        {% if docentemoduloslist %}
+        <p class="lead">
+            <b>Docente</b>
+        </p>
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for modulo in docentemoduloslist %}
+            <div class="col">
+                <div class="card h-100">
+
+                    <div class="card-header">
+                        <h5 class="card-title">Programa</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text"> <b>Período Académico:</b> {{ modulo.periodoacademico }}</p>
+
+                        <p class="card-text lead"> <b>Maestría:</b> {{ modulo.maestria }}</p>
+                        <p class="card-text lead"> <b>Módulo:</b> {{ modulo.modulo }}</p>
+
+                        <p class="card-text"> <b>Modalidad:</b> {{ modulo.modalidad }} - <b>Cohorte:</b> {{ modulo.programa.get_cohorte_display }}</p>
+                    </div>
+                    <div class="card-footer text-bg-dark">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'aulavirtual_docente' modulo.programa.id modulo.modulo.id %}"
+                                class="btn btn-warning">Ingresar</a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            {% endif %}
+
+    </section>
+
+
+</main>
+
+{% endblock %}

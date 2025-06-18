@@ -25,7 +25,7 @@
         {% endif %}
 
         <div class="mb-3" style="text-align: right;">
-            <a class="btn btn-info" href="">Crear docente</a>
+            <a class="btn btn-info" href="{% url 'docentepm_create' programa.id %}">Crear docente</a>
         </div>
 
 
@@ -84,7 +84,7 @@
 
 <script>
     $(document).ready(function () {
-        $('#usuariosmatricular').DataTable({
+        $('#docentesmatricular').DataTable({
             "language": {
                 "lengthMenu": "Mostrar _MENU_ registros por página",
                 "zeroRecords": "No se encontraron resultados",

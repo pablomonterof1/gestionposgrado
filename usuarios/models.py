@@ -63,6 +63,7 @@ class MatriculaDocenteModulo(models.Model):
     object_id = models.PositiveIntegerField()
     modulo = GenericForeignKey('content_type', 'object_id')
     fecha_matricula = models.DateTimeField(auto_now_add=True)
+    programa = models.BigIntegerField()
 
     class Meta:
         verbose_name = 'Matricula docente a módulo'
