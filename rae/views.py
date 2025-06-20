@@ -38,8 +38,12 @@ def reactivosprograma(request, programa_id):
 
 @login_required
 def reactivosmodulo(request, programa_id, modulo_id):
+<<<<<<< HEAD
     reactivos_list = ReactivosMultipleChoice.objects.filter(
         modulo=modulo_id).order_by('created')
+=======
+    reactivos_list = ReactivosMultipleChoice.objects.filter(modulo=modulo_id, programadeposgrado=programa_id).order_by('created')
+>>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
     modulo = Modulos.objects.get(id=modulo_id)
     modulonombre = modulo.nombre
     programaposgrado = ProgramaPosgrado.objects.get(id=programa_id)
@@ -67,6 +71,40 @@ def reactivosmodulo(request, programa_id, modulo_id):
 
     })
 
+<<<<<<< HEAD
+=======
+@login_required
+def reactivosmodulodocente(request, programa_id, modulo_id):
+    reactivos_list = ReactivosMultipleChoice.objects.filter(
+        modulo=modulo_id, programadeposgrado=programa_id, usuario=request.user.id).order_by('created')
+    modulo = Modulos.objects.get(id=modulo_id)
+    modulonombre = modulo.nombre
+    programaposgrado = ProgramaPosgrado.objects.get(id=programa_id)
+    maestria = programaposgrado.maestria
+    maestrianombre = Maestrias.objects.get(id=maestria)
+    periodoacademico = programaposgrado.periodoacademico
+    periodoacademiconombre = PeriodosAcademicos.objects.get(
+        id=periodoacademico)
+    modalidad = programaposgrado.modalidad
+    modalidadnombre = Modalidad.objects.get(id=modalidad)
+    for r in reactivos_list:
+        try:
+            r.usuario_obj = User.objects.get(id=r.usuario)
+        except User.DoesNotExist:
+            r.usuario_obj = None
+
+    return render(request, 'reactivos_modulodocente.html', {
+        'reactivos_list': reactivos_list,
+        'maestrianombre': maestrianombre,
+        'periodoacademiconombre': periodoacademiconombre,
+        'modalidadnombre': modalidadnombre,
+        'programaposgrado': programaposgrado,
+        'modulonombre': modulonombre,
+        'modulo': modulo,
+
+    })
+
+>>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
 @user_passes_test(es_docente)
 def reactivosmc_create(request, programa_id, modulo_id):
@@ -102,6 +140,43 @@ def reactivosmc_create(request, programa_id, modulo_id):
         'form': form,
     })
 
+<<<<<<< HEAD
+=======
+@user_passes_test(es_docente)
+def reactivosdocente_create(request, programa_id, modulo_id):
+    reactivos_list = ReactivosMultipleChoice.objects.filter(modulo=modulo_id)
+    modulo = Modulos.objects.get(id=modulo_id)
+    modulonombre = modulo.nombre
+    programaposgrado = ProgramaPosgrado.objects.get(id=programa_id)
+    maestria = programaposgrado.maestria
+    maestrianombre = Maestrias.objects.get(id=maestria)
+    if request.method == 'POST':
+        form = ReactivosMultipleChoiceForm(request.POST)
+        if form.is_valid():
+
+            reactivo = form.save(commit=False)
+            reactivo.programadeposgrado = ProgramaPosgrado.objects.get(
+                id=programa_id)
+            reactivo.modulo = modulo_id
+            reactivo.usuario = request.user.id
+            reactivo.save()
+            messages.success(request, "Reactivo creado correctamente.")
+            return redirect('reactivosmodulodocente', programa_id=programa_id, modulo_id=modulo_id)
+        else:
+            messages.error(
+                request, "Revise que todos los campos sean válidos o ya existe un reactivo con este enunciado.")
+    else:
+        form = ReactivosMultipleChoiceForm()
+    return render(request, 'reactivosdocente_create.html', {
+        'maestrianombre': maestrianombre,
+        'programaposgrado': programaposgrado,
+        'modulonombre': modulonombre,
+        'modulo': modulo,
+        'reactivos_list': reactivos_list,
+        'form': form,
+    })
+
+>>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
 @login_required
 def reactivosmc_update(request, reactivo_id):
@@ -122,6 +197,28 @@ def reactivosmc_update(request, reactivo_id):
         'modulo_id': modulo_id,
     })
 
+<<<<<<< HEAD
+=======
+@login_required
+def reactivosdocente_update(request, reactivo_id):
+    reactivo = ReactivosMultipleChoice.objects.get(id=reactivo_id)
+    programadeposgrado = reactivo.programadeposgrado
+    modulo_id = reactivo.modulo
+    if request.method == 'POST':
+        form = ReactivosMultipleChoiceForm(request.POST, instance=reactivo)
+        if form.is_valid():
+            form.save()
+            return redirect('reactivosmodulodocente', programa_id=programadeposgrado.id, modulo_id=modulo_id)
+    else:
+        form = ReactivosMultipleChoiceForm(instance=reactivo)
+    return render(request, 'reactivosdocente_update.html', {
+        'form': form,
+        'reactivo': reactivo,
+        'programadeposgrado': programadeposgrado,
+        'modulo_id': modulo_id,
+    })
+
+>>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
 @login_required
 def reactivosmc_validate(request, reactivo_id):
@@ -164,6 +261,23 @@ def reactivosmc_delete(request, reactivo_id):
         'modulo_id': modulo_id,
     })
 
+<<<<<<< HEAD
+=======
+@login_required
+def reactivosdocente_delete(request, reactivo_id):
+    reactivo = ReactivosMultipleChoice.objects.get(id=reactivo_id)
+    programa_id = reactivo.programadeposgrado.id
+    modulo_id = reactivo.modulo
+    if request.method == 'POST':
+        reactivo.delete()
+        return redirect('reactivosmodulodocente', programa_id=programa_id, modulo_id=modulo_id)
+    return render(request, 'reactivosdocente_delete.html', {
+        'reactivo': reactivo,
+        'programa_id': programa_id,
+        'modulo_id': modulo_id,
+    })
+
+>>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
 @login_required
 def reactivos_programaposgrado(request, programa_id):

@@ -1,0 +1,48 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<main class="container py-5">
+
+    <section class="card p-4">
+
+        <h2 class="mb-4">Crear Docente</h2>
+
+        {% if messages %}
+        <div class="mt-2">
+            {% for message in messages %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'docentepm_create' programa_id %}">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre</label>
+                <input type="text" class="form-control" id="nombre" name="nombre" required>
+            </div>
+            <div class="mb-3">
+                <label for="apellido" class="form-label">Apellido</label>
+                <input type="text" class="form-control" id="apellido" name="apellido" required>
+            </div>
+            <div class="mb-3">
+                <label for="cedula" class="form-label">Cédula</label>
+                <input type="text" class="form-control" id="cedula" name="cedula" required>
+            </div>
+            <div class="mb-3">
+                <label for="correo" class="form-label">Correo Electrónico</label>
+                <input type="email" class="form-control" id="correo" name="correo" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Crear Docente</button>
+        </form>
+
+    </section>
+</main>
+
+
+
+
+{% endblock %}

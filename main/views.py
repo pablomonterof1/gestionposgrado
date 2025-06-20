@@ -64,7 +64,10 @@ def es_coordinador(user):
 def es_editor(user):
     return user.is_authenticated and user.perfilusuario.rol == 4 or user.is_superuser
 
+<<<<<<< HEAD
 def es_tutor(user):
     return user.is_authenticated and user.perfilusuario.rol == 5 or user.is_superuser
 
+=======
+>>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 

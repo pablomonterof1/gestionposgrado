@@ -1,0 +1,132 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+
+<main style="padding: 2%;">
+    <section class="card" style="padding: 2%;">
+        <h3 class="display-6"> Reactivos </h3>
+        <br>
+        <p class="lead">
+            <b>Programa:</b> {{maestrianombre}}
+            <br>
+            <b>Módulo:</b> {{modulonombre}}
+
+        </p>
+
+        <div class="mb-3">
+            <a class="btn btn-sm btn-danger" href="{% url 'aulavirtual_docente' programaposgrado.id modulo.id %}">Regresar</a>
+        </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="mb-3" style="text-align: right;">
+
+            <a class="btn btn-info" href="{% url 'reactivosdocente_create' programaposgrado.id modulo.id %}">Agregar un
+                reactivo</a>
+        </div>
+
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Enunciado</th>
+                    <th scope="col">contribución</th>
+                    <th scope="col">Opciones de respuesta</th>
+                    <th scope="col">Correcta</th>
+                    <th scope="col">Justificación</th>
+                    <th scope="col">Creado por:</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col" style="text-align: center;">Detalles</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                {% for reactivo in reactivos_list %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ reactivo.enunciado|safe }}</td>
+                    <td>{{ reactivo.get_contribucion_display }}</td>
+                    <td>
+                        a. {{ reactivo.opciona }}
+                        <br>
+                        b. {{ reactivo.opcionb }}
+                        <br>
+                        c. {{ reactivo.opcionc }}
+                        <br>
+                        d. {{ reactivo.opciond }}
+                    </td>
+                    <td>{{ reactivo.correcta }}</td>
+                    <td>{{ reactivo.justificacion }}</td>
+                    <td>{{ reactivo.usuario_obj.get_full_name }} </td>
+                    {% if reactivo.estado == 2 %}
+                    <td class="text-success">
+                        {% elif reactivo.estado == 3 %}
+                    <td class="text-danger">
+                        {% else %}
+                    <td>
+                        {% endif %}
+
+                        {{ reactivo.get_estado_display }}
+                    </td>
+                    <td>
+
+                        <div class="d-flex gap-2">
+                            {% if reactivo.estado == 1 %}
+                            <a href="{% url 'reactivosdocente_update' reactivo.id %}" class="btn btn-sm
+                            btn-warning">Editar</a>
+                            {% endif %}
+                            {% if reactivo.estado == 1 %}
+                            <form id="form-borrar-{{ reactivo.id }}" action="{% url 'reactivosdocente_delete' reactivo.id %}"
+                                method="POST" class="form-borrar">
+                                {% csrf_token %}
+                                <button type="button" class="btn btn-danger"
+                                    onclick="confirmarBorrado('{{ reactivo.id }}')">Borrar</button>
+                            </form>
+                             {% endif %}
+
+                        </div>
+
+
+
+
+
+
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+
+    </section>
+
+</main>
+
+
+<script>
+    function confirmarBorrado(id) {
+        Swal.fire({
+            title: '¿Estás seguro de borrar el reactivo?',
+            text: "¡Esta acción no se puede deshacer!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, borrar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('form-borrar-' + id).submit();
+            }
+        })
+    }
+</script>
+
+{% endblock %}
