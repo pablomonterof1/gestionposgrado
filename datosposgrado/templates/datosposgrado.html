@@ -1,0 +1,66 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<main class="container py-5 ">
+    <section class="card" style="padding: 2%;">
+
+        <h3 class="display-6"> Base de datos de Posgrado - UNACH</h3>
+
+        <br>
+        <br>
+
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            <div class="col">
+                <div class="card h-100">
+                    
+                    <div class="card-body">
+                        <h5 class="card-title">Contratos docentes</h5>
+                        
+                    </div>
+                    <div class="card-footer text-bg-dark" style="text-align: right;">
+                      
+                            <a  class="btn btn-info"  href="{% url 'contratosdocentes' periodo_id %}">Ver</a>
+                     
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100">
+                    
+                    <div class="card-body">
+                        <h5 class="card-title">Contratos tutores</h5>
+                       
+                    </div>
+                    <div class="card-footer text-bg-dark" style="text-align: right;">
+                      
+                            <a  class="btn btn-info"  href="{% url 'contratotutor' periodo_id %}">Ver</a>
+                     
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100">
+                    
+                    <div class="card-body">
+                        <h5 class="card-title">Contratos coordinadores</h5>
+                        
+                    </div>
+                   <div class="card-footer text-bg-dark" style="text-align: right;">
+                      
+                            <a  class="btn btn-info"  href="{% url 'contratocoordinador' periodo_id %}">Ver</a>
+                     
+                    </div>
+                </div>
+            </div>
+           
+        </div>
+
+    </section>
+
+
+
+
+</main>
+
+{% endblock %}

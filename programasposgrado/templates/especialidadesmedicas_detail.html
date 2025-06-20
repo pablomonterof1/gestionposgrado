@@ -1,0 +1,25 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<main class="container py-5">
+    <section class="card" style="padding: 2%;">
+
+        <p class="display-6"> Editar especialidad médica </p>
+        <h5>
+            {{especialidadesmedicas.nombre}}
+        </h5>
+
+        <form action="{% url 'especialidadesmedicas_detail' especialidadesmedicas.id %}" method="POST" style="padding: 2%;">
+       
+            {% csrf_token %}
+            {{form.as_p}}
+            <button class="btn btn-success">Actualizar</button>
+        </form>
+
+    </section>
+
+
+</main>
+
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+
+<main class="container py-5 ">
+    <section class="card" style="padding: 2%;">
+        <h3 class="display-6"> Crear un nuevo reactivo </h3>
+        <br>
+
+        <p class="lead">
+            <b>Programa:</b> {{maestrianombre}}
+            <br>
+            <b>Módulo:</b> {{modulonombre}}
+
+        </p>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+    
+        <form action="{% url 'reactivosmc_create' programaposgrado.id modulo.id %}" method="POST">
+
+            {% csrf_token %}
+
+            <div>
+                <label for="enunciado" class="form-label"> <b>Enunciado</b> </label>
+                {{ form.enunciado }}
+            </div>
+            <div class="mb-3">
+                <label for="enunciado" class="form-label"> <b>Contribución</b> </label>
+                {{ form.contribucion }}
+            </div>
+
+
+
+
+            <table class="table table-striped table-bordered">
+                <tr>
+                    <th style="width: 10%; text-align: center;">Correcta</th>
+                    <th>Opciones</th>
+                </tr>
+                {% for radio in form.correcta %}
+                <tr>
+                    <td style="text-align: center;">
+                        {{ radio.tag }}
+                    </td>
+                    <td>
+                        {% if radio.choice_label == "Opción A" %}{{ form.opciona }}
+                        {% elif radio.choice_label == "Opción B" %}{{ form.opcionb }}
+                        {% elif radio.choice_label == "Opción C" %}{{ form.opcionc }}
+                        {% elif radio.choice_label == "Opción D" %}{{ form.opciond }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+
+
+            <div class="mb-3">
+                <label for="enunciado" class="form-label"> <b>Justificacion</b> </label>
+                {{ form.justificacion }}
+            </div>
+            <div class="mb-3">
+                <label for="enunciado" class="form-label"> <b>Palabras clave</b> </label>
+                {{ form.palabras_clave }}
+            </div>
+            <div class="mb-3">
+                <label for="enunciado" class="form-label"> <b>Bibliografía</b> - Normas APA </label>
+                {{ form.bibliografia }}
+            </div>
+            <div class="mb-3">
+                <label for="enunciado" class="form-label"> <b>Tiempos estimado</b> </label>
+                {{ form.tiempo_estimado }}
+            </div>
+
+
+
+
+
+
+            <button type="submit" class="btn btn-primary">Crear</button>
+        </form>
+        <div style="text-align: right;" class="mb-3">
+            <a class="btn btn-danger" href="{% url 'reactivosmodulo' programaposgrado.id modulo.id %}">Cancelar</a>
+        </div>
+
+
+
+    </section>
+
+</main>
+
+{% endblock %}

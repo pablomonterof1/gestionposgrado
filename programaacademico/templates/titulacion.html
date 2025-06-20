@@ -1,0 +1,93 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+
+<main class="container py-5">
+
+    <section class="card" style="padding: 2%;">
+
+        <h1 class="display-5">Titulación</h1>
+        <p class="lead">
+            <b>Programa:</b> {{maestrianombre}}
+            <br>
+            <b>Periodo academico:</b> {{periodoacademiconombre}}
+            <br>
+            <b>Modalidad:</b> {{modalidadnombre}}
+        </p>
+
+        <div class="mb-3">
+
+            <a class="btn btn-sm btn-danger" href="/indicadoreseval/{{programaposgrado.id}}">Regresar</a>
+        </div>
+
+        <div style="margin: auto;" >
+
+            {{ grafico|safe }}
+        </div>
+
+
+        {% if tiene_permiso_edision %}
+        <div style="text-align: right;" class="mb-3">
+
+            <a class="btn  btn-info" href="{% url 'titulacion_create' programaposgrado.id%} ">Agregar</a>
+
+        </div>
+        {% endif %}
+
+        <ul class="list-group">
+            {% for titulacion in titulacion_list %}
+
+            <li class="list-group-item d-flex justify-content-between align-items-start">
+                <div class="ms-4 me-auto">
+                    <h5>{{titulacion.nombre}}</h5>
+                    {{titulacion.descripcion}}
+                    <br>
+
+                    {{titulacion.get_tipodedato_display}}
+                    <br>
+
+                    {{titulacion.valor}}
+                </div>
+                {% if tiene_permiso_edision %}
+                <a class="btn btn-success " href="{% url 'titulacion_detail' titulacion.id %}">Ver</a>
+
+                &nbsp;
+
+                <form id="form-borrar-{{ titulacion.id }}" action="{% url 'titulacion_delete' titulacion.id %}"
+                    method="POST" class="form-borrar">
+                    {% csrf_token %}
+                    <button type="button" class="btn btn-danger"
+                        onclick="confirmarBorrado('{{ titulacion.id }}')">Borrar</button>
+                </form>
+                {% endif %}
+            </li>
+
+
+            {% endfor %}
+        </ul>
+
+    </section>
+
+</main>
+
+<script>
+    function confirmarBorrado(id) {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "¡Esta acción no se puede deshacer!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, borrar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('form-borrar-' + id).submit();
+            }
+        })
+    }
+</script>
+
+{% endblock %}

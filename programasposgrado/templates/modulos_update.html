@@ -1,0 +1,33 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+
+
+<main class="container py-5 ">
+    <section class="card" style="padding: 2%;">
+        <h3 class="display-6"> {{maestria.nombre}} </h3>
+        <h4> Editar módulo</h4>
+        <br>
+
+        {{error}}
+        <div class="card-body">
+            <form action="{% url 'modulos_update' modulo.id %}" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-lg btn-primary">Actualizar</button>
+            </form>
+        </div>
+
+        <div style="text-align: right; padding-right: 2%;" class="mb-3">
+            <a class="btn  btn-success" href="{% url 'modulos' maestria.id %}">Regresar</a>
+        </div>
+
+
+
+
+
+    </section>
+
+</main>
+
+
+{% endblock %}

@@ -1,0 +1,203 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+
+<main class="container py-5">
+    <section class="card p-4">
+
+        <h2 class="mb-4">Subir documentos de postulación</h2>
+        <p class="lead" style="font-size: 1.8em;">
+            <b>Programa: </b>{{especialidadmedica.nombre}}
+        </p>
+
+        {% if messages %}
+        <div class="mt-2">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+
+        <hr class="my-4">
+        <p class="lead" style="font-size: 1.5em;">Información del postulante</p>
+
+        <div class="container ">
+            <div class="row">
+                <div class="col">
+                    <label for="ci" class="form-label">Cédula de identidad</label>
+                    <input type="text" class="form-control" id="ci" name="ci"
+                        placeholder="{{ usuario.perfilusuario.ci }}" disabled>
+                </div>
+                <div class="col">
+                    <label for="first_name" class="form-label">Nombres</label>
+                    <input type="text" class="form-control" id="first_name" name="first_name"
+                        placeholder="{{ usuario.first_name }}" disabled>
+
+
+
+                </div>
+                <div class="col">
+                    <label for="last_name" class="form-label">Apellidos</label>
+                    <input type="text" class="form-control" id="last_name" name="last_name"
+                        placeholder="{{ usuario.last_name }}" disabled>
+
+                </div>
+            </div>
+        </div>
+
+        <br>
+        <div class="container ">
+            <div class="row">
+                <div class="col">
+                    <label for="fecha_nacimiento" class="form-label">Fecha de nacimiento</label>
+                    <input type="text" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento"
+                        placeholder="{{ usuario.perfilusuario.fecha_nacimiento }}" disabled>
+                </div>
+                <div class="col">
+                    <label for="nacionalidad" class="form-label">Nacionalidad</label>
+                    <input type="text" class="form-control" id="nacionalidad" name="nacionalidad"
+                        placeholder="{{ usuario.perfilusuario.nacionalidad }}" disabled>
+                </div>
+                <div class="col">
+                    <label for="sexo" class="form-label">Sexo</label>
+                    <input type="text" class="form-control" id="sexo" name="sexo"
+                        placeholder="{{ usuario.perfilusuario.sexo }}" disabled>
+                </div>
+            </div>
+        </div>
+        <br>
+        <div class="container ">
+            <div class="row">
+                <div class="col">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="{{ usuario.email }}"
+                        disabled>
+
+                </div>
+                <div class="col">
+                    <label for="telefono" class="form-label">Teléfono</label>
+                    <input type="text" class="form-control" id="telefono" name="telefono"
+                        placeholder="{{ usuario.perfilusuario.telefono }}" disabled>
+
+                </div>
+                <div class="col">
+                    <label for="provincia" class="form-label">Provincia</label>
+                    <input type="text" class="form-control" id="provincia" name="provincia"
+                        placeholder="{{ usuario.perfilusuario.provincia }}" disabled>
+
+                </div>
+            </div>
+        </div>
+        <br>
+        <hr class="my-4">
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+
+                        <th style="width: 30%;">Documento</th>
+                        <th style="width: 30%;">Subir</th>
+                        <th>Archivo Actual</th>
+                        <th>Estado</th>
+                        <th>Observación</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>{{ form.docidentificacion.label_tag }}</td>
+                        <td>
+
+                            {% if documentos_usuario.estado_docidentificacion == "Enviado" or documentos_usuario.estado_docidentificacion == "Pendiente" or documentos_usuario.estado_docidentificacion == "Rectificar" %}
+                            {{ form.docidentificacion }}
+                            {% elif documentos_usuario.estado_docidentificacion == "Aprobado" %}
+                            Documentos aprobados, nos se pueden editar.
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if documentos_usuario.docidentificacion %}
+                            <a href="{{ documentos_usuario.docidentificacion.url }}" target="_blank">Ver archivo</a>
+                            {% else %}
+                            No subido
+                            {% endif %}
+                        </td>
+                        {% if documentos_usuario.estado_docidentificacion == "Rechazado" %}
+                        <td class="text-danger">
+                        {% elif documentos_usuario.estado_docidentificacion == "Rectificar" %}
+                        <td class="text-warning">
+                        {% elif documentos_usuario.estado_docidentificacion == "Aprobado" %}
+                        <td class="text-success">
+                        {% elif documentos_usuario.estado_docidentificacion == "Pendiente" %}
+                        <td class="text-info">
+                        {% elif documentos_usuario.estado_docidentificacion == "Enviado" %}
+                        <td class="text-info">
+                        {% else %}
+                        <td>
+                        {% endif %}
+                            {{ documentos_usuario.estado_docidentificacion}}</td>
+                        <td>{{ documentos_usuario.observaciondocidentificacion|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ form.titulosenescyt.label_tag }}</td>
+                        <td>
+
+                            {% if documentos_usuario.estado_docidentificacion == "Enviado" or documentos_usuario.estado_docidentificacion == "Pendiente" or documentos_usuario.estado_docidentificacion == "Rectificar" %}
+                            {{ form.titulosenescyt }}
+                            {% elif documentos_usuario.estado_docidentificacion == "Aprobado" %}
+                            Documentos aprobados, nos se pueden editar.
+                            {% endif %}
+
+                        </td>
+                        <td>
+                            {% if documentos_usuario.titulosenescyt %}
+                            <a href="{{ documentos_usuario.titulosenescyt.url }}" target="_blank">Ver archivo</a>
+                            {% else %}
+                            No subido
+                            {% endif %}
+                        </td>
+
+                        {% if documentos_usuario.estado_docidentificacion == "Rechazado" %}
+                        <td class="text-danger">
+                        {% elif documentos_usuario.estado_docidentificacion == "Rectificar" %}
+                        <td class="text-warning">
+                        {% elif documentos_usuario.estado_docidentificacion == "Aprobado" %}
+                        <td class="text-success">
+                        {% elif documentos_usuario.estado_docidentificacion == "Pendiente" %}
+                        <td class="text-info">
+                        {% elif documentos_usuario.estado_docidentificacion == "Enviado" %}
+                        <td class="text-info">
+                        {% else %}
+                        <td>
+                        {% endif %}
+                            {{ documentos_usuario.estado_titulosenescyt|default:"Pendiente" }}
+                        </td>
+                        <td>{{ documentos_usuario.observaciontitulosenescyt|default:"-" }}</td>
+                    </tr>
+
+                </tbody>
+            </table>
+
+            <p class="lead text-danger">
+                Debes subir los 2 documentos para continuar
+            </p>
+
+            <button type="submit" class="btn btn-primary">Subir Documentos</button>
+
+        </form>
+
+    </section>
+</main>
+
+
+
+
+
+
+{% endblock %}

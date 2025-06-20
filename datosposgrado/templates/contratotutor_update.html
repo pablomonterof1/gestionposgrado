@@ -1,0 +1,158 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<main class="container py-5 ">
+    <section class="card" style="padding: 2%;">
+
+        <h3 class="mb-4">Contrato Actualizar </b></h3>
+       
+        <br>
+
+        {% if messages %}   
+        <div class="mt-2">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <form action="{% url 'contratotutor_update' contratotutor.id periodo_id %}" method="POST">
+            {% csrf_token %}
+
+            <label for="tutor" class="form-label"> <b>Tutor</b> </label>
+            <select name="tutor" class="form-select" id="selecttutor" aria-label="Default select example">
+                <option selected disabled>Seleccione un docente</option>
+                {% for tutor in tutor_list %}
+                <option value="{{ tutor.id }}" {% if contratotutor.tutor == tutor.user.id %} selected {% endif %}>{{ tutor.user.get_full_name }}</option>
+
+                {% endfor %}
+            </select>
+            <br>
+            <br>
+
+            <label for="programadeposgrado" class="form-label"> <b>Programa de posgrado</b> </label>
+            <select name="programadeposgrado" class="form-select" id="selectprogramadeposgrado" aria-label="Default select example">
+                <option selected disabled>Seleccione un programa de posgrado</option>
+                {{ programadeposgrado.periodoacademico.nombre }} - {% for programadeposgrado in programasdeposgrado_list %}
+                <option value="{{ programadeposgrado.id }}" {% if contratotutor.programadeposgrado == programadeposgrado.id %} selected {% endif %}>{{ programadeposgrado.maestria.nombre }}</option>
+
+                {% endfor %}
+            </select>
+            
+            <br>
+            <br>
+            <label for="maestrante" class="form-label"><b>Maestrante</b></label>
+            <select name="maestrante" class="form-select" id="selectmaestrante" aria-label="Default select example">
+            <option disabled {% if not contratotutor.maestrante %}selected{% endif %}>Seleccione un maestrante</option>
+            {% for maestrante in maestrantes_list %}
+            <option value="{{ maestrante.id }}" {% if contratotutor.maestrante.id == maestrante.id %}selected{% endif %}>
+            {{ maestrante.user.get_full_name }}
+            </option>
+            {% endfor %}
+            </select>
+            <br><br>
+
+            <div class="mb-3">
+                <label for="valorxhora" class="form-label"> <b>Valor del contrato</b> </label>
+                {{ form.valorcontrato }}
+            </div>
+            <div class="mb-3">
+                <label for="certificacionpresupuestaria" class="form-label"> <b>Certificación presupuestaria</b> </label>
+                {{ form.certificacionpresupuestaria }}
+            </div>
+            <div class="mb-3">
+                <label for="fechacertificacionpresupuestaria" class="form-label"> <b>Fecha - Certificación presupuestaria</b> </label>
+                {{ form.fechacertificacionpresupuestaria }}
+            </div>
+            <div class="mb-3">
+                <label for="plazo" class="form-label"> <b>Plazo</b> </label>
+                {{ form.plazo }}
+            </div>
+            <div class="mb-3">
+                <label for="numerocontrato" class="form-label"> <b>Número de contrato</b> </label>
+                {{ form.numerocontrato }}
+            </div>
+
+            <div class="mb-3">
+                <label for="numerocontrato" class="form-label"> <b>Número de Memorando TTHH</b> </label>
+                {{ form.numeromemorandotthh }}
+            </div>
+
+             <div class="mb-3">
+                <label for="tipopersonalacademico" class="form-label"> <b>Tipo de personal académico</b> </label>
+                {{ form.tipopersonalacademico }}
+            </div>
+             <div class="mb-3">
+                <label for="adenda" class="form-label"> <b>Adenda</b> </label>
+                {{ form.adenda }}
+            </div>
+             <div class="mb-3">
+                <label for="obsevaciones" class="form-label"> <b>Observaciones</b> </label>
+                {{ form.obsevaciones }}
+            </div>
+            <div style="text-align: right; padding-right: 2%;" class="mb-3">
+                <button type="submit" class="btn btn-primary">Actualizar</button>   
+                <a class="btn btn-danger" href="{% url 'contratotutor' periodo_id %}">Cancelar</a>
+            </div>
+        </form>
+        
+
+
+
+      
+
+    </section>
+</main>
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+
+    $(document).ready(function () {
+        $('#selecttutor').select2({
+            placeholder: "Seleccione un tutor",
+            width: '100%'
+        });
+        $('#selectmaestrante').select2({
+        placeholder: "Seleccione un maestrante",
+        width: '100%'
+        });
+        $('#selectprogramadeposgrado').select2({
+            placeholder: "Seleccione un programa de posgrado",
+            width: '100%'
+        });
+
+        $('#selectprogramadeposgrado').on('change', function () {
+            let programaId = $(this).val();
+
+            // Limpiar y desactivar el select de módulos mientras se carga
+            $('#selectmodulo').empty().append('<option selected disabled>Cargando módulos...</option>').prop('disabled', true);
+
+            $.ajax({
+                url: `/api/modulos/${programaId}/`,
+                type: 'GET',
+                success: function (modulos) {
+                    $('#selectmodulo').empty().append('<option selected disabled>Seleccione un módulo</option>');
+                    modulos.forEach(modulo => {
+                        $('#selectmodulo').append(`<option value="${modulo.id}">${modulo.nombre}</option>`);
+                    });
+                    $('#selectmodulo').prop('disabled', false);
+                },
+                error: function () {
+                    $('#selectmodulo').empty().append('<option selected disabled>Error al cargar</option>');
+                }
+            });
+        });
+
+        $('#selectmodulo').select2({
+            placeholder: "Seleccione un módulo",
+            width: '100%'
+        });
+    });
+</script>
+{% endblock %}

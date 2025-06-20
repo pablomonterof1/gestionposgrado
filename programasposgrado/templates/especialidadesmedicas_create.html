@@ -1,0 +1,27 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+
+<main class="container py-5 ">
+
+    <section class="card">
+
+        <h3 class="display-6"> Crear especialidad Médicas </h3>
+        
+        <div class="card-body">
+
+            <form action="{% url 'especialidadesmedicas_create' %}" method="POST" enctype="multipart/form-data">
+
+                {% csrf_token %}
+
+                {{ form.as_p }}
+
+                <button type="submit" class="btn btn-primary">Crear</button>
+
+            </form>
+
+
+    </section>
+
+{% endblock %}

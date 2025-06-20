@@ -1,0 +1,26 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<main class="container">
+
+    <h2>Admision - detalles</h2>
+    <h3>{{admision.nombre}}</h3>
+
+   
+
+    <form action="{% url 'admision_detail' admision.id %}" method="POST">
+        {% csrf_token %}
+        {{admisionform.as_p}}
+        <button class="btn btn-success">Actualizar</button>
+    </form>
+
+
+    <div style="text-align: right;"  >
+        
+
+    </div>
+    
+</main>
+
+{% endblock %}

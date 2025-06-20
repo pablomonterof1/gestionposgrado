@@ -1,0 +1,72 @@
+
+
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<main class="container py-5">
+    <section class="card p-4">
+
+        <p class="display-6" style="font-size: 2em;"> <b>Documentos validados</b></p>
+
+        <p class="lead" style="font-size: 1.8em;">
+            <b>Programa: </b>{{especialidadmedica.nombre}}
+        </p>
+
+        <div style="text-align: right;" >
+            <a class="btn btn-danger" href="{% url 'documentospsenviados' %}">Regresar</a>
+
+        </div>
+
+        {% if messages %}
+        <div class="mt-2">
+            {% for message in messages %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <hr style="border: solid 2px black ; border-radius: 5px;" >
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Documento de identificación</th>
+                    <th>Estado</th>
+                    <th>Título SENESCYT</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <form method="POST" action="#">
+                {% csrf_token %}
+                <tbody>
+                    {% for doc in documentosusuariospostulacion_list %}
+                    <tr>
+                        <td>{{ doc.usuario.user.get_full_name }}</td>
+                        <td><a href="{{ doc.docidentificacion.url }}" target="_blank">Ver archivo</a></td>
+                        <td>
+                            {{doc.estado_docidentificacion}}
+                        </td>
+                        <td><a href="{{ doc.titulosenescyt.url }}" target="_blank">Ver archivo</a></td>
+                        <td>
+                            {{doc.estado_titulosenescyt}}
+                        </td>
+                       
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No hay documentos validados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </form>
+        </table>
+
+    </section>
+
+</main>
+
+
+{% endblock %}

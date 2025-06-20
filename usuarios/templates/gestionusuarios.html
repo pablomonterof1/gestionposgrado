@@ -1,0 +1,99 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<main class="container py-5">
+    <section class="card p-4">
+
+        <h2 class="mb-4">Gestión de Usuarios</h2>
+
+
+
+        <div class="table-responsive">
+
+            <div style="text-align: right;">
+
+                <input class="inputbuscar" type="text" id="buscador" placeholder="Buscar en la tabla... 🔎"
+                    aria-label="Search ">
+            </div>
+
+            <table id="tablausuarios" class="table">
+
+                <thead>
+                    <tr>
+                        <th scope="col">Nombre</th>
+                        <th scope="col">Correo</th>
+                        <th scope="col">Rol</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for usuario in datosUsuario_list %}
+                    {% if not usuario.is_superuser %}
+                    <tr>
+                        <td>{{ usuario.first_name }} {{ usuario.last_name }}</td>
+                        <td>{{ usuario.email }}</td>
+                        {% if usuario.perfilusuario.rol  %}
+                        <td> {{ usuario.perfilusuario.get_rol_display }}</td>
+                        {% else %}
+                        <td>Sin rol asignado</td>
+                        {% endif %}
+                       
+                        <td>
+                            
+                            <form action="{% url 'actualizar_rol_usuario' usuario.id %}" method="POST">
+                                {% csrf_token %}
+                                <select class="form-select" name="rol" onchange="this.form.submit()" aria-label="Default select example">
+                                    <option selected disabled>Seleccione un rol</option>
+                                    <option value="1" {% if usuario.PerfilUsuario.rol == 1 %}selected{% endif %}>Estudiante</option>
+                                    <option value="2" {% if usuario.PerfilUsuario.rol == 2 %}selected{% endif %}>Docente</option>
+                                    <option value="3" {% if usuario.PerfilUsuario.rol == 3 %}selected{% endif %}>Coordinador</option>
+                                    <option value="4" {% if usuario.PerfilUsuario.rol == 4 %}selected{% endif %}>Editor</option>
+                                </select>
+                            </form>
+                           
+                        </td>
+                       
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+
+
+            </table>
+        </div>
+    </section>
+
+</main>
+
+
+
+<script>
+    const buscador = document.getElementById('buscador');
+    const tabla = document.getElementById('tablausuarios').getElementsByTagName('tbody')[0];
+
+    buscador.addEventListener('keyup', function () {
+        const filtro = buscador.value.toLowerCase();
+        const filas = tabla.getElementsByTagName('tr');
+
+        for (let i = 0; i < filas.length; i++) {
+            const celdas = filas[i].getElementsByTagName('td');
+            let coincide = false;
+
+            for (let j = 0; j < celdas.length; j++) {
+                const texto = celdas[j].textContent.toLowerCase();
+                if (texto.indexOf(filtro) > -1) {
+                    coincide = true;
+                    break;
+                }
+            }
+
+            filas[i].style.display = coincide ? '' : 'none';
+        }
+    });
+</script>
+
+
+
+
+{% endblock %}

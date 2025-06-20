@@ -1,0 +1,91 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<main style="padding: 2%;">
+    <section class="card p-4">
+
+        <p class="display-6" style="font-size: 2em;"> <b>Documentos pendientes de validación</b></p>
+
+        <p class="lead" style="font-size: 1.8em;">
+            <b>Programa: </b>{{especialidadmedica.nombre}}
+        </p>
+
+        <div style="text-align: right;">
+            <a class="btn btn-danger" href="{% url 'documentospsenviados' %}">Regresar</a>
+
+        </div>
+
+        {% if messages %}
+        <div class="mt-2">
+            {% for message in messages %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <hr style="border: solid 2px black ; border-radius: 5px;">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Documento de identificación</th>
+                    <th>Observación doc. identidad</th>
+                    <th>Título SENESCYT</th>
+                    <th>Observación título</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doc in documentosusuariospostulacion_list %}
+                <tr>
+                    <form method="POST" action="{% url 'documentospsnovalidar' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="doc_id" value="{{ doc.id }}">
+                        <input type="hidden" name="especialidad_id" value="{{ doc.especialidadmedica }}">
+
+
+                        <td>{{ doc.usuario.user.get_full_name }}</td>
+                        <td><a href="{{ doc.docidentificacion.url }}" target="_blank">Ver archivo</a></td>
+                        <td>
+                            <textarea  name="observacion_docidentificacion" rows="4" class="form-control"
+                                style="min-width: 250px;"
+                                placeholder="Solo si se envía a rectificar o no se aprueba"></textarea>
+                        </td>
+                        <td><a href="{{ doc.titulosenescyt.url }}" target="_blank">Ver archivo</a></td>
+                        <td>
+                            <textarea name="observacion_titulosenescyt" rows="4" class="form-control"
+                                style="min-width: 250px;"
+                                placeholder="Solo si se envía a rectificar o no se aprueba"></textarea>
+                        </td>
+                        <td>
+                            <!-- Aquí puedes agregar botones o enlaces para validar/rechazar -->
+                            <a href="{% url 'documentospsvalidar' doc.id doc.especialidadmedica %}"
+                                class="btn btn-success">Aprobar</a>
+                            <button type="submit" name="accion" value="rectificar"
+                                class="btn btn-warning">Rectificar</button>
+                            <button type="submit" name="accion" value="rechazar"
+                                class="btn btn-danger">Rechazar</button>
+                        </td>
+                    </form>
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No hay documentos pendientes de validación.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+
+
+
+    </section>
+
+</main>
+
+
+{% endblock %}

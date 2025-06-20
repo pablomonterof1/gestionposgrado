@@ -1,0 +1,31 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<main class="container py-5 ">
+    <section class="card" style="padding: 2%;">
+
+       
+
+
+        <div class="card" style="width: 100%;">
+            <div class="card-header text-bg-dark ">
+                <h3 class="display-6"> Seleccione un programa académico  {{programaposgrado_list.0.periodoacademico }}</h3>
+            </div>
+            <ul class="list-group list-group-flush ">
+                {% for programa in programaposgrado_list %}
+                <a href="#" style="text-decoration: none;">
+                    <li class="list-group-item">
+                        <p style="font-size: 1.3em; ">
+                            {{programa.maestria}} - {{programa.modalidad}}
+                        </p>
+                    </li>
+                </a> 
+                {% endfor %}
+            </ul>
+        </div>
+
+    </section>
+</main>
+
+{% endblock %}

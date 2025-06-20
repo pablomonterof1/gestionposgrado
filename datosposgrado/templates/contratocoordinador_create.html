@@ -1,0 +1,160 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<main class="container py-5 ">
+    <section class="card" style="padding: 2%;">
+
+        <h3 class="mb-4">Crear contrado - <b>{{periodoacademico.nombre}}</b></h3>
+
+
+
+        <div style="text-align: right;">
+            <p class="lead">Si el Coordinador no se encuentra en la lista, debe crear un nuevo registro</p>
+            <a class="btn  btn-primary" href="{% url 'coordinadordp_create' periodo_id %}"> Crear nuevo coordinador</a>
+        </div>
+
+        {% if messages %}
+        <div class="mt-2">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <br>
+
+        <form action="{% url 'contratocoordinador_create' periodo_id %}" method="POST">
+
+            {% csrf_token %}
+
+            <label for="coordinador" class="form-label"> <b>Coordinador</b> </label>
+            <select name="coordinador" class="form-select" id="selectcoordinador" aria-label="Default select example">
+                <option selected disabled>Seleccione un Coordinador</option>
+                {% for coordinador in coordinadores_list %}
+                <option value="{{ coordinador.id }}">{{ coordinador.user.get_full_name }}</option>
+                {% endfor %}
+            </select>
+
+            <br>
+            <br>
+            <label for="programadeposgrado" class="form-label"> <b>Programa de posgrado</b> </label>
+            <select name="programadeposgrado" class="form-select" id="selectprogramadeposgrado"
+                aria-label="Default select example">
+                <option selected disabled>Seleccione un programa de posgrado</option>
+                {% for programadeposgrado in programasdeposgrado_list %}
+                <option value="{{ programadeposgrado.id }}">
+                {{ programadeposgrado.periodoacademico.nombre }} - {{ programadeposgrado.maestria.nombre }}
+                </option>
+                {% endfor %}
+            </select>
+            <br>
+            <br>
+            <div class="mb-3">
+                <label for="certificacionpresupuestaria" class="form-label"> <b>Certificación presupuestaria</b>
+                </label>
+                {{ form.certificacionpresupuestaria }}
+            </div>
+
+            <div class="mb-3">
+                <label for="fechacertificacionpresupuestaria" class="form-label"> <b>Fecha - Certificación
+                        presupuestaria</b> </label>
+                {{ form.fechacertificacionpresupuestaria }}
+            </div>
+
+            <div class="mb-3">
+                <label for="plazo" class="form-label"> <b>Plazo</b> </label>
+                {{ form.plazo }}
+            </div>
+
+            <div class="mb-3">
+                <label for="honorario" class="form-label"> <b>Honorario</b> </label>
+                {{ form.honorario }}
+            </div>
+
+            <div class="mb-3">
+                <label for="numerocontrato" class="form-label"> <b>Número de contrato</b> </label>
+                {{ form.numerocontrato }}
+            </div>
+
+            <div class="mb-3">
+                <label for="cargo" class="form-label"> <b>Cargo</b> </label>
+                {{ form.cargo }}
+            </div>
+
+            <div class="mb-3">
+                <label for="noactasseleccion" class="form-label"> <b>Número de acta de selección</b> </label>
+                {{ form.noactasseleccion }}
+            </div>
+
+
+            <div class="mb-3">
+                <label for="oficioentregadoporth" class="form-label"> <b>Oficio entregado por TTHH</b> </label>
+                {{ form.oficioentregadoporth }}
+            </div>
+
+            <div class="mb-3">
+                <label for="modalidadcontractuar" class="form-label"> <b>Modalidad Contractuar</b> </label>
+                {{ form.modalidadcontractuar }}
+            </div>
+
+            <div class="mb-3">
+                <label for="obsevaciones" class="form-label"> <b>Observaciones</b> </label>
+                {{ form.obsevaciones }}
+            </div>
+
+
+            <button type="submit" class="btn btn-primary">Crear</button>
+        </form>
+
+    </section>
+</main>
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+
+    $(document).ready(function () {
+        $('#selectcoordinador').select2({
+            placeholder: "Seleccione un docente",
+            width: '100%'
+        });
+        $('#selectprogramadeposgrado').select2({
+            placeholder: "Seleccione un programa de posgrado",
+            width: '100%'
+        });
+
+        $('#selectprogramadeposgrado').on('change', function () {
+            let programaId = $(this).val();
+
+            // Limpiar y desactivar el select de módulos mientras se carga
+            $('#selectmodulo').empty().append('<option selected disabled>Cargando módulos...</option>').prop('disabled', true);
+
+            $.ajax({
+                url: `/api/modulos/${programaId}/`,
+                type: 'GET',
+                success: function (modulos) {
+                    $('#selectmodulo').empty().append('<option selected disabled>Seleccione un módulo</option>');
+                    modulos.forEach(modulo => {
+                        $('#selectmodulo').append(`<option value="${modulo.id}">${modulo.nombre}</option>`);
+                    });
+                    $('#selectmodulo').prop('disabled', false);
+                },
+                error: function () {
+                    $('#selectmodulo').empty().append('<option selected disabled>Error al cargar</option>');
+                }
+            });
+        });
+
+        $('#selectmodulo').select2({
+            placeholder: "Seleccione un módulo",
+            width: '100%'
+        });
+    });
+</script>
+{% endblock %}

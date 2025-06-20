@@ -1,0 +1,34 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+
+<main class="container py-5 ">
+
+    <section class="card" style="padding: 2%;">
+
+        <h3 class="display-6"> Campo amplio </h3>
+        <br>
+
+        <div class="row" >
+
+            {% for campo in campoamplio_list %}
+            <div class="card mb-3" style="width: 18rem;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ campo.nombre }}</h5>
+                </div>
+            </div>
+            &nbsp;
+            &nbsp;
+            {% endfor %}
+
+        </div>
+       
+
+        <div style="text-align: right;">
+            <b>Importante:</b> Para agregar o editar un Campo amplio, por favor dirígete al <a href="/admin" target="_blank">Panel de
+                administración</a>.
+        </div>
+    </section>
+
+</main>
+
+{% endblock %}

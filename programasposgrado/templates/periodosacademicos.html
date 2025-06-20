@@ -1,0 +1,36 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+
+<main class="container py-5 ">
+
+    <section class="card" style="padding: 2%;">
+
+        <h3 class="display-6"> Periodos académicos </h3>
+
+        <div class="row" >
+
+            {% for pacademico in periodosacademicos_list %}
+            <div class="card mb-3" style="width: 18rem;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ pacademico.nombre }}</h5>
+                    <p class="card-text">Fecha de inicio: {{ pacademico.fecha_inicio }}</p>
+                    <p class="card-text">Fecha de fin: {{ pacademico.fecha_fin }}</p>
+                </div>
+            </div>
+            &nbsp;
+            &nbsp;
+            {% endfor %}
+
+        </div>
+       
+
+        <div style="text-align: right;">
+            <b>Importante:</b> Para agregar o editar un periodo académico, por favor dirígete al <a href="/admin" target="_blank">Panel de
+                administración</a>.
+        </div>
+    </section>
+
+</main>
+
+
+{% endblock %}

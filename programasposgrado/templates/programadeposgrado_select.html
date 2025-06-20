@@ -1,0 +1,126 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<main class="container py-5 ">
+
+    <section class="card" style="padding: 2%;">
+
+        <h3 class="display-6"> Crear programa de posgrado </h3>
+        <p class="lead">
+            Selecciones un campo amplio, una maestría, un periodo académico y una modalidad para crear un programa de posgrado.
+        </p>
+
+        {{error}}
+        <select class="form-select" name="" id="campoamplioSelect">
+            <option value="" selected disabled>Seleccione un campo amplio</option>
+            {% for campoamplio in campoamplio_list %}
+            <option value="{{campoamplio.id}}">{{campoamplio.nombre}}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <select class="form-select" name="" id="maestriaSelect">
+            <option value="" selected disabled>Seleccione una maestría</option>
+            {% for maestria in maestrias_list %}
+            <option value="{{maestria.id}}">{{maestria.nombre}}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <select class="form-select" name="" id="pacademicoSelect">
+            <option value="" selected disabled>Seleccione un periodo académico</option>
+            {% for pacademico in periodoacademico_list %}
+            <option value="{{pacademico.id}}">{{pacademico.nombre}}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <select class="form-select" name="" id="modalidadSelect">
+            <option value="" selected disabled>Seleccione una modalidad</option>
+            {% for modalidad in modalidad_list %}
+            <option value="{{modalidad.id}}">{{modalidad.modalidad}}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <select class="form-select" name="" id="cohorte">
+            <option value="" selected disabled>Seleccione una cohorte</option>
+            
+            <option value="1">Primera</option>
+            <option value="2">Segunda</option>
+            <option value="3">Tercera</option>
+            <option value="4">Cuarta</option>
+            <option value="5">Quinta</option>
+            <option value="6">Sexta</option>
+            <option value="7">Séptima</option>
+            <option value="8">Octava</option>
+            <option value="9">Novena</option>
+            <option value="10">Décima</option>
+             
+        </select>
+        <br>
+
+        <form action="{% url 'programadeposgrado_create'  %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="campoamplio_id" id="inputCampoamplio">
+            <input type="hidden" name="maestria_id" id="inputMaestria">
+            <input type="hidden" name="pacademico_id" id="inputPeriodoAcademico">
+            <input type="hidden" name="modalidad_id" id="inputModalidad">
+            <input type="hidden" name="cohorte" id="inputCohorte">
+            <button type="submit" id="crearProgramaBtn" class="btn btn-primary disabled" disabled>
+                Crear programa
+            </button>
+        </form>
+
+         <div class="mb-3" style="text-align: right;">
+            <a href="{% url 'programasdeposgrado' %}" class="btn btn-danger">Cancelar</a>
+        </div>
+
+
+
+    </section>
+
+</main>
+
+<script>
+    const campoamplio = document.getElementById('campoamplioSelect');
+    const maestria = document.getElementById('maestriaSelect');
+    const pacademico = document.getElementById('pacademicoSelect');
+    const modalidad = document.getElementById('modalidadSelect');
+    const cohorte = document.getElementById('cohorte');
+
+    const inputCampoamplio = document.getElementById('inputCampoamplio');
+    const inputMaestria = document.getElementById('inputMaestria');
+    const inputPeriodoAcademico = document.getElementById('inputPeriodoAcademico');
+    const inputModalidad = document.getElementById('inputModalidad');
+    const inputCohorte = document.getElementById('inputCohorte');
+
+    const btn = document.getElementById('crearProgramaBtn');
+
+    function updateFormState() {
+        const campid = campoamplio.value;
+        const mid = maestria.value;
+        const cid = pacademico.value;
+        const modid = modalidad.value;
+        const cohort = cohorte.value;
+
+        if (mid && cid && modid && campid && cohort) {
+            inputCampoamplio.value = campid;
+            inputMaestria.value = mid;
+            inputPeriodoAcademico.value = cid;
+            inputModalidad.value = modid;
+            inputCohorte.value = cohort;
+
+            btn.disabled = false;
+            btn.classList.remove('disabled');
+        } else {
+            btn.disabled = true;
+            btn.classList.add('disabled');
+        }
+    }
+
+    campoamplio.addEventListener('change', updateFormState);
+    maestria.addEventListener('change', updateFormState);
+    pacademico.addEventListener('change', updateFormState);
+    modalidad.addEventListener('change', updateFormState);
+    cohorte.addEventListener('change', updateFormState);
+</script>
+
+{% endblock %}

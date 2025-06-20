@@ -1,0 +1,24 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+
+<main class="container py-5">
+    <div>
+        <h1 class="display-5">Titulación - detalle</h1>
+        <p class="lead">
+            {{titulacion.nombre}}
+        </p>
+        <form action="{% url 'titulacion_detail'  titulacion.id %}" method="POST">
+            {% csrf_token %}
+            {{titulacionform.as_p}}
+            <button class="btn btn-success">Actualizar</button>
+
+        </form>
+
+    </div>
+</main>
+
+
+
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<main class="container py-5">
+    <div>
+        <h1 class="display-5">Diseño Curricular</h1>
+        <p class="lead">
+            <b>Programa:</b> {{maestrianombre}}
+            <br>
+            <b>Periodo academico:</b> {{periodoacademiconombre}}
+            <br>
+            <b>Modalidad:</b> {{modalidadnombre}}
+        </p>
+
+
+        <div class="mb-3">
+
+            <a class="btn btn-sm btn-danger" href="/indicadoreseval/{{programaposgrado.id}}">Regresar</a>
+        </div>
+
+        <div class="mb-3" style="text-align: right;">
+
+            <a class="btn  btn-info" href="{% url 'disenocurricular_create' programaposgrado.id %} ">Agregar</a>
+
+        </div>
+    </div>
+
+    <section>
+        <ul class="list-group">
+            {% for disenocurricular in disenodisenocurricular_list %}
+
+            <li class="list-group-item d-flex justify-content-between align-items-start">
+                <div class="ms-4 me-auto">
+                    <h5>{{disenocurricular.nombre}}</h5>
+                    {{disenocurricular.descripcion}}
+                    <br>
+                    {{disenocurricular.get_tipodedato_display}}
+                    <br>
+                    {{disenocurricular.valor}}
+                </div>
+                <a class="btn btn-success " href="{% url 'disenocurricular_detail' disenocurricular.id %}">Ver</a>
+                &nbsp;
+                <form action="{% url 'disenocurricular_delete' disenocurricular.id %}" method="POST">
+                    {% csrf_token %}
+                    <button class="btn btn-danger">Borrar</button>
+                </form>
+
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+</main>
+
+
+
+
+{% endblock %}
