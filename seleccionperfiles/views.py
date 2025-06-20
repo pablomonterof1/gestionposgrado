@@ -1,5 +1,4 @@
 from django.shortcuts import render
-<<<<<<< HEAD
 from usuarios.models import PerfilUsuario
 from programasposgrado.models import PeriodosAcademicos, ProgramaPosgrado, Maestrias, Modalidad
 
@@ -26,7 +25,3 @@ def datosposgradosp(request, periodo_id):
         'periodo_id': periodo_id,
         'programaposgrado_list': programaposgrado_list,
     })
-=======
-
-# Create your views here.
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4

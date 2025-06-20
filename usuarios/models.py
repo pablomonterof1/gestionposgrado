@@ -21,10 +21,7 @@ class PerfilUsuario(models.Model):
         (2, 'Docente'),
         (3, 'Coordinador'),
         (4, 'Editor'),
-<<<<<<< HEAD
         (5, 'Tutor'),
-=======
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
     ], blank=True, null=True)
     telefono = models.CharField(max_length=15, blank=True, null=True)
     fecha_nacimiento = models.DateField(blank=True, null=True)
@@ -67,10 +64,7 @@ class MatriculaDocenteModulo(models.Model):
     object_id = models.PositiveIntegerField()
     modulo = GenericForeignKey('content_type', 'object_id')
     fecha_matricula = models.DateTimeField(auto_now_add=True)
-<<<<<<< HEAD
-=======
     programa = models.BigIntegerField()
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
     class Meta:
         verbose_name = 'Matricula docente a módulo'

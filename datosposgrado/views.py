@@ -1,19 +1,13 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-<<<<<<< HEAD
 from .models import ContratosDocentes, ContratoTutor, ContratoCoordinador
-=======
 from .models import ContratosDocentes
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 from programasposgrado.models import ProgramaPosgrado, Maestrias, PeriodosAcademicos, Modalidad, Modulos, CampoAmplio
 from usuarios.models import PerfilUsuario
 from django.contrib.auth.models import User
 from django.http import JsonResponse
-<<<<<<< HEAD
 from .forms import ContratosDocentesForm, ContratoTutorForm, ContratoCoordinadorForm
-=======
 from .forms import ContratosDocentesForm
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 from django.contrib import messages
 
 # Create your views here.
@@ -31,10 +25,7 @@ def datosposgrado(request, periodo_id):
         'periodo_id': periodo_id,
     })
 
-<<<<<<< HEAD
-=======
 
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 def contratosdocentes(request, periodo_id):
     contratos_por_periordo = []
     programasdeposgrado_list = ProgramaPosgrado.objects.filter(
@@ -73,7 +64,6 @@ def contratosdocentes(request, periodo_id):
 
     })
 
-<<<<<<< HEAD
 def contratotutor(request, periodo_id):
     contratos_por_periordo = []
     programasdeposgrado_list = ProgramaPosgrado.objects.filter(
@@ -148,8 +138,6 @@ def contratocoordinador(request, periodo_id):
 
     })
 
-=======
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
 def contratosdocentes_create(request, periodo_id):
     if request.method == 'POST':
@@ -206,15 +194,10 @@ def contratosdocentes_create(request, periodo_id):
     for p in programasdeposgrado_list:
         try:
             p.maestria = Maestrias.objects.get(id=p.maestria)
-<<<<<<< HEAD
             p.periodoacademico = PeriodosAcademicos.objects.get(id=p.periodoacademico)
         except Maestrias.DoesNotExist:
             p.maestria = None
             p.periodoacademico = None
-=======
-        except Maestrias.DoesNotExist:
-            p.maestria = None
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
     periodoacademico = PeriodosAcademicos.objects.get(id=periodo_id)
     modalidad_list = Modalidad.objects.all()
@@ -230,7 +213,6 @@ def contratosdocentes_create(request, periodo_id):
         'form': form,
     })
 
-<<<<<<< HEAD
 def contratotutor_create(request, periodo_id):
     if request.method == 'POST':
         form = ContratoTutorForm(request.POST)
@@ -375,8 +357,6 @@ def contratocoordinador_create(request, periodo_id):
         'periodo_id': periodo_id,
         'form': form,
     })
-=======
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
 def obtener_modulos_por_maestria(request, programa_id):
     try:
@@ -390,10 +370,6 @@ def obtener_modulos_por_maestria(request, programa_id):
         return JsonResponse({'error': 'Programa no encontrado'}, status=404)
     
 
-<<<<<<< HEAD
-
-=======
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
     contratodocente = ContratosDocentes.objects.get(
         id=contratosdocentes_id)
@@ -403,10 +379,6 @@ def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
             docente_id = request.POST.get('docente')
             programadeposgrado_id = request.POST.get('programadeposgrado')
             modulo_id = request.POST.get('modulo')
-<<<<<<< HEAD
-=======
-         
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
             docente = PerfilUsuario.objects.get(id=docente_id)
             programadeposgrado = ProgramaPosgrado.objects.get(
                 id=programadeposgrado_id)
@@ -442,7 +414,6 @@ def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
     programadeposgrado = ProgramaPosgrado.objects.get(id=contratodocente.programadeposgrado)
     maestria_id = programadeposgrado.maestria
     modulos_list = Modulos.objects.filter(maestria_id=maestria_id)
-<<<<<<< HEAD
     for p in programasdeposgrado_list:
         try:
             p.maestria = Maestrias.objects.get(id=p.maestria)
@@ -453,14 +424,6 @@ def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
         except Maestrias.DoesNotExist:
             p.maestria = None
             p.periodoacademico = None
-=======
-    print(modulos_list)
-    for p in programasdeposgrado_list:
-        try:
-            p.maestria = Maestrias.objects.get(id=p.maestria)
-        except Maestrias.DoesNotExist:
-            p.maestria = None
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
     return render(request, 'contratosdocentes_update.html', {
         'periodo_id': periodo_id,
         'form': form,
@@ -468,7 +431,6 @@ def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
         'docentes_list': docentes_list,
         'programasdeposgrado_list': programasdeposgrado_list,
         'modulos_list': modulos_list,
-<<<<<<< HEAD
         'periodoacademico': periodoacademico,
         'modalidad_list': modalidad_list,
         'maestrias_list': maestrias_list,
@@ -585,11 +547,6 @@ def contratocoordinador_update(request, contratocoordinador_id, periodo_id):
         'maestria_id': maestria_id,
         'periodoacademico': periodoacademico,
     })
-=======
-    })
-    
-
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
 
 def contratosdocentes_delete(request, contratosdocentes_id, periodo_id):
@@ -604,7 +561,6 @@ def contratosdocentes_delete(request, contratosdocentes_id, periodo_id):
 
     return redirect('contratosdocentes', periodo_id)
 
-<<<<<<< HEAD
 def contratotutor_delete(request, contratotutor_id, periodo_id):
     try:
         contratotutor = ContratoTutor.objects.get(
@@ -630,5 +586,3 @@ def contratocoordinador_delete(request, contratocoordinador_id, periodo_id):
     return redirect('contratocoordinador', periodo_id)
 
 
-=======
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4

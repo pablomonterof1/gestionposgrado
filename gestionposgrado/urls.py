@@ -23,17 +23,14 @@ from programasposgrado import views as programasposgrado_views
 from cuerpoacademico import views as cuerpoacademico_views
 from postulacion import views as postulacion_views
 from rae import views as rae_views
-<<<<<<< HEAD
 from django.conf.urls.static import static
 from django.conf import settings
 from datosposgrado import views as datosposgrado_views
 from seleccionperfiles import views as seleccionperfiles_views
-=======
 from aulavirtual import views as aulavirtual_views
 from django.conf.urls.static import static
 from django.conf import settings
 from datosposgrado import views as datosposgrado_views
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -50,17 +47,14 @@ urlpatterns = [
     path('gestionusuarios/', user_views.datosUsuario, name='gestionusuarios'),
     path('actualizar-rol/<int:usuario_id>/', user_views.actualizar_rol_usuario, name='actualizar_rol_usuario'),
     path('docentedp/create/<int:periodo_id>', user_views.docentedp_create, name='docentedp_create'),
-<<<<<<< HEAD
     path('tutordp/create/<int:periodo_id>', user_views.tutordp_create, name='tutordp_create'),
     path('coordinadordp/create/<int:periodo_id>', user_views.coordinadordp_create, name='coordinadordp_create'),
     
     
-=======
     path('docentepm/create/<int:programa_id>', user_views.docentepm_create, name='docentepm_create'),
     path('estudiantepm/create/<int:programa_id>', user_views.estudiantepm_create, name='estudiantepm_create'),
 
 
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
     #Gestion de programas de posgrado
     path('maestrias/', programasposgrado_views.maestrias, name='maestrias'),
     path('maestrias/create/', programasposgrado_views.maestrias_create, name='maestrias_create'),
@@ -123,11 +117,9 @@ urlpatterns = [
     #Reactivos
     path('reactivosprograma/<int:programa_id>/', rae_views.reactivosprograma, name='reactivosprograma'),
     path('reactivosmodulo/<int:programa_id>/<int:modulo_id>/', rae_views.reactivosmodulo, name='reactivosmodulo'),
-<<<<<<< HEAD
     path('reactivosmc/create/<int:programa_id>/<int:modulo_id>/', rae_views.reactivosmc_create, name='reactivosmc_create'),
     path('reactivosmc/<int:reactivo_id>/', rae_views.reactivosmc_update, name='reactivosmc_update'),
     path('reactivosmc/<int:reactivo_id>/delete', rae_views.reactivosmc_delete, name='reactivosmc_delete'),
-=======
     path('reactivosmodulodocente/<int:programa_id>/<int:modulo_id>/', rae_views.reactivosmodulodocente, name='reactivosmodulodocente'),
     path('reactivosmc/create/<int:programa_id>/<int:modulo_id>/', rae_views.reactivosmc_create, name='reactivosmc_create'),
     path('reactivosdocente/create/<int:programa_id>/<int:modulo_id>/', rae_views.reactivosdocente_create, name='reactivosdocente_create'),
@@ -135,7 +127,6 @@ urlpatterns = [
     path('reactivosdocente/<int:reactivo_id>/', rae_views.reactivosdocente_update, name='reactivosdocente_update'),
     path('reactivosmc/<int:reactivo_id>/delete', rae_views.reactivosmc_delete, name='reactivosmc_delete'),
     path('reactivosdocente/<int:reactivo_id>/delete', rae_views.reactivosdocente_delete, name='reactivosdocente_delete'),
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
     path('reactivosmcvalidate/<int:reactivo_id>/', rae_views.reactivosmc_validate, name='reactivosmc_validate'),
     path('reactivosprogramaposgrado/<int:programa_id>/', rae_views.reactivos_programaposgrado, name='reactivos_programaposgrado'),
 
@@ -149,7 +140,6 @@ urlpatterns = [
     path('contratosdocentesupdate/<int:contratosdocentes_id>/<int:periodo_id>', datosposgrado_views.contratosdocentes_update, name='contratosdocentes_update'),
     path('contratosdocentes/<int:contratosdocentes_id>/<int:periodo_id>/delete', datosposgrado_views.contratosdocentes_delete, name='contratosdocentes_delete'),
     path('api/modulos/<int:programa_id>/', datosposgrado_views.obtener_modulos_por_maestria, name='obtener_modulos_por_maestria'),
-<<<<<<< HEAD
     #Contratos tutores
     path('contratotutor/<int:periodo_id>/', datosposgrado_views.contratotutor, name='contratotutor'),
     path('contratotutor/create/<int:periodo_id>', datosposgrado_views.contratotutor_create, name='contratotutor_create'),
@@ -166,13 +156,11 @@ urlpatterns = [
     path('datosposgradosp/<int:periodo_id>/', seleccionperfiles_views.datosposgradosp, name='datosposgradosp'),
     #POSTULACION
     #UsuarioPostulacionEspecialidadesMédicas 
-=======
 
 
 
     #POSTULACION
     #UsuarioPostulacionEspecialidadesMédicas
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
     path('especialidadesmedicaspos/', postulacion_views.especialidadesmedicaspos, name='especialidadesmedicaspos'),
     path('usuariopostulacion/<int:em_id>/', postulacion_views.usuarriops_create, name='usuariopostulacion'),
@@ -188,23 +176,17 @@ urlpatterns = [
     path('usuariosmatriculadosprogramam/<int:programa_id>/', user_views.UsuariosMatriculadosProgramaM, name='usuariosmatriculadosprogramam'),
     path('usuariosmatricularprogramam/<int:programa_id>/', user_views.UsuariosMatricularProgramaM, name='usuariosmatricularprogramam'),
     path('borarusuariosmatriculadosprogramam/<int:programa_id>/<int:usuario_id>/', user_views.BorrarUsuariosMatricularProgramaM, name='borarusuariosmatriculadosprogramam'),
-<<<<<<< HEAD
-=======
     #DOCENTESMATRICULADOS
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
     path('docentesmatriculadosmodulom/<int:programa_id>/', user_views.DocentesMatriculadosModuloM, name='docentesmatriculadosmodulom'),
     path('docentesmatricularmodulom/<int:programa_id>/', user_views.DocentesMatricularModuloM, name='docentesmatricularmodulom'),
     path('borardocentesmatriculadosmodulom/<int:programa_id>/<int:docente_id>/<int:modulo_id>/', user_views.BorrarDocentesMatricularModuloM, name='borardocentesmatriculadosmodulom'),
 
-<<<<<<< HEAD
-=======
     #AULAS VIRTUALES
     path('miscursos/', aulavirtual_views.MisCursos, name='miscursos'),
     path('aulavirtualdocente/<int:programa_id>/<int:modulo_id>/', aulavirtual_views.AulaVirtual_Docente, name='aulavirtual_docente'),
     path('aulavirtualestudiante/<int:programa_id>/', aulavirtual_views.AulaVirtual_Estudiante, name='aulavirtual_estudiante'),
 
 
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
     ############################
 
 

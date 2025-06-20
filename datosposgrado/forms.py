@@ -1,9 +1,5 @@
 from django import forms
-<<<<<<< HEAD
 from .models import ContratosDocentes, ContratoTutor , ContratoCoordinador
-=======
-from .models import ContratosDocentes
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
 class ContratosDocentesForm(forms.ModelForm):
     class Meta:
@@ -41,7 +37,6 @@ class ContratosDocentesForm(forms.ModelForm):
             'tipopersonalacademico': 'Tipo de Personal Académico',
             'adenda': 'Adenda',
             'obsevaciones': 'Observaciones',
-<<<<<<< HEAD
         }
 
 class ContratoTutorForm(forms.ModelForm):
@@ -112,6 +107,4 @@ class ContratoCoordinadorForm(forms.ModelForm):
             'oficioentregadoporth': 'Oficio Entregado por TTHH',
             'modalidadcontractuar': 'Modalidad Contractuar',
             'obsevaciones': 'Observaciones',
-=======
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
         }

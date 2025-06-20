@@ -5,11 +5,7 @@
 <main class="container py-5 ">
     <section class="card" style="padding: 2%;">
 
-<<<<<<< HEAD
         <h3 class="mb-4">Crear contrado - <b>{{periodoacademico.nombre}}</b></h3>
-=======
-        <h3 class="mb-4">Cear contrado - <b>{{periodoacademico.nombre}}</b></h3>
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
 
 
@@ -48,13 +44,9 @@
                 aria-label="Default select example">
                 <option selected disabled>Seleccione un programa de posgrado</option>
                 {% for programadeposgrado in programasdeposgrado_list %}
-<<<<<<< HEAD
                 <option value="{{ programadeposgrado.id }}">
                 {{ programadeposgrado.periodoacademico.nombre }} - {{ programadeposgrado.maestria.nombre }}
                 </option>
-=======
-                <option value="{{ programadeposgrado.id }}">{{ programadeposgrado.maestria.nombre }}</option>
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
                 {% endfor %}
             </select>
             <br>

@@ -24,7 +24,6 @@ class ContratosDocentes(models.Model):
 
     class Meta:
         ordering = ['-created']
-<<<<<<< HEAD
         verbose_name = 'Contratos Docentes'
 
 class ContratoTutor(models.Model):
@@ -72,6 +71,4 @@ class ContratoCoordinador(models.Model):
     class Meta:
         ordering = ['-created']
         verbose_name = 'Contrato Coordinador'
-=======
         verbose_name = 'Contratos Docentes'
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4

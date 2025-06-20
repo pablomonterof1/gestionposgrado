@@ -150,14 +150,9 @@ def docentedp_create(request, periodo_id):
     return render(request, 'docentedp_create.html',
                   {'periodo_id': periodo_id})
 
-<<<<<<< HEAD
-@login_required
-def tutordp_create(request, periodo_id):
-=======
 
 @login_required
 def docentepm_create(request, programa_id):
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
     if request.method == 'POST':
         nombre = request.POST.get('nombre', '').strip()
         apellido = request.POST.get('apellido', '').strip()
@@ -167,40 +162,24 @@ def docentepm_create(request, programa_id):
         # Validación básica de campos vacíos
         if not nombre or not apellido or not cedula or not correo:
             messages.error(request, 'Todos los campos son obligatorios.')
-<<<<<<< HEAD
-            return redirect('tutordp_create', periodo_id=periodo_id)
-=======
             return redirect('docentepm_create', programa_id=programa_id)
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
         # Validación de formato de correo
         try:
             validate_email(correo)
         except ValidationError:
             messages.error(request, 'El correo electrónico no es válido.')
-<<<<<<< HEAD
-            return redirect('tutordp_create', periodo_id=periodo_id)
-=======
             return redirect('docentepm_create', programa_id=programa_id)
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
         # Verificar duplicados
         if User.objects.filter(username=cedula).exists():
             messages.error(request, 'Ya existe un usuario con esa cédula.')
-<<<<<<< HEAD
-            return redirect('tutordp_create', periodo_id=periodo_id)
-=======
             return redirect('docentepm_create', programa_id=programa_id)
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
         if User.objects.filter(email=correo).exists():
             messages.error(
                 request, 'Ya existe un usuario con ese correo electrónico.')
-<<<<<<< HEAD
-            return redirect('tutordp_create', periodo_id=periodo_id)
-=======
             return redirect('docentepm_create', programa_id=programa_id)
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
         # Crear el usuario
         user = User.objects.create_user(
@@ -210,17 +189,6 @@ def docentepm_create(request, programa_id):
             last_name=apellido,
             email=correo
         )
-<<<<<<< HEAD
-        PerfilUsuario.objects.create(user=user, rol=5, ci=cedula)
-        messages.success(request, 'Tutor creado exitosamente.')
-        return redirect('contratotutor', periodo_id=periodo_id)
-
-    return render(request, 'tutordp_create.html',
-                  {'periodo_id': periodo_id})
-
-@login_required
-def coordinadordp_create(request, periodo_id):
-=======
         PerfilUsuario.objects.create(user=user, rol=2, ci=cedula)
         messages.success(request, 'Docente creado exitosamente.')
         return redirect('docentesmatricularmodulom', programa_id=programa_id)
@@ -231,7 +199,6 @@ def coordinadordp_create(request, periodo_id):
 
 @login_required
 def estudiantepm_create(request, programa_id):
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
     if request.method == 'POST':
         nombre = request.POST.get('nombre', '').strip()
         apellido = request.POST.get('apellido', '').strip()
@@ -241,40 +208,24 @@ def estudiantepm_create(request, programa_id):
         # Validación básica de campos vacíos
         if not nombre or not apellido or not cedula or not correo:
             messages.error(request, 'Todos los campos son obligatorios.')
-<<<<<<< HEAD
-            return redirect('coordinadordp_create', periodo_id=periodo_id)
-=======
             return redirect('estudiantepm_create', programa_id=programa_id)
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
         # Validación de formato de correo
         try:
             validate_email(correo)
         except ValidationError:
             messages.error(request, 'El correo electrónico no es válido.')
-<<<<<<< HEAD
-            return redirect('coordinadordp_create', periodo_id=periodo_id)
-=======
             return redirect('estudiantepm_create', programa_id=programa_id)
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
         # Verificar duplicados
         if User.objects.filter(username=cedula).exists():
             messages.error(request, 'Ya existe un usuario con esa cédula.')
-<<<<<<< HEAD
-            return redirect('coordinadordp_create', periodo_id=periodo_id)
-=======
             return redirect('estudiantepm_create', programa_id=programa_id)
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
         if User.objects.filter(email=correo).exists():
             messages.error(
                 request, 'Ya existe un usuario con ese correo electrónico.')
-<<<<<<< HEAD
-            return redirect('coordinadordp_create', periodo_id=periodo_id)
-=======
             return redirect('estudiantepm_create', programa_id=programa_id)
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
         # Crear el usuario
         user = User.objects.create_user(
@@ -284,14 +235,6 @@ def estudiantepm_create(request, programa_id):
             last_name=apellido,
             email=correo
         )
-<<<<<<< HEAD
-        PerfilUsuario.objects.create(user=user, rol=3, ci=cedula)
-        messages.success(request, 'Coordinador creado exitosamente.')
-        return redirect('contratocoordinador', periodo_id=periodo_id)
-
-    return render(request, 'coordinadordp_create.html',
-                  {'periodo_id': periodo_id})
-=======
         PerfilUsuario.objects.create(user=user, rol=1, ci=cedula)
         messages.success(request, 'Estudiante creado exitosamente.')
         return redirect('usuariosmatricularprogramam', programa_id=programa_id)
@@ -299,7 +242,96 @@ def estudiantepm_create(request, programa_id):
     return render(request, 'estudiantepm_create.html',
                   {'programa_id': programa_id})
 
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
+@login_required
+def tutordp_create(request, periodo_id):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre', '').strip()
+        apellido = request.POST.get('apellido', '').strip()
+        cedula = request.POST.get('cedula', '').strip()
+        correo = request.POST.get('correo', '').strip()
+
+        # Validación básica de campos vacíos
+        if not nombre or not apellido or not cedula or not correo:
+            messages.error(request, 'Todos los campos son obligatorios.')
+            return redirect('tutordp_create', periodo_id=periodo_id)
+
+        # Validación de formato de correo
+        try:
+            validate_email(correo)
+        except ValidationError:
+            messages.error(request, 'El correo electrónico no es válido.')
+            return redirect('tutordp_create', periodo_id=periodo_id)
+
+        # Verificar duplicados
+        if User.objects.filter(username=cedula).exists():
+            messages.error(request, 'Ya existe un usuario con esa cédula.')
+            return redirect('tutordp_create', periodo_id=periodo_id)
+
+        if User.objects.filter(email=correo).exists():
+            messages.error(
+                request, 'Ya existe un usuario con ese correo electrónico.')
+            return redirect('tutordp_create', periodo_id=periodo_id)
+
+        # Crear el usuario
+        user = User.objects.create_user(
+            username=cedula,
+            password=cedula,
+            first_name=nombre,
+            last_name=apellido,
+            email=correo
+        )
+        PerfilUsuario.objects.create(user=user, rol=5, ci=cedula)
+        messages.success(request, 'Tutor creado exitosamente.')
+        return redirect('contratotutor', periodo_id=periodo_id)
+
+    return render(request, 'tutordp_create.html',
+                  {'periodo_id': periodo_id})
+
+@login_required
+def coordinadordp_create(request, periodo_id):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre', '').strip()
+        apellido = request.POST.get('apellido', '').strip()
+        cedula = request.POST.get('cedula', '').strip()
+        correo = request.POST.get('correo', '').strip()
+
+        # Validación básica de campos vacíos
+        if not nombre or not apellido or not cedula or not correo:
+            messages.error(request, 'Todos los campos son obligatorios.')
+            return redirect('coordinadordp_create', periodo_id=periodo_id)
+
+        # Validación de formato de correo
+        try:
+            validate_email(correo)
+        except ValidationError:
+            messages.error(request, 'El correo electrónico no es válido.')
+            return redirect('coordinadordp_create', periodo_id=periodo_id)
+
+        # Verificar duplicados
+        if User.objects.filter(username=cedula).exists():
+            messages.error(request, 'Ya existe un usuario con esa cédula.')
+            return redirect('coordinadordp_create', periodo_id=periodo_id)
+
+        if User.objects.filter(email=correo).exists():
+            messages.error(
+                request, 'Ya existe un usuario con ese correo electrónico.')
+            return redirect('coordinadordp_create', periodo_id=periodo_id)
+
+        # Crear el usuario
+        user = User.objects.create_user(
+            username=cedula,
+            password=cedula,
+            first_name=nombre,
+            last_name=apellido,
+            email=correo
+        )
+        PerfilUsuario.objects.create(user=user, rol=3, ci=cedula)
+        messages.success(request, 'Coordinador creado exitosamente.')
+        return redirect('contratocoordinador', periodo_id=periodo_id)
+
+    return render(request, 'coordinadordp_create.html',
+                  {'periodo_id': periodo_id})
+
 
 
 @login_required
@@ -432,12 +464,8 @@ def DocentesMatricularModuloM(request, programa_id):
         obj, created = MatriculaDocenteModulo.objects.get_or_create(
             docente=docente,
             content_type=modulo_ct,
-<<<<<<< HEAD
-            object_id=modulo.id
-=======
             object_id=modulo.id,
             programa=programa.id
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
         )
 
         if created:

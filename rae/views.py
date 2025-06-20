@@ -38,12 +38,7 @@ def reactivosprograma(request, programa_id):
 
 @login_required
 def reactivosmodulo(request, programa_id, modulo_id):
-<<<<<<< HEAD
-    reactivos_list = ReactivosMultipleChoice.objects.filter(
-        modulo=modulo_id).order_by('created')
-=======
     reactivos_list = ReactivosMultipleChoice.objects.filter(modulo=modulo_id, programadeposgrado=programa_id).order_by('created')
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
     modulo = Modulos.objects.get(id=modulo_id)
     modulonombre = modulo.nombre
     programaposgrado = ProgramaPosgrado.objects.get(id=programa_id)
@@ -71,8 +66,6 @@ def reactivosmodulo(request, programa_id, modulo_id):
 
     })
 
-<<<<<<< HEAD
-=======
 @login_required
 def reactivosmodulodocente(request, programa_id, modulo_id):
     reactivos_list = ReactivosMultipleChoice.objects.filter(
@@ -104,7 +97,6 @@ def reactivosmodulodocente(request, programa_id, modulo_id):
 
     })
 
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
 @user_passes_test(es_docente)
 def reactivosmc_create(request, programa_id, modulo_id):
@@ -140,8 +132,6 @@ def reactivosmc_create(request, programa_id, modulo_id):
         'form': form,
     })
 
-<<<<<<< HEAD
-=======
 @user_passes_test(es_docente)
 def reactivosdocente_create(request, programa_id, modulo_id):
     reactivos_list = ReactivosMultipleChoice.objects.filter(modulo=modulo_id)
@@ -176,7 +166,6 @@ def reactivosdocente_create(request, programa_id, modulo_id):
         'form': form,
     })
 
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
 @login_required
 def reactivosmc_update(request, reactivo_id):
@@ -197,8 +186,6 @@ def reactivosmc_update(request, reactivo_id):
         'modulo_id': modulo_id,
     })
 
-<<<<<<< HEAD
-=======
 @login_required
 def reactivosdocente_update(request, reactivo_id):
     reactivo = ReactivosMultipleChoice.objects.get(id=reactivo_id)
@@ -218,7 +205,6 @@ def reactivosdocente_update(request, reactivo_id):
         'modulo_id': modulo_id,
     })
 
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
 @login_required
 def reactivosmc_validate(request, reactivo_id):
@@ -261,8 +247,6 @@ def reactivosmc_delete(request, reactivo_id):
         'modulo_id': modulo_id,
     })
 
-<<<<<<< HEAD
-=======
 @login_required
 def reactivosdocente_delete(request, reactivo_id):
     reactivo = ReactivosMultipleChoice.objects.get(id=reactivo_id)
@@ -277,7 +261,6 @@ def reactivosdocente_delete(request, reactivo_id):
         'modulo_id': modulo_id,
     })
 
->>>>>>> bb1335e6b4376e4f100ad702bb93f9266f0a92d4
 
 @login_required
 def reactivos_programaposgrado(request, programa_id):
