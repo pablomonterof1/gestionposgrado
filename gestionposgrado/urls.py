@@ -154,7 +154,7 @@ urlpatterns = [
     path('seleccionp/', seleccionperfiles_views.seleccionp, name='seleccionp'),
     path('periodosacademicosp/', seleccionperfiles_views.periodosacademicosp, name='periodosacademicosp'),    
     path('datosposgradosp/<int:periodo_id>/', seleccionperfiles_views.datosposgradosp, name='datosposgradosp'),
-    path('datosmodulos/<int:programa_id>/', seleccionperfiles_views.datosmodulos, name='datosmodulos')
+    path('datosmodulos/<int:programa_id>/', seleccionperfiles_views.datosmodulos, name='datosmodulos'),
     #POSTULACION
     #UsuarioPostulacionEspecialidadesMédicas 
 
