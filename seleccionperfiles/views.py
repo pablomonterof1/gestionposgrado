@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from usuarios.models import PerfilUsuario
-from programasposgrado.models import PeriodosAcademicos, ProgramaPosgrado, Maestrias, Modalidad
+from programasposgrado.models import PeriodosAcademicos, ProgramaPosgrado, Maestrias, Modalidad, Modulos
 
 # Create your views here.
 def seleccionp(request):
@@ -24,4 +24,11 @@ def datosposgradosp(request, periodo_id):
     return render(request, 'datosposgrado_sp.html', {
         'periodo_id': periodo_id,
         'programaposgrado_list': programaposgrado_list,
+    })
+
+def datosmodulos(request, programa_id):
+    modulos_list = Modulos.objects.filter(programa=programa_id)
+    return render(request, 'datosmodulos.html', {
+        'programa_id': programa_id,
+        'modulos_list': modulos_list,
     })
