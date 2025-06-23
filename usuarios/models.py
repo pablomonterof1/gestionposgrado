@@ -22,6 +22,9 @@ class PerfilUsuario(models.Model):
         (3, 'Coordinador'),
         (4, 'Editor'),
         (5, 'Tutor'),
+        (6, 'Técnico'),
+        (7, 'Analista'),      
+
     ], blank=True, null=True)
     telefono = models.CharField(max_length=15, blank=True, null=True)
     fecha_nacimiento = models.DateField(blank=True, null=True)
@@ -31,7 +34,6 @@ class PerfilUsuario(models.Model):
         ('F', 'Femenino'),
         ('O', 'Otro'),
     ], blank=True, null=True)
-    titulotercernivel = models.CharField(max_length=100, blank=True, null=True)
     provincia = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
@@ -97,4 +99,12 @@ class DocumentosUsuarioPEM(models.Model):
     def __str__(self):
         return f"{self.usuario.user.get_full_name()} - Documentos"
 
+class PerfilAcademicoUsuario(models.Model):
+    usuario = models.ForeignKey(PerfilUsuario, on_delete=models.CASCADE)
+    titulo_grado = models.CharField(max_length=100, blank=True, null=True)
+    titulo_postgrado_maestria = models.CharField(max_length=100, blank=True, null=True)
+    titulo_postgrado_doctorado = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.usuario.user.get_full_name()} - Perfil Académico"
 

@@ -36,3 +36,16 @@ def datosmodulos(request, programa_id):
         'maestria': maestria,
         'modulos_list': modulos_list,
     })
+
+
+def ternamodulopm(request, modulo_id):
+    modulos = Modulos.objects.filter(id=modulo_id).first()
+    if not modulos:
+        return render(request, 'error.html', {'message': 'Módulo no encontrado.'})
+    
+    terna_modulo_pm = modulos.terna_modulopm.all()
+    
+    return render(request, 'ternamodulopm.html', {
+        'modulo': modulos,
+        'terna_modulo_pm': terna_modulo_pm,
+    })
