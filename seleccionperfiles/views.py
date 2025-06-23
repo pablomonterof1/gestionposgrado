@@ -27,8 +27,12 @@ def datosposgradosp(request, periodo_id):
     })
 
 def datosmodulos(request, programa_id):
-    modulos_list = Modulos.objects.filter(programa=programa_id)
+    programapostrgrado = ProgramaPosgrado.objects.filter(id=programa_id).first()  
+    maestria = Maestrias.objects.filter(id=programapostrgrado.maestria).first() if programapostrgrado else None
+    print(maestria)
+    modulos_list = Modulos.objects.filter(maestria=maestria.id)
     return render(request, 'datosmodulos.html', {
         'programa_id': programa_id,
+        'maestria': maestria,
         'modulos_list': modulos_list,
     })

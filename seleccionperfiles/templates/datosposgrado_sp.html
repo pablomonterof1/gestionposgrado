@@ -14,7 +14,7 @@
             </div>
             <ul class="list-group list-group-flush ">
                 {% for programa in programaposgrado_list %}
-                <a href="{% url 'modulos_sp.html' }" style="text-decoration: none;">
+                <a href="{% url 'datosmodulos' programa.id %}" style="text-decoration: none;">
                     <li class="list-group-item">
                         <p style="font-size: 1.3em; ">
                             {{programa.maestria}} - {{programa.modalidad}}
