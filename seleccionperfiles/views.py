@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from usuarios.models import PerfilUsuario
 from programasposgrado.models import PeriodosAcademicos, ProgramaPosgrado, Maestrias, Modalidad, Modulos
+from seleccionperfiles.models import TernaModuloPM
+from django.contrib import messages
 
 # Create your views here.
 def seleccionp(request):
@@ -26,26 +28,23 @@ def datosposgradosp(request, periodo_id):
         'programaposgrado_list': programaposgrado_list,
     })
 
-def datosmodulos(request, programa_id):
+def datosmodulossp(request, programa_id):
     programapostrgrado = ProgramaPosgrado.objects.filter(id=programa_id).first()  
     maestria = Maestrias.objects.filter(id=programapostrgrado.maestria).first() if programapostrgrado else None
     print(maestria)
     modulos_list = Modulos.objects.filter(maestria=maestria.id)
-    return render(request, 'datosmodulos.html', {
+    return render(request, 'datosmodulos_sp.html', {
         'programa_id': programa_id,
         'maestria': maestria,
         'modulos_list': modulos_list,
     })
 
-
-def ternamodulopm(request, modulo_id):
-    modulos = Modulos.objects.filter(id=modulo_id).first()
-    if not modulos:
-        return render(request, 'error.html', {'message': 'Módulo no encontrado.'})
+def ternamodulopmsp(request, modulo_id):
+    terna = TernaModuloPM.objects.filter(modulo_id=modulo_id).first()
+    if not terna:
+        messages.error(
+                request, "Aún no existe una terna.")
     
-    terna_modulo_pm = modulos.terna_modulopm.all()
-    
-    return render(request, 'ternamodulopm.html', {
-        'modulo': modulos,
-        'terna_modulo_pm': terna_modulo_pm,
+    return render(request, 'terna_sp.html', {
+        'terna': terna,
     })

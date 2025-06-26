@@ -14,7 +14,7 @@
             </div>
             <ul class="list-group list-group-flush ">
                 {% for modulo in modulos_list %}
-                <a href="#" style="text-decoration: none;">
+                <a href="{% url 'ternapmmsp' modulo.id %}" style="text-decoration: none;">
                     <li class="list-group-item">
                         <p style="font-size: 1.3em; ">
                             {{modulo.nombre}}

@@ -9,8 +9,6 @@ class TernaModuloPM(models.Model):
     docente2 = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='ternas_docente2')
     docente3 = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='ternas_docente3')
     responsable = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='ternas_responsable')
-
-
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
     class Meta:
