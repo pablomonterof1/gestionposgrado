@@ -48,3 +48,21 @@ def ternamodulopmsp(request, modulo_id):
     return render(request, 'terna_sp.html', {
         'terna': terna,
     })
+
+def crearternamodulopmmsp(request, modulo_id):
+    if request.method == 'POST':
+        docente1_idoneo_id = request.POST.get('docente1_idoneo')
+        docente2_id = request.POST.get('docente2')  
+        docente3_id = request.POST.get('docente3')
+        responsable_id = request.POST.get('responsable')
+        fecha_creacion = request.POST.get('fecha_creacion')
+        messages.success(request, "Terna creada exitosamente.")
+        return render(request, 'crear_terna_sp.html', {
+            'terna': None,
+        })
+    else:
+        messages.error(request, "Error al crear la terna.")
+    
+    return render(request, 'terna_sp.html', {
+        'terna': None,
+    })
