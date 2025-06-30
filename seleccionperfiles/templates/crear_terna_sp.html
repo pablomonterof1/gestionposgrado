@@ -11,7 +11,7 @@
 
         <div style="text-align: right;">
 
-            <a class="btn  btn-primary" href="#"> Crear Terna</a>
+            <a class="btn  btn-primary" href="#"> Crear docente</a>
         </div>
 
         <div class="table-responsive">
@@ -21,18 +21,18 @@
                 <thead>
                     <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Seleccionar Docente</th>
+                        <th scope="col">Docente</th>
                         <th scope="col">Cédula</th>
                         <th scope="col">Perfil Académico</th>
                         <th scope="col">Estado</th>
-                        <th scope="col">Responsable</th>
                         <th scope="col">Asignar</th>
                     </tr>
                 </thead>
+                
+                
+                
+
                 <tbody>
-
-
-
                     {% for docente in docentes %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
@@ -43,15 +43,14 @@
                                 {% csrf_token %}
                                 <input type="hidden" name="docente_id" value="{{ docente.id }}">
                                 <select class="form-select" name="modulo_id" required>
-                                    <option selected disabled>Seleccionar docente</option>
+                                    <option selected disabled>Seleccionar estado</option>
                                     {% for docente in docentes %}
                                     <option value="{{ docente.id }}">{{ docente.nombre }}</option>
                                     {% endfor %}
                                 </select>
                         </td>
                         <td>
-
-                            <button type="submit" class="btn btn-success">Matricular</button>
+                            <button type="submit" class="btn btn-success">asignar</button>
                             </form>
                         </td>
                     </tr>
