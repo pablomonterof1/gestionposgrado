@@ -157,6 +157,7 @@ urlpatterns = [
     path('datosmodulossp/<int:programa_id>/', seleccionperfiles_views.datosmodulossp, name='datosmodulossp'),
     path('ternapmmsp/<int:programa_id>/<int:modulo_id>/', seleccionperfiles_views.ternamodulopmsp, name='ternapmmsp'),
     path('crearternamodulopmmsp/<int:programa_id>/<int:modulo_id>/', seleccionperfiles_views.crearternamodulopmmsp, name='crearternamodulopmmsp'),
+    path('docentedpmmsp/create/<int:periodo_id>', seleccionperfiles_views.docentepmmsp_create, name='docentedpmmsp_create'),
     #POSTULACION
     #UsuarioPostulacionEspecialidadesMédicas 
 
