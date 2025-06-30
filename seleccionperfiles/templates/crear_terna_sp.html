@@ -28,37 +28,35 @@
                         <th scope="col">Asignar</th>
                     </tr>
                 </thead>
-                
-                
-                
 
-                <tbody>
-                    {% for docente in docentes %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ docente.get_full_name }}</td>
-                        <td>{{ docente.perfilusuario.ci }}</td>
-                        <td>
-                            <form method="POST" action="#">
-                                {% csrf_token %}
-                                <input type="hidden" name="docente_id" value="{{ docente.id }}">
-                                <select class="form-select" name="modulo_id" required>
-                                    <option selected disabled>Seleccionar estado</option>
-                                    {% for docente in docentes %}
-                                    <option value="{{ docente.id }}">{{ docente.nombre }}</option>
-                                    {% endfor %}
-                                </select>
-                        </td>
-                        <td>
-                            <button type="submit" class="btn btn-success">asignar</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-
-                </tbody>
-
+                
             </table>
+
+            <tbody>
+            {% for docentes_list in docentes_list %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ docente_list.get_full_name }}</td>
+                    <td>{{ docente_list.perfilusuario.ci }}</td>
+                    <td>{{ docente_list.perfil_academico }}</td>
+                    <td>
+                    <form method="POST" action="#">
+                        {% csrf_token %}
+                        <input type="hidden" name="docente_id" value="{{ docente_id }}">
+                        <select  name="Estado" class="form-select" required>
+                            <option selected disabled>-- Seleccionar estado --</option>
+                            <option value="activo">Idomio</option>
+                            <option value="inactivo">E1</option>
+                            <option value="pendiente">E2</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button type="submit" class="btn btn-success">Asignar</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
         </div>
 
 
