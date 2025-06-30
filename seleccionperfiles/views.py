@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from usuarios.models import PerfilUsuario, User
+from usuarios.models import PerfilUsuario, User, PerfilAcademicoUsuario
 from programasposgrado.models import PeriodosAcademicos, ProgramaPosgrado, Maestrias, Modalidad, Modulos
 from seleccionperfiles.models import TernaModuloPM
 from django.contrib import messages
@@ -61,7 +61,6 @@ def ternamodulopmsp(request, programa_id, modulo_id):
 
 @login_required
 def crearternamodulopmmsp(request, programa_id, modulo_id):
-    print(modulo_id,  programa_id)
     terna = TernaModuloPM.objects.filter(modulo=modulo_id, programa_posgrado=programa_id).first()
     docentes_list= PerfilUsuario.objects.filter(
         rol=2,
@@ -81,48 +80,8 @@ def crearternamodulopmmsp(request, programa_id, modulo_id):
         'modulo_id': modulo_id, 
     })
 
-@login_required
-def docentepmmsp_create(request, periodo_id):
-    if request.method == 'POST':
-        nombre = request.POST.get('nombre', '').strip()
-        apellido = request.POST.get('apellido', '').strip()
-        cedula = request.POST.get('cedula', '').strip()
-        perfil_academico = request.POST.get('perfil_academico', '').strip()
-        correo = request.POST.get('correo', '').strip()
 
-        # Validación básica de campos vacíos
-        if not nombre or not apellido or not cedula or not correo:
-            messages.error(request, 'Todos los campos son obligatorios.')
-            return redirect('docentedp_create', periodo_id=periodo_id)
+    
 
-        # Validación de formato de correo
-        try:
-            validate_email(correo)
-        except ValidationError:
-            messages.error(request, 'El correo electrónico no es válido.')
-            return redirect('docentedp_create', periodo_id=periodo_id)
-
-        # Verificar duplicados
-        if User.objects.filter(username=cedula).exists():
-            messages.error(request, 'Ya existe un usuario con esa cédula.')
-            return redirect('docentedp_create', periodo_id=periodo_id)
-
-        if User.objects.filter(email=correo).exists():
-            messages.error(
-                request, 'Ya existe un usuario con ese correo electrónico.')
-            return redirect('docentedp_create', periodo_id=periodo_id)
-
-        # Crear el usuario
-        user = User.objects.create_user(
-            username=cedula,
-            password=cedula,
-            first_name=nombre,
-            last_name=apellido,
-            email=correo
-        )
-        PerfilUsuario.objects.create(user=user, rol=2, ci=cedula)
-        messages.success(request, 'Docente creado exitosamente.')
-        return redirect('crearternamodulopmmsp', periodo_id=periodo_id)
-
-    return render(request, 'crearternamodulopmmsp.html',
-                  {'periodo_id': periodo_id})
+    
+        

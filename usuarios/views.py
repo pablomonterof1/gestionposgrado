@@ -6,7 +6,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
 from .forms import CustomUserCreationForm
 from django.contrib.auth.decorators import login_required
-from .models import PerfilUsuario, MatriculaUsuario, MatriculaDocenteModulo
+from .models import PerfilUsuario, MatriculaUsuario, MatriculaDocenteModulo, PerfilAcademicoUsuario
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.core.validators import validate_email
@@ -195,6 +195,73 @@ def docentepm_create(request, programa_id):
 
     return render(request, 'docentepm_create.html',
                   {'programa_id': programa_id})
+
+#docente pmmsp
+
+@login_required
+def docentepmmsp_create(request, programa_id,  modulo_id):
+    if request.method == 'POST':
+       nombre = request.POST.get('nombre', '').strip()
+       apellido = request.POST.get('apellido', '').strip()
+       cedula = request.POST.get('cedula', '').strip()
+       titulo = request.POST.get('titulo', '').strip()
+       titulo_maestria = request.POST.get('titulo_maestria', '').strip()
+       titulo_doctorado = request.POST.get('titulo_doctorado', '').strip()
+       correo = request.POST.get('correo', '').strip()
+    
+       # Validación básica de campos vacíos
+       if not nombre or not apellido or not cedula or not correo:
+           messages.error(request, 'Todos los campos son obligatorios.')
+           return redirect('docentespmmsp_create', )
+
+       # Validación de formato de correo
+       try:
+           validate_email(correo)
+       except ValidationError:
+           messages.error(request, 'El correo electrónico no es válido.')
+           return redirect('docentespmmsp_create', programa_id=programa_id, modulo_id=modulo_id)
+
+       # Verificar duplicados
+       if User.objects.filter(username=cedula).exists():
+           messages.error(request, 'Ya existe un usuario con esa cédula.')
+           return redirect('docentespmmsp_create', programa_id=programa_id, modulo_id=modulo_id)
+
+       if User.objects.filter(email=correo).exists():
+           messages.error(
+               request, 'Ya existe un usuario con ese correo electrónico.')
+           return redirect('docentespmmsp_create', programa_id=programa_id, modulo_id=modulo_id)
+       # Crear el usuario
+       user = User.objects.create_user(
+           username=cedula,
+           email=correo,
+           first_name=nombre,
+           last_name=apellido,
+       )
+       user.set_password(cedula)
+       user.save()
+       # Crear el perfil del usuario
+       perfil = PerfilUsuario.objects.create(
+           user=user,
+           cedula=cedula,
+           rol=2,  # Asignar rol de docente
+       )
+       perfil.save()
+
+       perfil_academico = PerfilAcademicoUsuario.objects.create(
+           usuario=perfil,
+           titulo_grado=titulo,
+           titulo_postgrado_maestria=titulo_maestria,
+           titulo_postgrado_doctorado=titulo_doctorado,
+       )
+       messages.success(request, 'Docente creado exitosamente.')
+       return redirect('crearternamodulopmmsp', programa_id=programa_id, modulo_id=modulo_id)
+
+    
+    return render(request, 'docentespmmsp_create.html', {
+        'programa_id': programa_id,
+        'modulo_id': modulo_id
+    })
+    
 
 
 @login_required

@@ -18,7 +18,7 @@
         </div>
         {% endif %}
 
-        <form method="POST" action="{% url 'docentedp_create' periodo_id %}">
+        <form method="POST" action="{% url 'docentesdpmmsp_create' programa_id modulo_id %}">
             {% csrf_token %}
             <div class="mb-3">
                 <label for="nombre" class="form-label">Nombre</label>
@@ -34,8 +34,14 @@
             </div>
             <div class="mb-3">
                  <label for="perfil_academico" class="form-label">Perfil académico</label>
+                 <br>
+                 <label for="titulo_grado" class="form-label">Titulo de grado</label>
                  <input type="text" class="form-control" id="titulo_grado" name="titulo_grado" value="N/A" onfocus="if(this.value === 'N/A') this.value = '';" onblur="if(this.value === '') this.value = 'N/A';">
+                 <br>
+                 <label for="titulo_postgrado_maestria" class="form-label">Titulo de maestria</label>
                  <input type="text" class="form-control" id="titulo_postgrado_maestria" name="titulo_postgrado_maestria" value="N/A" onfocus="if(this.value === 'N/A') this.value = '';" onblur="if(this.value === '') this.value = 'N/A';">
+                 <br>
+                 <label for="titulo_postgrado_doctorado" class="form-label">titulo de doctorado</label>
                  <input type="text" class="form-control" id="titulo_postgrado_doctorado" name="titulo_postgrado_doctorado" value="N/A" onfocus="if(this.value === 'N/A') this.value = '';" onblur="if(this.value === '') this.value = 'N/A';">
             </div>    
             <div class="mb-3">
