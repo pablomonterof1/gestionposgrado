@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from usuarios.models import PerfilUsuario
+from usuarios.models import PerfilUsuario,User
 from programasposgrado.models import PeriodosAcademicos, ProgramaPosgrado, Maestrias, Modalidad, Modulos
 from seleccionperfiles.models import TernaModuloPM
 from django.contrib import messages
@@ -39,7 +39,7 @@ def datosmodulossp(request, programa_id):
         'modulos_list': modulos_list,
     })
 
-def ternamodulopmsp(request, modulo_id):
+def ternamodulopmsp(request, programa_id, modulo_id):
     terna = TernaModuloPM.objects.filter(modulo_id=modulo_id).first()
     if not terna:
         messages.error(
@@ -47,11 +47,15 @@ def ternamodulopmsp(request, modulo_id):
     
     return render(request, 'terna_sp.html', {
         'terna': terna,
+        'modulo_id': modulo_id,
+        'programa_id': programa_id,
     })
 
-def crearternamodulopmmsp(request, modulo_id):
+def crearternamodulopmmsp(request, programa_id, modulo_id):
+    print(modulo_id,  programa_id)
+    terna = TernaModuloPM.objects.filter(modulo=modulo_id, programa_posgrado=programa_id).first()
     if request.method == 'POST':
-        docente1_idoneo_id = request.POST.get('docente1_idoneo')
+        docente1_idoneo_id = User.objects.get(id=d.docente)
         docente2_id = request.POST.get('docente2')  
         docente3_id = request.POST.get('docente3')
         responsable_id = request.POST.get('responsable')
@@ -63,6 +67,13 @@ def crearternamodulopmmsp(request, modulo_id):
     else:
         messages.error(request, "Error al crear la terna.")
     
-    return render(request, 'terna_sp.html', {
-        'terna': None,
+    return render(request, 'crear_terna_sp.html', {
+        'terna': terna,
+        'docente1_idoneo': docente1_idoneo_id,
+        'docente2': docente2_id,
+        'docente3': docente3_id,
+        'responsable': responsable_id,
+        'fecha_creacion': fecha_creacion,
+        'programa_id': programa_id,
+        'modulo_id': modulo_id, 
     })

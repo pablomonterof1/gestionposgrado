@@ -5,16 +5,13 @@
 <main class="container py-5 ">
     <section class="card" style="padding: 2%;">
 
-       
-
-
         <div class="card" style="width: 100%;">
             <div class="card-header text-bg-dark ">
                 <h3 class="display-6"> Seleccione modulo</h3>
             </div>
             <ul class="list-group list-group-flush ">
                 {% for modulo in modulos_list %}
-                <a href="{% url 'ternapmmsp' modulo.id %}" style="text-decoration: none;">
+                <a href="{% url 'ternapmmsp' programa_id modulo.id %}" style="text-decoration: none;">
                     <li class="list-group-item">
                         <p style="font-size: 1.3em; ">
                             {{modulo.nombre}}
