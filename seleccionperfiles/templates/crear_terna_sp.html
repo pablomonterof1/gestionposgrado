@@ -28,9 +28,6 @@
                         <th scope="col">Asignar</th>
                     </tr>
                 </thead>
-                
-                
-                
 
                 <tbody>
                     {% for docente in docentes %}
@@ -39,7 +36,7 @@
                         <td>{{ docente.get_full_name }}</td>
                         <td>{{ docente.perfilusuario.ci }}</td>
                         <td>
-                            <form method="POST" action="#">
+                            <form method="POST" action="{% url 'ternapmmsp' programa_id modulo.id %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="docente_id" value="{{ docente.id }}">
                                 <select class="form-select" name="modulo_id" required>
