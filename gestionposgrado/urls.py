@@ -129,6 +129,7 @@ urlpatterns = [
     path('reactivosdocente/<int:reactivo_id>/delete', rae_views.reactivosdocente_delete, name='reactivosdocente_delete'),
     path('reactivosmcvalidate/<int:reactivo_id>/', rae_views.reactivosmc_validate, name='reactivosmc_validate'),
     path('reactivosprogramaposgrado/<int:programa_id>/', rae_views.reactivos_programaposgrado, name='reactivos_programaposgrado'),
+    path('raeprogramaposgrado/<int:programa_id>/', rae_views.rae_programaposgrado, name='rae_programaposgrado'),
 
 
     #DATOSPOSGRADO

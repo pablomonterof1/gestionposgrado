@@ -94,7 +94,6 @@ def AulaVirtual_Estudiante(request, programa_id):
     programadeposgrado = get_object_or_404(ProgramaPosgrado, id=programa_id)
     modulos_list = Modulos.objects.filter(maestria=programadeposgrado.maestria)
     for modulo in modulos_list:
-        print(modulo.id)
         matriculadocebte = MatriculaDocenteModulo.objects.filter(object_id=modulo.id)
         docente = User.objects.filter(id__in=matriculadocebte.values_list('docente'))
         if matriculadocebte.exists():

@@ -161,6 +161,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Seguridad de la sesión
-SESSION_COOKIE_AGE = 1800  
+SESSION_COOKIE_AGE = 3600  
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 

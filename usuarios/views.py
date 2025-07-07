@@ -62,7 +62,10 @@ def signin(request):
         })
     else:
         user = authenticate(
-            request, username=request.POST['username'], password=request.POST['password'])
+            request,
+            username=request.POST['username'],
+            password=request.POST['password']
+        )
         if user is None:
             return render(request, 'signin.html', {
                 'form': AuthenticationForm,
@@ -70,7 +73,12 @@ def signin(request):
             })
         else:
             login(request, user)
-            return redirect('home')
+            # Aquí revisamos si viene el next
+            next_url = request.GET.get('next')
+            if next_url:
+                return redirect(next_url)
+            else:
+                return redirect('home')
 
 
 @login_required
