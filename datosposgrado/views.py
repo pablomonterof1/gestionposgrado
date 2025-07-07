@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from .models import ContratosDocentes, ContratoTutor, ContratoCoordinador
 from .models import ContratosDocentes
 from programasposgrado.models import ProgramaPosgrado, Maestrias, PeriodosAcademicos, Modalidad, Modulos, CampoAmplio
-from usuarios.models import PerfilUsuario
+from usuarios.models import PerfilUsuario, PerfilAcademicoUsuario
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from .forms import ContratosDocentesForm, ContratoTutorForm, ContratoCoordinadorForm
