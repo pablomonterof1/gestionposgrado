@@ -14,3 +14,4 @@ class PerfilUsuarioAdmin(admin.ModelAdmin):
     )
 
 admin.site.register(PerfilUsuario, PerfilUsuarioAdmin)
+

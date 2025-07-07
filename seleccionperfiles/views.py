@@ -62,9 +62,18 @@ def ternamodulopmsp(request, programa_id, modulo_id):
 @login_required
 def crearternamodulopmmsp(request, programa_id, modulo_id):
     terna = TernaModuloPM.objects.filter(modulo=modulo_id, programa_posgrado=programa_id).first()
-    docentes_list= PerfilUsuario.objects.filter(
-        rol=2,
-    ),
+    docentes_list = PerfilUsuario.objects.filter(rol=2)
+    for docente in docentes_list:
+        perfil_academico = PerfilAcademicoUsuario.objects.filter(usuario=docente.id).first()
+        if perfil_academico:
+            docente.titulo_grado = perfil_academico.titulo_grado
+            docente.titulo_postgrado_maestria = perfil_academico.titulo_postgrado_maestria
+            docente.titulo_postgrado_doctorado = perfil_academico.titulo_postgrado_doctorado
+        else:
+            docente.titulo_grado = None
+            docente.titulo_postgrado_maestria = None
+            docente.titulo_postgrado_doctorado = None
+    print(docentes_list)
     if request.method == 'POST':
         messages.success(request, "Terna creada exitosamente.")
         return render(request, 'crear_terna_sp.html', {
