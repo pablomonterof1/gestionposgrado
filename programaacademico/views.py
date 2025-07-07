@@ -24,10 +24,10 @@ def admision(request, programa_id):
     modalidadnombre = Modalidad.objects.get(id=modalidad)
 
     # Gráfico de admisiones
-    df = pd.DataFrame(list(admision_list.values('nombre', 'valor')))
+    df = pd.DataFrame(list(admision_list.values('tipodedato', 'valor')))
     if not df.empty:
-        fig = px.bar(df, x='nombre', y='valor', title='Valores de Admisión',
-                     labels={'nombre': 'Nombre', 'valor': 'Valor'}, color='valor')
+        fig = px.bar(df, x='tipodedato', y='valor', title='Valores de Admisión',
+                     labels={'tipodedato': 'Admisión', 'valor': 'Valor'}, color='valor')
         grafico_html = fig.to_html(full_html=False)
     else:
         grafico_html = "<p>No hay datos disponibles para mostrar el gráfico.</p>"

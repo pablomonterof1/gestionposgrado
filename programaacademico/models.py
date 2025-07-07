@@ -5,16 +5,16 @@ from programasposgrado.models import ProgramaPosgrado
 
 
 class Admision(models.Model):
-    nombre = models.CharField(max_length=200)
-    descripcion = models.TextField(blank=True)
-    valor = models.DecimalField(
-        max_digits=10, decimal_places=2, blank=True, null=True)
+    tipodedato = models.IntegerField(choices=[(1, 'Incritos'), (
+        2, 'Matriculados'),])
+    descripcion = models.TextField(blank=True, null=True)
+    valor = models.IntegerField( blank=True, null=True)
     created = models.DateField(auto_now_add=True)
     programadeposgrado = models.ForeignKey(
         ProgramaPosgrado, on_delete=models.CASCADE, related_name='programadeposgrado')
 
     def __str__(self):
-        return self.nombre + ' - ' + self.descripcion + ' - ' + str(self.valor) + ' - ' + str(self.created) + ' - ' + str(self.programadeposgrado)
+        return self.get_tipodedato_display() + ' - ' + self.descripcion + ' - ' + str(self.valor) + ' - ' + str(self.created) + ' - ' + str(self.programadeposgrado)
 
 
 class DisenoCurricular(models.Model):

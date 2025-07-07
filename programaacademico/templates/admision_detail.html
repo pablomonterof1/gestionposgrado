@@ -2,25 +2,32 @@
 
 {% block content %}
 
-<main class="container">
+<main class="container py-5">
 
-    <h2>Admision - detalles</h2>
-    <h3>{{admision.nombre}}</h3>
+    <section class="card" style="padding: 20px;">
 
-   
-
-    <form action="{% url 'admision_detail' admision.id %}" method="POST">
-        {% csrf_token %}
-        {{admisionform.as_p}}
-        <button class="btn btn-success">Actualizar</button>
-    </form>
+        <h2>Admision - detalles</h2>
+        <h3>{{admision.nombre}}</h3>
 
 
-    <div style="text-align: right;"  >
-        
 
-    </div>
-    
+        <form action="{% url 'admision_detail' admision.id %}" method="POST">
+            {% csrf_token %}
+            {{admisionform.as_p}}
+            <button class="btn btn-success">Actualizar</button>
+        </form>
+
+
+        <div style="text-align: right;">
+
+            <a class="btn btn-danger" href="{% url 'admision' admision.programadeposgrado.id %}">Cancelar</a>
+
+        </div>
+
+    </section>
+
+
+
 </main>
 
 {% endblock %}

@@ -154,7 +154,7 @@ def reactivosdocente_create(request, programa_id, modulo_id):
             return redirect('reactivosmodulodocente', programa_id=programa_id, modulo_id=modulo_id)
         else:
             messages.error(
-                request, "Revise que todos los campos sean válidos o ya existe un reactivo con este enunciado.")
+                request, "Ya existe un reactivo con este enunciado o revise que todos los campos sean válidos.")
     else:
         form = ReactivosMultipleChoiceForm()
     return render(request, 'reactivosdocente_create.html', {
@@ -283,6 +283,25 @@ def reactivos_programaposgrado(request, programa_id):
 
     return render(request, 'reactivos_programaposgrado.html', {
         'reactivos_list': reactivos_list,
+        'maestrianombre': maestrianombre,
+        'periodoacademiconombre': periodoacademiconombre,
+        'modalidadnombre': modalidadnombre,
+        'programaposgrado': programaposgrado,
+    })
+
+
+@login_required
+def rae_programaposgrado(request, programa_id):
+    programaposgrado = ProgramaPosgrado.objects.get(id=programa_id)
+    maestria = programaposgrado.maestria
+    maestrianombre = Maestrias.objects.get(id=maestria)
+    periodoacademico = programaposgrado.periodoacademico
+    periodoacademiconombre = PeriodosAcademicos.objects.get(
+        id=periodoacademico)
+    modalidad = programaposgrado.modalidad
+    modalidadnombre = Modalidad.objects.get(id=modalidad)
+
+    return render(request, 'rae_programaposgrado.html', {
         'maestrianombre': maestrianombre,
         'periodoacademiconombre': periodoacademiconombre,
         'modalidadnombre': modalidadnombre,

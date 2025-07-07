@@ -78,7 +78,7 @@
                         <div class="d-flex gap-2">
                             {% if reactivo.estado == 1 %}
                             <a href="{% url 'reactivosmc_update' reactivo.id %}" class="btn btn-sm
-                            btn-warning">Editar</a>
+                            btn-warning">✎</a>
                             {% endif %}
                             {% if tiene_permiso_edision %}
                             <a class="btn btn-success" href="{% url 'reactivosmc_validate' reactivo.id %}"> Validar </a>
@@ -88,7 +88,7 @@
                                 method="POST" class="form-borrar">
                                 {% csrf_token %}
                                 <button type="button" class="btn btn-danger"
-                                    onclick="confirmarBorrado('{{ reactivo.id }}')">Borrar</button>
+                                    onclick="confirmarBorrado('{{ reactivo.id }}')">🗑</button>
                             </form>
                              {% endif %}
 

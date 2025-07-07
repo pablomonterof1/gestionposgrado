@@ -18,7 +18,7 @@
 
         <div class="mb-3">
 
-            <a class="btn btn-sm btn-danger" href="/indicadoreseval/{{programaposgrado.id}}">Regresar</a>
+            <a class="btn btn-sm btn-danger" href="{% url 'programamaestria' programaposgrado.id %}">Regresar</a>
         </div>
 
 
@@ -35,21 +35,37 @@
             {% for admision in admision_list %}
 
             <li class="list-group-item d-flex justify-content-between align-items-start">
-                <div class="ms-4 me-auto">
-                    <h5>{{admision.nombre}}</h5>
-                    {{admision.descripcion}}
-                    <br>
-                    {{admision.valor}}
+                
+
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm">
+                            {% if admision.tipodedato == 2 %}
+                            <a href="{% url 'usuariosmatriculadosprogramam' programaposgrado.id %}">
+                                <strong>{{admision.get_tipodedato_display }}</strong>
+                            </a>
+                            {% else %}
+                            <strong>{{admision.get_tipodedato_display }}</strong>
+                            {% endif %}
+                            
+                        </div>
+                        <div class="col-sm">
+                          {{admision.valor}}
+                        </div>
+                        <div class="col-sm">
+                           {{admision.descripcion}}
+                        </div>
+                    </div>
                 </div>
                 {% if tiene_permiso_edision %}
-                <a class="btn btn-success " href="{% url 'admision_detail' admision.id %}">Ver</a>
+                <a class="btn btn-warning " href="{% url 'admision_detail' admision.id %}">✎</a>
                 &nbsp;
 
                 <form id="form-borrar-{{ admision.id }}" action="{% url 'admision_delete' admision.id %}" method="POST"
                     class="form-borrar">
                     {% csrf_token %}
                     <button type="button" class="btn btn-danger"
-                        onclick="confirmarBorrado('{{ admision.id }}')">Borrar</button>
+                        onclick="confirmarBorrado('{{ admision.id }}')">🗑</button>
                 </form>
                 {% endif %}
             </li>

@@ -5,7 +5,7 @@ from .models import Admision, DisenoCurricular, Titulacion
 
 class admisionAdmin(admin.ModelAdmin):
     readonly_fields = ('created',)   
-    list_display = ('nombre', 'descripcion', 'valor', 'created', 'programadeposgrado')
+    list_display = ('tipodedato', 'descripcion', 'valor', 'created', 'programadeposgrado')
 
 admin.site.register(Admision, admisionAdmin)
 
