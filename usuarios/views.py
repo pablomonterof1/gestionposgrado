@@ -165,6 +165,9 @@ def docentepm_create(request, programa_id):
         nombre = request.POST.get('nombre', '').strip()
         apellido = request.POST.get('apellido', '').strip()
         cedula = request.POST.get('cedula', '').strip()
+        titulo = request.POST.get('titulo_grado', '').strip()
+        titulo_maestria = request.POST.get('titulo_postgrado_maestria', '').strip()
+        titulo_doctorado = request.POST.get('titulo_postgrado_doctorado', '').strip()
         correo = request.POST.get('correo', '').strip()
 
         # Validación básica de campos vacíos
@@ -197,7 +200,16 @@ def docentepm_create(request, programa_id):
             last_name=apellido,
             email=correo
         )
-        PerfilUsuario.objects.create(user=user, rol=2, ci=cedula)
+        user.save()
+        perfilusuario=PerfilUsuario.objects.create(user=user, rol=2, ci=cedula)
+        perfilusuario.save()
+        perfil_academico = PerfilAcademicoUsuario.objects.create(
+            usuario=perfilusuario,
+            titulo_grado=titulo,
+            titulo_postgrado_maestria=titulo_maestria,
+            titulo_postgrado_doctorado=titulo_doctorado,
+        )
+        perfil_academico.save()
         messages.success(request, 'Docente creado exitosamente.')
         return redirect('docentesmatricularmodulom', programa_id=programa_id)
 

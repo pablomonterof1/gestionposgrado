@@ -73,7 +73,7 @@ def crearternamodulopmmsp(request, programa_id, modulo_id):
             docente.titulo_grado = None
             docente.titulo_postgrado_maestria = None
             docente.titulo_postgrado_doctorado = None
-    print(docentes_list)
+    
     if request.method == 'POST':
         messages.success(request, "Terna creada exitosamente.")
         return render(request, 'crear_terna_sp.html', {
