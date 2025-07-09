@@ -11,8 +11,7 @@
 
         <div style="text-align: right;">
 
-            <a class="btn  btn-primary" href="{% url 'docentesdpmmsp_create' programa_id modulo_id %}"> Crear
-                docente</a>
+            <a class="btn  btn-primary" href="{% url 'docentesdpmmsp_create' programa_id modulo_id %}"> Crear docente</a>
         </div>
         <br>
 
@@ -39,7 +38,7 @@
                         <td>{{ forloop.counter }}</td>
                         <td>{{ docente.user.get_full_name }}</td>
                         <td>{{ docente.ci }}</td>
-                        <td>{{ docente.titulo_grado }}</td>
+                        <td>{{ docente.titulo_grado }} <br> {{docente.titulo_postgrado_maestria }} <br> {{docente.titulo_postgrado_doctorado }} </td>
                         <td>
                             <form method="POST" action="#">
                                 {% csrf_token %}
