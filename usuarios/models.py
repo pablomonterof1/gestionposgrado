@@ -15,7 +15,7 @@ ESTADO_CHOICES = [
 
 class PerfilUsuario(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    ci = models.CharField(max_length=20, blank=True, null=True)
+    ci = models.CharField(max_length=20, blank=True, null=True, unique=True)
     rol = models.IntegerField( choices=[
         (1, 'Estudiante'),
         (2, 'Docente'),

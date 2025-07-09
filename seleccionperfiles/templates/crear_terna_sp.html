@@ -1,53 +1,41 @@
 {% extends 'layouts/base.html' %}
 
 {% block content %}
-
 <main style="padding: 2%;">
     <section class="card" style="padding: 2%;">
-
-
-        <p class="lead" style="font-size: 2em;">Crear Terna<b>{{periodoacademico.nombre}}</b> </p>
-
-
+        <p class="lead" style="font-size: 2em;">Crear Terna <b>{{programa_id}} - {{modulo_id}}</b></p><br>
         <div style="text-align: right;">
-
-            <a class="btn  btn-primary" href="{% url 'docentesdpmmsp_create' programa_id modulo_id %}"> Crear docente</a>
+            <a class="btn  btn-primary" href="{% url 'docentesdpmmsp' programa_id modulo_id %}"> Crear Docente</a>
         </div>
         <br>
-
-      
-
         <div class="table-responsive">
-
             <table id="CrearTerna" class="table table-striped table-bordered">
-
                 <thead>
                     <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Docente</th>
-                        <th scope="col">Cédula</th>
-                        <th scope="col">Perfil Académico</th>
-                        <th scope="col">Estado</th>
-                        <th scope="col">Asignar</th>
+                        <th>#</th>
+                        <th>Docente</th>
+                        <th>Cédula</th>
+                        <th>Perfil Académico</th>
+                        <th>Asignar Rol</th>
+                        <th>Acción</th>
                     </tr>
                 </thead>
-
                 <tbody>
                     {% for docente in docentes_list %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
                         <td>{{ docente.user.get_full_name }}</td>
                         <td>{{ docente.ci }}</td>
-                        <td>{{ docente.titulo_grado }} <br> {{docente.titulo_postgrado_maestria }} <br> {{docente.titulo_postgrado_doctorado }} </td>
+                        <td>{{ docente.titulo_grado }}<br>{{ docente.titulo_postgrado_maestria }}<br>{{docente.titulo_postgrado_doctorado }}</td>
                         <td>
-                            <form method="POST" action="#">
+                            <form method="POST" action="{% url 'crearternamodulopmmsp' programa_id modulo_id %}">
                                 {% csrf_token %}
-                                <input type="hidden" name="docente_id" value="{{ docente_id }}">
+                                <input type="hidden" name="docente_id" value="{{ docente.id }}">
                                 <select name="Estado" class="form-select" required>
-                                    <option selected disabled>-- Seleccionar estado --</option>
-                                    <option value="activo">Idomio</option>
-                                    <option value="inactivo">E1</option>
-                                    <option value="pendiente">E2</option>
+                                    <option value="" disabled selected>-- Seleccionar --</option>
+                                    {% if not terna.docente1_idoneo %}<option value="idoneo">Idóneo</option>{% endif %}
+                                    {% if not terna.docente2 %}<option value="elegible1">Elegible 1</option>{% endif %}
+                                    {% if not terna.docente3 %}<option value="elegible2">Elegible 2</option>{% endif %}
                                 </select>
                         </td>
                         <td>
@@ -57,13 +45,12 @@
                     </tr>
                     {% endfor %}
                 </tbody>
+
             </table>
         </div>
-
-
-
     </section>
 </main>
+
 <script>
     $(document).ready(function () {
         $('#CrearTerna').DataTable({
@@ -83,7 +70,5 @@
             },
         });
     });
-
 </script>
-
 {% endblock %}
