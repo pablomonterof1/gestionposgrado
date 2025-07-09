@@ -76,12 +76,12 @@
                     <td>
 
                         <div class="d-flex gap-2">
+                            {% if tiene_permiso_edision %}
+                            <a class="btn btn-info" href="{% url 'reactivosmc_validate' reactivo.id %}"> Validar/Rechazar </a>
+                            {% endif %}
                             {% if reactivo.estado == 1 %}
                             <a href="{% url 'reactivosmc_update' reactivo.id %}" class="btn btn-sm
                             btn-warning">✎</a>
-                            {% endif %}
-                            {% if tiene_permiso_edision %}
-                            <a class="btn btn-success" href="{% url 'reactivosmc_validate' reactivo.id %}"> Validar </a>
                             {% endif %}
                             {% if reactivo.estado == 1 %}
                             <form id="form-borrar-{{ reactivo.id }}" action="{% url 'reactivosmc_delete' reactivo.id %}"

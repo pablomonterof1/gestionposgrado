@@ -8,7 +8,7 @@
 
         <p class="lead">
             <b>Programa:</b> {{maestrianombre}}
-            
+
         </p>
 
         <div class="mb-3">
@@ -16,14 +16,16 @@
             <a class="btn btn-sm btn-danger" href="{% url 'programamaestria' programaposgrado.id %}">Regresar</a>
         </div>
 
-          <nav class="navbar navbar-expand-lg navbar-dark bg-dark menuprogposgrado" style="border-radius: 5px;">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark menuprogposgrado" style="border-radius: 5px;">
             <div class="container-fluid">
 
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ">
                         <div class="nav-divider"></div>
                         <li class="nav-item">
-                            <a class="nav-link fs-5" aria-current="page" href="{% url 'rae_programaposgrado' programaposgrado.id %}" style="color: white !important;">
+                            <a class="nav-link fs-5" aria-current="page"
+                                href="{% url 'rae_programaposgrado' programaposgrado.id %}"
+                                style="color: white !important;">
                                 RAE
                             </a>
                         </li>
@@ -43,29 +45,31 @@
         <div class="row">
 
 
-  
+
 
             {% for modulo in modulos_list %}
-                <div class="card mb-3" style="width: 18rem;">
+            <div class="card mb-3" style="width: 18rem;">
                 <div class="card-body">
                     <h5 class="card-title">{{ modulo.nombre }}</h5>
-                    
+
                 </div>
                 <div class="card-footer" style="text-align: right;">
-                    <a href="{% url 'reactivosmodulo' programaposgrado.id modulo.id %}" class="btn btn-sm btn-info">Ver reactivos</a>
+                    <a href="{% url 'reactivosmodulo' programaposgrado.id modulo.id %}" class="btn btn-sm btn-info">Ver
+                        reactivos</a>
                 </div>
             </div>
             &nbsp;
             &nbsp;
-   
+
             {% endfor %}
-            
+
 
         </div>
         <br>
-        <div style="text-align: center;" >
+        <div style="text-align: center;">
 
-            <a href="{% url 'reactivos_programaposgrado' programaposgrado.id %}" class="btn btn-primary" >Ver todos los reactivos del programa</a>
+            <a href="{% url 'reactivos_programaposgrado' programaposgrado.id %}" class="btn btn-primary">Ver todos los
+                reactivos del programa</a>
         </div>
 
 

@@ -1,0 +1,27 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<main class="container py-5">
+    <section class="card p-4">
+
+
+        <form method="POST">
+            {% csrf_token %}
+            {% for reactivo in reactivos %}
+            <div class="card mb-3">
+                <div class="card-header">{{ forloop.counter }}. {{ reactivo.reactivo.enunciado }}</div>
+                <div class="card-body">
+                    {% for opcion in reactivo.reactivo.get_opciones %}
+                    <label><input type="radio" name="pregunta_{{ reactivo.id }}" value="{{ opcion.0 }}" required> {{
+                        opcion.1 }}</label><br>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+            <button class="btn btn-primary">Enviar evaluación</button>
+        </form>
+
+
+    </section>
+</main>
+{% endblock %}

@@ -130,6 +130,9 @@ urlpatterns = [
     path('reactivosmcvalidate/<int:reactivo_id>/', rae_views.reactivosmc_validate, name='reactivosmc_validate'),
     path('reactivosprogramaposgrado/<int:programa_id>/', rae_views.reactivos_programaposgrado, name='reactivos_programaposgrado'),
     path('raeprogramaposgrado/<int:programa_id>/', rae_views.rae_programaposgrado, name='rae_programaposgrado'),
+    path('reactivosmodulorae/create/<int:programa_id>/<int:modulo_id>/', rae_views.reactivosmodulorae_create, name='reactivosmodulorae_create'),
+    path('programa/<int:programa_id>/evaluaciones/', rae_views.evaluacionrae_programaposgrado, name='evaluacionrae_programaposgrado'),
+    path('evaluacionrae_activar/<int:programa_id>/<str:tipo>/', rae_views.evaluacionrae_activar, name='evaluacionrae_activar' ),
 
 
     #DATOSPOSGRADO
