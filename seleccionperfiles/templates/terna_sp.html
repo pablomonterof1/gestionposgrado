@@ -5,16 +5,32 @@
 <main style="padding: 2%;">
     <section class="card" style="padding: 2%;">
 
+        <p class="lead" style="font-size: 2em;">
+            Terna del módulo
+            {% if terna %}
+            <b>{{ terna.modulo }}</b>
+            {% else %}
+            <b>N/A</b>
+            {% endif %}
+        </p>
+        <br>
+        <p class="lead" style="font-size: 1.5em;">Responsable:</p>
 
-        <p class="lead" style="font-size: 2em;">Terna del modulo <b>{{modulos_list.0.modulo }}</b>: </p><br>
-        <p class="lead" style="font-size: 1.5em;">Responsable: </p>
         <div style="text-align: right;">
-            <a class="btn  btn-primary" href="#">Seleccionar Responsable</a>
-            <a class="btn  btn-primary" href="{% url 'crearternamodulopmmsp' programa_id modulo_id %}"> Crear Terna</a>
+            <a class="btn btn-primary" href="#">Seleccionar Responsable</a>
+            {% if terna %}
+            <a class="btn btn-warning" href="{% url 'modificarternamodulopmmsp' programa_id modulo_id %}">
+                Modificar Terna
+            </a>
+            {% endif %}
+
+            {% if not terna %}
+            <a class="btn btn-primary" href="{% url 'crearternamodulopmmsp' programa_id modulo_id %}">
+                Crear Terna
+            </a>
+            {% endif %}
         </div>
 
-        <!-- Lista de contrados x docente -->
-        {{ terna.programa_posgrado }}
         <div class="table-responsive mt-4">
             <table id="tablaTernapmmsp" class="table table-striped table-bordered">
                 <thead>
@@ -24,64 +40,76 @@
                         <th scope="col">Perfil académico</th>
                         <th scope="col">Estado</th>
                         <th scope="col">Fecha de registro</th>
-
                     </tr>
                 </thead>
                 <tbody>
-                    {% if terna.docente1_idoneo %}
+                    {% if terna and terna.docente1_idoneo %}
                     <tr>
                         <td>{{ terna.docente1_idoneo.get_full_name }}</td>
                         <td>{{ terna.docente1_idoneo.perfilusuario.ci }}</td>
                         <td>
-                            {{ terna.docente1_idoneo.perfilusuario.perfilacademicousuario.titulo_grado }}<br>
-                            {{ terna.docente1_idoneo.perfilusuario.perfilacademicousuario.titulo_postgrado_maestria
-                            }}<br>
-                            {{ terna.docente1_idoneo.perfilusuario.perfilacademicousuario.titulo_postgrado_doctorado }}
+                            {% with perfil_acad=terna.docente1_idoneo.perfilusuario.perfilacademicousuario_set.first %}
+                            {% if perfil_acad %}
+                            {{ perfil_acad.titulo_grado }}<br>
+                            {{ perfil_acad.titulo_postgrado_maestria }}<br>
+                            {{ perfil_acad.titulo_postgrado_doctorado }}
+                            {% else %}
+                            <span style="color: red;">Sin perfil académico registrado</span>
+                            {% endif %}
+                            {% endwith %}
                         </td>
-                        <td>Idóneo</td> <!-- <<< Estado aquí -->
+                        <td>Idóneo</td>
                         <td>{{ terna.fecha_creacion|date:"d/m/Y H:i:s" }}</td>
                     </tr>
                     {% endif %}
 
-                    {% if terna.docente2 %}
+                    {% if terna and terna.docente2 %}
                     <tr>
                         <td>{{ terna.docente2.get_full_name }}</td>
                         <td>{{ terna.docente2.perfilusuario.ci }}</td>
                         <td>
-                            {{ terna.docente2.perfilusuario.perfilacademicousuario.titulo_grado }}<br>
-                            {{ terna.docente2.perfilusuario.perfilacademicousuario.titulo_postgrado_maestria }}<br>
-                            {{ terna.docente2.perfilusuario.perfilacademicousuario.titulo_postgrado_doctorado }}
+                            {% with perfil_acad=terna.docente2.perfilusuario.perfilacademicousuario_set.first %}
+                            {% if perfil_acad %}
+                            {{ perfil_acad.titulo_grado }}<br>
+                            {{ perfil_acad.titulo_postgrado_maestria }}<br>
+                            {{ perfil_acad.titulo_postgrado_doctorado }}
+                            {% else %}
+                            <span style="color: red;">Sin perfil académico registrado</span>
+                            {% endif %}
+                            {% endwith %}
                         </td>
-                        <td>Elegible 1</td> <!-- <<< Estado aquí -->
+                        <td>Elegible 1</td>
                         <td>{{ terna.fecha_creacion|date:"d/m/Y H:i:s" }}</td>
                     </tr>
                     {% endif %}
 
-                    {% if terna.docente3 %}
+                    {% if terna and terna.docente3 %}
                     <tr>
                         <td>{{ terna.docente3.get_full_name }}</td>
                         <td>{{ terna.docente3.perfilusuario.ci }}</td>
                         <td>
-                            {{ terna.docente3.perfilusuario.perfilacademicousuario.titulo_grado }}<br>
-                            {{ terna.docente3.perfilusuario.perfilacademicousuario.titulo_postgrado_maestria }}<br>
-                            {{ terna.docente3.perfilusuario.perfilacademicousuario.titulo_postgrado_doctorado }}
+                            {% with perfil_acad=terna.docente3.perfilusuario.perfilacademicousuario_set.first %}
+                            {% if perfil_acad %}
+                            {{ perfil_acad.titulo_grado }}<br>
+                            {{ perfil_acad.titulo_postgrado_maestria }}<br>
+                            {{ perfil_acad.titulo_postgrado_doctorado }}
+                            {% else %}
+                            <span style="color: red;">Sin perfil académico registrado</span>
+                            {% endif %}
+                            {% endwith %}
                         </td>
-                        <td>Elegible 2</td> <!-- <<< Estado aquí -->
+                        <td>Elegible 2</td>
                         <td>{{ terna.fecha_creacion|date:"d/m/Y H:i:s" }}</td>
                     </tr>
                     {% endif %}
                 </tbody>
-
-
             </table>
         </div>
 
     </section>
 </main>
 
-
 <script>
-
     $(document).ready(function () {
         $('#tablaTernapmmsp').DataTable({
             "language": {
@@ -104,7 +132,6 @@
         });
     });
 
-
     function confirmarBorrado(id) {
         Swal.fire({
             title: '¿Estás seguro de borrar el contrato?',
@@ -121,10 +148,6 @@
             }
         })
     }
-
-
 </script>
-
-
 
 {% endblock %}

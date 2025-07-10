@@ -295,8 +295,8 @@ def docentepmmsp_create(request, programa_id,  modulo_id):
         
     return render(request,'docentespmmsp_create.html',
                 {'programa_id': programa_id,
-                 'modulo_id': modulo_id,
-                 })
+                'modulo_id': modulo_id,
+                })
 
 
 @login_required
@@ -342,7 +342,7 @@ def estudiantepm_create(request, programa_id):
         return redirect('usuariosmatricularprogramam', programa_id=programa_id)
 
     return render(request, 'estudiantepm_create.html',
-                  {'programa_id': programa_id})
+                {'programa_id': programa_id})
 
 @login_required
 def tutordp_create(request, periodo_id):
