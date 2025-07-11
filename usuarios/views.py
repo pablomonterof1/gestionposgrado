@@ -119,6 +119,9 @@ def docentedp_create(request, periodo_id):
         nombre = request.POST.get('nombre', '').strip()
         apellido = request.POST.get('apellido', '').strip()
         cedula = request.POST.get('cedula', '').strip()
+        titulo = request.POST.get('titulo_grado', '').strip()
+        titulo_maestria = request.POST.get('titulo_postgrado_maestria', '').strip()
+        titulo_doctorado = request.POST.get('titulo_postgrado_doctorado', '').strip()
         correo = request.POST.get('correo', '').strip()
 
         # Validación básica de campos vacíos
@@ -139,8 +142,7 @@ def docentedp_create(request, periodo_id):
             return redirect('docentedp_create', periodo_id=periodo_id)
 
         if User.objects.filter(email=correo).exists():
-            messages.error(
-                request, 'Ya existe un usuario con ese correo electrónico.')
+            messages.error(request, 'Ya existe un usuario con ese correo electrónico.')
             return redirect('docentedp_create', periodo_id=periodo_id)
 
         # Crear el usuario
@@ -151,12 +153,22 @@ def docentedp_create(request, periodo_id):
             last_name=apellido,
             email=correo
         )
-        PerfilUsuario.objects.create(user=user, rol=2, ci=cedula)
+        user.save()
+        perfilusuario=PerfilUsuario.objects.create(user=user, rol=2, ci=cedula)
+        perfilusuario.save()
+
+        perfil_academico = PerfilAcademicoUsuario.objects.create(
+            usuario=perfilusuario,
+            titulo_grado=titulo,
+            titulo_postgrado_maestria=titulo_maestria,
+            titulo_postgrado_doctorado=titulo_doctorado,
+        )
+        perfil_academico.save()
         messages.success(request, 'Docente creado exitosamente.')
         return redirect('contratosdocentes', periodo_id=periodo_id)
 
     return render(request, 'docentedp_create.html',
-                  {'periodo_id': periodo_id})
+                {'periodo_id': periodo_id})
 
 
 @login_required
@@ -217,7 +229,6 @@ def docentepm_create(request, programa_id):
                 {'programa_id': programa_id})
 
 #docente pmmsp
-
 @login_required
 def docentepmmsp_create(request, programa_id,  modulo_id):
     if request.method == 'POST':
@@ -282,10 +293,10 @@ def docentepmmsp_create(request, programa_id,  modulo_id):
         messages.success(request, 'Docente creado exitosamente.')
         return redirect('crearternamodulopmmsp', programa_id=programa_id, modulo_id=modulo_id)
         
-    return render(request, 'docentespmmsp_create.html',
+    return render(request,'docentespmmsp_create.html',
                 {'programa_id': programa_id,
-                 'modulo_id': modulo_id,
-                 })
+                'modulo_id': modulo_id,
+                })
 
 
 @login_required
@@ -331,7 +342,7 @@ def estudiantepm_create(request, programa_id):
         return redirect('usuariosmatricularprogramam', programa_id=programa_id)
 
     return render(request, 'estudiantepm_create.html',
-                  {'programa_id': programa_id})
+                {'programa_id': programa_id})
 
 @login_required
 def tutordp_create(request, periodo_id):
@@ -421,7 +432,7 @@ def coordinadordp_create(request, periodo_id):
         return redirect('contratocoordinador', periodo_id=periodo_id)
 
     return render(request, 'coordinadordp_create.html',
-                  {'periodo_id': periodo_id})
+                {'periodo_id': periodo_id})
 
 
 
@@ -545,7 +556,7 @@ def DocentesMatricularModuloM(request, programa_id):
 
     if request.method == 'POST':
         docente_id = request.POST.get('docente_id')
-        modulo_id = request.POST.get('modulo_id')
+        modulo_id = request.POST.get('modulo_id')   
 
         docente = get_object_or_404(User, id=docente_id)
         modulo = get_object_or_404(Modulos, id=modulo_id)

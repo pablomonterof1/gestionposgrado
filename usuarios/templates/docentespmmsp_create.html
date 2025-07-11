@@ -18,7 +18,7 @@
         </div>
         {% endif %}
 
-        <form method="POST" action="{% url 'docentesdpmmsp_create' programa_id modulo_id %}">
+        <form method="POST" action="{% url 'docentesdpmmsp' programa_id modulo_id %}">
             {% csrf_token %}
             <div class="mb-3">
                 <label for="nombre" class="form-label">Nombre</label>
