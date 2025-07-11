@@ -2,43 +2,93 @@
 {% block content %}
 <main class="container py-5">
     <h3>Resultados de {{ evaluacion.get_tipo_display }} - {{ programa }}</h3>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Estudiante</th>
-                <th>Estado</th>
-                <th>Calificación</th>
-                <th>Detalles</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for res in resultados %}
-            <tr>
-                <td>{{ res.estudiante.get_full_name }}</td>
-                <td>
-                    {% if res.respondido %}
+
+    <br>
+
+
+    <a href="{% url 'evaluacionrae_programaposgrado' programa.id %}"
+        class="btn btn-secondary position-fixed bottom-0 start-0 m-3 shadow">
+        <i class="fas fa-arrow-left"></i> Atrás
+    </a>
+
+    <a href="{% url 'evaluacionrae_programaposgrado' programa.id %}" class="btn btn-outline-dark mb-3"
+        data-bs-toggle="tooltip" title="Volver">
+        <i class="fa fa-arrow-left"></i>
+    </a>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-info">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="table-responsive mt-4">
+
+
+        <table id="tablaResultadosRAEPrograma" class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Estudiante</th>
+                    <th>Estado</th>
+                    <th>Calificación</th>
+                    <th>Detalles</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for res in resultados %}
+                <tr>
+                    <td>{{ res.estudiante.get_full_name }}</td>
+                    <td>
+                        {% if res.respondido %}
                         <span class="badge bg-success">Respondido</span>
-                    {% else %}
+                        {% else %}
                         <span class="badge bg-danger">No respondido</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if res.calificacion %}
+                        {% endif %}
+                    </td>
+                    <td style="text-align: center;">
+                        {% if res.calificacion %}
                         {{ res.calificacion }}
-                    {% else %}
+                        {% else %}
                         -
-                    {% endif %}
-                </td>
-                <td>
-                    {% if res.detalle_url %}
-                        <a href="{{ res.detalle_url }}" class="btn btn-info btn-sm">Ver</a>
-                    {% else %}
+                        {% endif %}
+                    </td>
+                    <td style="text-align: center;">
+                        {% if res.detalle_url %}
+                        <a href="{{ res.detalle_url }}" class="btn btn-info ">🔍</a>
+                        {% else %}
                         -
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </main>
+
+
+<script>
+    const buscador = document.getElementById('buscador');
+    $(document).ready(function () {
+        $('#tablaResultadosRAEPrograma').DataTable({
+            "language": {
+                "lengthMenu": "Mostrar _MENU_ registros por página",
+                "zeroRecords": "No se encontraron resultados",
+                "info": "Mostrando página _PAGE_ de _PAGES_",
+                "infoEmpty": "No hay registros disponibles",
+                "infoFiltered": "(filtrado de _MAX_ registros totales)",
+                "search": "Buscar:",
+                "paginate": {
+                    "first": "Primera",
+                    "last": "Última",
+                    "next": "Siguiente",
+                    "previous": "Anterior"
+                },
+            }
+        });
+    });
+
+
+</script>
+
 {% endblock %}

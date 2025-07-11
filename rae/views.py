@@ -366,7 +366,7 @@ def reactivosmodulorae_create(request, programa_id, modulo_id):
 @login_required
 def evaluacionrae_programaposgrado(request, programa_id):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
-    evaluaciones = EvaluacionPrograma.objects.filter(programa=programa)
+    evaluaciones = EvaluacionPrograma.objects.filter(programa=programa).order_by('-activa')
 
     return render(request, 'evaluacionrae_programaposgrado.html', {
         'programa': programa,
@@ -375,10 +375,8 @@ def evaluacionrae_programaposgrado(request, programa_id):
 
 
 def obtener_reactivos_para_evaluacion(programa, tipo, estudiante=None):
-    
-
+    import random
     seleccionados_estudiante = []
-
     modulos = Modulos.objects.filter(maestria=programa.maestria)
 
     for modulo in modulos:
@@ -394,12 +392,17 @@ def obtener_reactivos_para_evaluacion(programa, tipo, estudiante=None):
             estado=2
         )
 
-        # Excluir los usados en simulacro si estamos generando la evaluación final
-        if tipo == 'final':
-            simulacro = EvaluacionPrograma.objects.filter(programa=programa, tipo='simulacro').first()
-            if simulacro and estudiante:
+ 
+        if tipo == 'final' and estudiante:
+            simulacro_activo = EvaluacionPrograma.objects.filter(
+                programa=programa,
+                tipo='simulacro',
+                activa=True
+            ).first()
+
+            if simulacro_activo:
                 usados_ids = ReactivoEvaluacion.objects.filter(
-                    evaluacion_estudiante__evaluacion=simulacro,
+                    evaluacion_estudiante__evaluacion=simulacro_activo,
                     evaluacion_estudiante__estudiante=estudiante
                 ).values_list('reactivo_id', flat=True)
                 reactivos_query = reactivos_query.exclude(id__in=usados_ids)
@@ -409,7 +412,7 @@ def obtener_reactivos_para_evaluacion(programa, tipo, estudiante=None):
         if len(reactivos_list) >= num_reactivos:
             seleccionados = random.sample(reactivos_list, num_reactivos)
         else:
-            seleccionados = reactivos_list  # menos de lo necesario, tomar todo
+            seleccionados = reactivos_list
 
         seleccionados_estudiante.extend(seleccionados)
 
@@ -419,17 +422,23 @@ def obtener_reactivos_para_evaluacion(programa, tipo, estudiante=None):
 @login_required
 def evaluacionrae_activar(request, programa_id, tipo):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    
     if request.method == 'POST':
         fecha_inicio = request.POST['fecha_inicio']
         fecha_fin = request.POST['fecha_fin']
-        evaluacion, created = EvaluacionPrograma.objects.update_or_create(
+        # Desactivar cualquier evaluación activa del mismo tipo en este programa
+        EvaluacionPrograma.objects.filter(
             programa=programa,
             tipo=tipo,
-            defaults={
-                'fecha_inicio': fecha_inicio,
-                'fecha_fin': fecha_fin,
-                'activa': True
-            }
+            activa=True
+        ).update(activa=False)
+
+        evaluacion = EvaluacionPrograma.objects.create(
+            programa=programa,
+            tipo=tipo,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+            activa=True
         )
 
         # Asignar a todos los estudiantes matriculados
@@ -439,7 +448,6 @@ def evaluacionrae_activar(request, programa_id, tipo):
             object_id=programa.id,
             rol_en_programa='estudiante'
         )
-        reactivos = obtener_reactivos_para_evaluacion(programa, tipo)
 
         for est in estudiantes:
             evaluacion_estudiante, creado = EvaluacionEstudiante.objects.get_or_create(
@@ -547,9 +555,9 @@ def resultadorae_estudiante(request, evaluacion_id):
 
 
 @login_required
-def resultadosrae_programa(request, programa_id, tipo):
+def resultadosrae_programa(request, programa_id, evaluacion_id):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
-    evaluacion = get_object_or_404(EvaluacionPrograma, programa=programa, tipo=tipo)
+    evaluacion = get_object_or_404(EvaluacionPrograma, programa=programa, id=evaluacion_id)
 
     content_type = ContentType.objects.get_for_model(ProgramaPosgrado)
     matriculas = MatriculaUsuario.objects.filter(
@@ -612,3 +620,25 @@ def resultado_estudiante_pdf(request, evaluacion_id):
         return HttpResponse('Error al generar el PDF', status=500)
 
     return response
+
+
+@login_required
+def evaluacionrae_eliminar(request, evaluacion_id):
+    evaluacion = get_object_or_404(EvaluacionPrograma, id=evaluacion_id)
+
+    # Solo permitir si no ha sido respondida o está inactiva
+    estudiantes_respondieron = EvaluacionEstudiante.objects.filter(
+        evaluacion=evaluacion,
+        respondido=True
+    ).exists()
+
+    if estudiantes_respondieron:
+        messages.error(request, "No se puede eliminar esta evaluación porque ya ha sido respondida.")
+        return redirect('evaluacionrae_programaposgrado', programa_id=evaluacion.programa.id)
+
+    # Eliminar todos los datos asociados
+    EvaluacionEstudiante.objects.filter(evaluacion=evaluacion).delete()
+    evaluacion.delete()
+
+    messages.success(request, "Evaluación eliminada correctamente.")
+    return redirect('evaluacionrae_programaposgrado', programa_id=evaluacion.programa.id)

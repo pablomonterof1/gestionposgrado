@@ -70,8 +70,8 @@ class EvaluacionPrograma(models.Model):
     fecha_fin = models.DateTimeField()
     activa = models.BooleanField(default=False)
 
-    class Meta:
-        unique_together = ('programa', 'tipo')
+    def __str__(self):
+        return f"{self.programa} - {self.get_tipo_display()}"
 
 
 class EvaluacionEstudiante(models.Model):

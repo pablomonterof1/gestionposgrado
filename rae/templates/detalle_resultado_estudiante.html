@@ -5,25 +5,36 @@
     <p><strong>Calificación:</strong> {{ calificacion }}</p>
 
     {% for resp in respuestas %}
-    <div class="card mb-3">
-        <div class="card-header">
+    <div class="card mb-3 {% if resp.correcta %}border-success bg-light{% else %}border-danger bg-light{% endif %}"
+        style="border: solid 2px;">
+
+
+        {% if resp.correcta %}
+        <div class="card-header" style="font-weight: bold; background-color: #d4edda; color: #155724;">
             {{ forloop.counter }}. {{ resp.reactivo.enunciado|safe }}
         </div>
+        {% else %}
+        <div class="card-header" style="font-weight: bold; background-color: #f8d7da; color: #721c24;">
+            {{ forloop.counter }}. {{ resp.reactivo.enunciado|safe }}
+        </div>
+        {% endif %}
         <div class="card-body">
             {% for opcion in resp.reactivo.get_opciones %}
-                <p>
-                    <strong>{{ opcion.0 }}.</strong> {{ opcion.1 }}
-                    {% if opcion.0 == resp.reactivo.correcta %}
-                        <span class="badge bg-success">Correcta</span>
-                    {% endif %}
-                    {% if opcion.0 == resp.respuesta_estudiante %}
-                        <span class="badge bg-primary">Respondida</span>
-                    {% endif %}
-                </p>
+            <p>
+                <strong>{{ opcion.0 }}.</strong> {{ opcion.1 }}
+                {% if opcion.0 == resp.reactivo.correcta %}
+                <span class="badge bg-success">Correcta</span>
+                {% endif %}
+                {% if opcion.0 == resp.respuesta_estudiante %}
+                <span class="badge bg-primary">Respondida</span>
+                {% endif %}
+            </p>
             {% endfor %}
             <p><strong>Justificación:</strong> {{ resp.reactivo.justificacion }}</p>
         </div>
     </div>
     {% endfor %}
+
+      <a href="{% url 'resultadosrae_programa' evaluacion.programa.id evaluacion.tipo %}" class="btn btn-secondary mt-4">Volver</a>
 </main>
 {% endblock %}

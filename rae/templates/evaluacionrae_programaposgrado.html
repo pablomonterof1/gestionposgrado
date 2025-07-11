@@ -3,41 +3,95 @@
 
 <main class="container py-5">
     <section class="card p-4">
-        <h3 class="display-6">Evaluaciones del programa: {{ programa.nombre }}</h3>
+        <h3 class="display-6">Evaluaciones del programa: </h3>
+        <p class="lead">
+            <strong>{{ programa }}</strong>
+        </p>
 
-        <a href="{% url 'evaluacionrae_activar' programa.id 'simulacro' %}" class="btn btn-primary btn-sm mt-2">
-            Activar Simulacro
-        </a>
-        <a href="{% url 'evaluacionrae_activar' programa.id 'final' %}" class="btn btn-secondary btn-sm mt-2">
-            Activar Final
-        </a>
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+
+        <div class="container">
+            <div class="row justify-content-md-center">
+                <div class="col col-lg-3">
+                    <a style="width: 100%;" href="{% url 'evaluacionrae_activar' programa.id 'simulacro' %}"
+                        class="btn btn-warning  btn-block">
+                        <i class="fa-solid fa-square-check"> </i> Activar RAE - Simulacro
+                    </a>
+                </div>
+                <div class="col col-lg-3">
+                    <a style="width: 100%;" href="{% url 'evaluacionrae_activar' programa.id 'final' %}"
+                        class="btn btn-success  btn-block">
+                        <i class="fa-solid fa-square-check"> </i> Activar RAE - Final
+                    </a>
+
+                </div>
+            </div>
+        </div>
+
 
         <table class="table table-bordered mt-4">
             <thead>
-                <tr>
+                <tr class="table-primary">
                     <th>#</th>
                     <th>Tipo</th>
                     <th>Fecha inicio</th>
                     <th>Fecha fin</th>
                     <th>Estado</th>
                     <th>Resultados</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 {% for eval in evaluaciones %}
-                <tr>
+                {% if eval.activa == True %}
+                <tr class="table-success" >
                     <td>{{ forloop.counter }}</td>
                     <td>{{ eval.tipo|title }}</td>
                     <td>{{ eval.fecha_inicio }}</td>
                     <td>{{ eval.fecha_fin }}</td>
                     <td>{{ eval.activa|yesno:"Activa,Inactiva" }}</td>
                     <td>
-                        <a class="btn btn-info btn-sm"  href="{% url 'resultadosrae_programa' programa.id eval.tipo %}"> Resultados</a>
+                        <a class="btn btn-info btn-sm" href="{% url 'resultadosrae_programa' programa.id eval.id %}">
+                            Resultados</a>
+                    </td>
+                    <td style="text-align: center;">
+                        <a href="{% url 'evaluacionrae_eliminar' eval.id %}" class="btn btn-sm btn-danger"
+                            onclick="return confirm('¿Estás seguro de eliminar esta evaluación? Esta acción no se puede deshacer.');">
+                            <i class="fas fa-trash"></i> 
+                        </a>
                     </td>
                 </tr>
+                {% else %}
+                <tr class="table-danger">
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ eval.tipo|title }}</td>
+                    <td>{{ eval.fecha_inicio }}</td>
+                    <td>{{ eval.fecha_fin }}</td>
+                    <td>{{ eval.activa|yesno:"Activa,Inactiva" }}</td>
+                    <td>
+                        <a class="btn btn-info btn-sm" href="{% url 'resultadosrae_programa' programa.id eval.id %}">
+                            Resultados</a>
+                    </td>
+                    <td style="text-align: center;">
+                        <a href="{% url 'evaluacionrae_eliminar' eval.id %}" class="btn btn-sm btn-danger"
+                            onclick="return confirm('¿Estás seguro de eliminar esta evaluación? Esta acción no se puede deshacer.');">
+                            <i class="fas fa-trash"></i> 
+                        </a>
+                    </td>
+                </tr>
+                {% endif %}
+
+
                 {% empty %}
                 <tr>
-                    <td colspan="5">No hay evaluaciones aún.</td>
+                    <td colspan="7">No hay evaluaciones aún.</td>
                 </tr>
                 {% endfor %}
             </tbody>

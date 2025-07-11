@@ -136,11 +136,10 @@ urlpatterns = [
     path('evaluaciones/disponibles/', rae_views.evaluacionesrae_disponibles, name='evaluacionesrae_disponibles'),
     path('evaluacion/rendir/<int:evaluacion_id>/', rae_views.evaluacionrae_rendir, name='evaluacionrae_rendir'),
     path('evaluacion/<int:evaluacion_id>/resultado/', rae_views.resultadorae_estudiante, name='resultadorae_estudiante'),
-    path('evaluacion/<int:programa_id>/<str:tipo>/resultados/', rae_views.resultadosrae_programa, name='resultadosrae_programa'),
+    path('evaluacion/<int:programa_id>/<int:evaluacion_id>/resultados/', rae_views.resultadosrae_programa, name='resultadosrae_programa'),
     path('evaluacion/<int:evaluacion_id>/estudiante/<int:estudiante_id>/', rae_views.detalle_resultado_estudiante, name='detalle_resultado_estudiante'),
     path('evaluacion/<int:evaluacion_id>/resultado/pdf/', rae_views.resultado_estudiante_pdf, name='resultado_estudiante_pdf'),
-
-
+    path('evaluacion/<int:evaluacion_id>/eliminar/', rae_views.evaluacionrae_eliminar, name='evaluacionrae_eliminar'),
 
 
 
