@@ -133,6 +133,15 @@ urlpatterns = [
     path('reactivosmodulorae/create/<int:programa_id>/<int:modulo_id>/', rae_views.reactivosmodulorae_create, name='reactivosmodulorae_create'),
     path('programa/<int:programa_id>/evaluaciones/', rae_views.evaluacionrae_programaposgrado, name='evaluacionrae_programaposgrado'),
     path('evaluacionrae_activar/<int:programa_id>/<str:tipo>/', rae_views.evaluacionrae_activar, name='evaluacionrae_activar' ),
+    path('evaluaciones/disponibles/', rae_views.evaluacionesrae_disponibles, name='evaluacionesrae_disponibles'),
+    path('evaluacion/rendir/<int:evaluacion_id>/', rae_views.evaluacionrae_rendir, name='evaluacionrae_rendir'),
+    path('evaluacion/<int:evaluacion_id>/resultado/', rae_views.resultadorae_estudiante, name='resultadorae_estudiante'),
+    path('evaluacion/<int:programa_id>/<str:tipo>/resultados/', rae_views.resultadosrae_programa, name='resultadosrae_programa'),
+    path('evaluacion/<int:evaluacion_id>/estudiante/<int:estudiante_id>/', rae_views.detalle_resultado_estudiante, name='detalle_resultado_estudiante'),
+    path('evaluacion/<int:evaluacion_id>/resultado/pdf/', rae_views.resultado_estudiante_pdf, name='resultado_estudiante_pdf'),
+
+
+
 
 
     #DATOSPOSGRADO

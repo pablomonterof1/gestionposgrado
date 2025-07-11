@@ -1,0 +1,96 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<main class="container py-5">
+    <section class="card p-4">
+        <h3 class="mb-4">Evaluaciones disponibles</h3>
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+
+
+
+        {% if evaluaciones %}
+        <p class="lead">
+            <strong>
+                Evaluaciones por realizar
+            </strong>
+        </p>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Programa</th>
+                      <th style="color: red;" >Tipo</th>
+                    <th>Fecha disponible</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for eval in evaluaciones %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ eval.evaluacion.programa }}</td>
+                    <td>
+                        <strong>
+                            {{ eval.evaluacion.get_tipo_display }}
+                        </strong>
+                    </td>
+                    <td>{{ eval.evaluacion.fecha_inicio|date:"d/m/Y H:i" }} - {{ eval.evaluacion.fecha_fin|date:"d/m/YH:i" }}</td>
+                    <td>
+                        <a href="{% url 'evaluacionrae_rendir' eval.evaluacion.id %}"
+                            class="btn btn-warning btn-sm">Rendir</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="alert alert-info">No tienes evaluaciones disponibles en este momento.</div>
+        {% endif %}
+        <hr style="border: solid 2px;">
+        {% if evaluacionesrealizadas %}
+        <p class="lead">
+            <strong>
+                Evaluaciones realizadas
+            </strong>
+        </p>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Programa</th>
+                    <th style="color: red;" >Tipo</th>
+                    <th>Fecha disponible</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for eval in evaluacionesrealizadas %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ eval.evaluacion.programa }}</td>
+                    <td>
+                        <strong>
+                            {{ eval.evaluacion.get_tipo_display }}
+                        </strong>
+                    </td>
+                    <td>{{ eval.evaluacion.fecha_inicio|date:"d/m/Y H:i" }} - {{ eval.evaluacion.fecha_fin|date:"d/m/YH:i" }}</td>
+                    <td>
+                        <a href="{% url 'resultadorae_estudiante' eval.evaluacion.id %}"
+                            class="btn btn-info btn-sm">Ver</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="alert alert-info">No tienes evaluaciones disponibles en este momento.</div>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}

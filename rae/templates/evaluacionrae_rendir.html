@@ -3,25 +3,42 @@
 {% block content %}
 <main class="container py-5">
     <section class="card p-4">
+        <h2 class="mb-4">Evaluación: {{ evaluacion_est.evaluacion.get_tipo_display }}</h2>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
 
 
         <form method="POST">
             {% csrf_token %}
             {% for reactivo in reactivos %}
             <div class="card mb-3">
-                <div class="card-header">{{ forloop.counter }}. {{ reactivo.reactivo.enunciado }}</div>
+                <div class="card-header">
+                    <strong>{{ forloop.counter }}.</strong> {{ reactivo.reactivo.enunciado|safe }}
+                </div>
                 <div class="card-body">
                     {% for opcion in reactivo.reactivo.get_opciones %}
-                    <label><input type="radio" name="pregunta_{{ reactivo.id }}" value="{{ opcion.0 }}" required> {{
-                        opcion.1 }}</label><br>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="pregunta_{{ reactivo.id }}"
+                            id="pregunta_{{ reactivo.id }}_{{ opcion.0 }}" value="{{ opcion.0 }}" required>
+                        <label class="form-check-label" for="pregunta_{{ reactivo.id }}_{{ opcion.0 }}">
+                            {{ opcion.0 }}) {{ opcion.1 }}
+                        </label>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
             {% endfor %}
-            <button class="btn btn-primary">Enviar evaluación</button>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary btn-lg">Enviar evaluación</button>
+            </div>
         </form>
-
-
     </section>
 </main>
 {% endblock %}

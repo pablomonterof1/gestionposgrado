@@ -25,9 +25,17 @@ class ReactivosMultipleChoice(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     programadeposgrado = models.ForeignKey(
         ProgramaPosgrado, on_delete=models.CASCADE, related_name='programa_reactivos')
-    modulo = models.IntegerField(blank=True, null=True)
+    modulo = models.ForeignKey(Modulos, on_delete=models.CASCADE, null=True, blank=True)
     usuario = models.IntegerField(blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True)
+
+    def get_opciones(self):
+        return [
+            ('A', self.opciona),
+            ('B', self.opcionb),
+            ('C', self.opcionc),
+            ('D', self.opciond)
+        ]
 
     def __str__(self):
         return f"{self.enunciado or ''} - {self.contribucion or ''} - {self.opciona or ''} - {self.opcionb or ''} - {self.opcionc or ''} - {self.opciond or ''} - {self.correcta or ''} - {self.justificacion or ''} - {self.bibliografia or ''} - {self.palabras_clave or ''} - {self.tiempo_estimado or ''} - {self.estado or ''} - {self.created or ''} - {self.programadeposgrado or ''} - {self.modulo or ''} - {self.usuario or ''} - {self.observaciones or ''}"
@@ -39,7 +47,7 @@ class ReactivosMultipleChoice(models.Model):
 
 class ReactivosModuloRAE(models.Model):
     programadeposgrado = models.ForeignKey(ProgramaPosgrado, on_delete=models.CASCADE, related_name='programa_reactivosmodulorae')
-    modulo = models.IntegerField()
+    modulo = models.ForeignKey(Modulos, on_delete=models.CASCADE)
     numero_reactivos_modulo = models.IntegerField()
     observaciones = models.TextField(blank=True, null=True)
 
@@ -72,8 +80,6 @@ class EvaluacionEstudiante(models.Model):
     fecha_inicio = models.DateTimeField(auto_now_add=True)
     calificacion = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     respondido = models.BooleanField(default=False)
-
-    
 
 
 class ReactivoEvaluacion(models.Model):

@@ -1,0 +1,51 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<main class="container py-5">
+    <section class="card p-4">
+        <h3>Resultado de la evaluación</h3>
+        <p><strong>Calificación:</strong> {{ evaluacion_est.calificacion }}/100</p>
+        <p><strong>Respondido:</strong> {{ evaluacion_est.respondido|yesno:"Sí,No" }}</p>
+
+        {% for item in reactivos %}
+        <div class="card my-3 border {% if item.correcta %}border-success{% else %}border-danger{% endif %}">
+            <div class="card-header">
+                <strong>{{ forloop.counter }}. </strong>{{ item.reactivo.enunciado|safe }}
+            </div>
+            <div class="card-body">
+                {% for letra, texto in item.reactivo.get_opciones %}
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" {% if item.respuesta_estudiante == letra %} checked {% endif %} disabled>
+                    <label class="form-check-label {% if item.reactivo.correcta == letra %}text-success{% endif %}">
+                        {{ letra }}. {{ texto }}
+                    </label>
+                </div>
+                {% endfor %}
+
+                <p class="mt-3">
+                    <strong>Tu respuesta:</strong> {{ item.respuesta_estudiante }}
+                    {% if item.correcta %}
+                    <span class="text-success">✔ Correcta</span>
+                    {% else %}
+                    <span class="text-danger">✘ Incorrecta</span><br>
+                    <strong>Respuesta correcta:</strong> {{ item.reactivo.correcta }}
+                    {% endif %}
+                </p>
+
+                <div class="mt-2">
+                    <strong>Justificación:</strong>
+                    <p>{{ item.reactivo.justificacion }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <a href="{% url 'evaluacionesrae_disponibles' %}" class="btn btn-secondary mt-4">Volver</a>
+
+        <br>
+        <a href="{% url 'resultado_estudiante_pdf' evaluacion_est.evaluacion.id %}" class="btn btn-success"
+            target="_blank">
+            Descargar PDF
+        </a>
+    </section>
+</main>
+{% endblock %}

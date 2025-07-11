@@ -1,0 +1,29 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<main class="container py-5">
+    <h3>Detalle de Evaluación: {{ estudiante.get_full_name }}</h3>
+    <p><strong>Calificación:</strong> {{ calificacion }}</p>
+
+    {% for resp in respuestas %}
+    <div class="card mb-3">
+        <div class="card-header">
+            {{ forloop.counter }}. {{ resp.reactivo.enunciado|safe }}
+        </div>
+        <div class="card-body">
+            {% for opcion in resp.reactivo.get_opciones %}
+                <p>
+                    <strong>{{ opcion.0 }}.</strong> {{ opcion.1 }}
+                    {% if opcion.0 == resp.reactivo.correcta %}
+                        <span class="badge bg-success">Correcta</span>
+                    {% endif %}
+                    {% if opcion.0 == resp.respuesta_estudiante %}
+                        <span class="badge bg-primary">Respondida</span>
+                    {% endif %}
+                </p>
+            {% endfor %}
+            <p><strong>Justificación:</strong> {{ resp.reactivo.justificacion }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</main>
+{% endblock %}

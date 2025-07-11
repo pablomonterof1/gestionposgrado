@@ -20,6 +20,7 @@
                     <th>Fecha inicio</th>
                     <th>Fecha fin</th>
                     <th>Estado</th>
+                    <th>Resultados</th>
                 </tr>
             </thead>
             <tbody>
@@ -30,6 +31,9 @@
                     <td>{{ eval.fecha_inicio }}</td>
                     <td>{{ eval.fecha_fin }}</td>
                     <td>{{ eval.activa|yesno:"Activa,Inactiva" }}</td>
+                    <td>
+                        <a class="btn btn-info btn-sm"  href="{% url 'resultadosrae_programa' programa.id eval.tipo %}"> Resultados</a>
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>

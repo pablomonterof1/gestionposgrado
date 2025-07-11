@@ -12,7 +12,7 @@
 
         </p>
 
-
+    
         <div class="mb-3">
             <a class="btn btn-sm btn-danger" href="{% url 'reactivosprograma' programaposgrado.id %}">Regresar</a>
         </div>
@@ -33,10 +33,11 @@
                         <div class="nav-divider"></div>
                         <li class="nav-item">
                             <a class="nav-link fs-5" aria-current="page" href="{% url 'evaluacionrae_programaposgrado' programaposgrado.id %}" style="color: white !important;">
-                                Configurar evaluación
+                                Evaluación RAE
                             </a>
                         </li>
                         <div class="nav-divider"></div>
+                       
                     </ul>
                 </div>
             </div>
@@ -75,7 +76,7 @@
                         <td>
                             <input type="number" class="form-control" name="numero_reactivos_modulo_rae"
                                 value="{{ modulo.numeroreactivosmodulorae.numero_reactivos_modulo }}" min="0"
-                                max="{{ modulo.reactivos.count }}" style="width: 100px;">
+                                max="{{ modulo.max_para_input }}" style="width: 100px;">
                         </td>
                         <td>
 

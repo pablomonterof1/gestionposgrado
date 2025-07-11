@@ -1,0 +1,44 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<main class="container py-5">
+    <h3>Resultados de {{ evaluacion.get_tipo_display }} - {{ programa }}</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Estudiante</th>
+                <th>Estado</th>
+                <th>Calificación</th>
+                <th>Detalles</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for res in resultados %}
+            <tr>
+                <td>{{ res.estudiante.get_full_name }}</td>
+                <td>
+                    {% if res.respondido %}
+                        <span class="badge bg-success">Respondido</span>
+                    {% else %}
+                        <span class="badge bg-danger">No respondido</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if res.calificacion %}
+                        {{ res.calificacion }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if res.detalle_url %}
+                        <a href="{{ res.detalle_url }}" class="btn btn-info btn-sm">Ver</a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</main>
+{% endblock %}

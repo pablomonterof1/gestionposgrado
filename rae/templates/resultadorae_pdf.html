@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Resultado de Evaluación</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .correcta { color: green; }
+        .incorrecta { color: red; }
+    </style>
+</head>
+<body>
+    <h2>Resultado de {{ evaluacion_est.estudiante.get_full_name }}</h2>
+    <p><strong>Calificación:</strong> {{ evaluacion_est.calificacion }}/100</p>
+    <p><strong>Fecha:</strong> {{ evaluacion_est.fecha_inicio }}</p>
+    <hr>
+
+    {% for reactivo in reactivos %}
+        <div>
+            <p><strong>{{ forloop.counter }}. {{ reactivo.reactivo.enunciado|safe }}</strong></p>
+            <ul>
+                {% for letra, opcion in reactivo.reactivo.get_opciones %}
+                    <li {% if letra == reactivo.respuesta_estudiante %} style="font-weight: bold;" {% endif %}>
+                        {{ letra }}) {{ opcion }}
+                        {% if letra == reactivo.reactivo.correcta %}
+                            ✅
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+            <p><strong>Justificación:</strong> {{ reactivo.reactivo.justificacion }}</p>
+            <hr>
+        </div>
+    {% endfor %}
+</body>
+</html>
