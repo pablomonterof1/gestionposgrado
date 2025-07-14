@@ -163,7 +163,7 @@ urlpatterns = [
     path('contratocoordinadorupdate/<int:contratocoordinador_id>/<int:periodo_id>', datosposgrado_views.contratocoordinador_update, name='contratocoordinador_update'),
     path('contratocoordinador/<int:contratocoordinador_id>/<int:periodo_id>/delete', datosposgrado_views.contratocoordinador_delete, name='contratocoordinador_delete'),
     #Seleccion de perfiles
-    path('seleccionp/', seleccionperfiles_views.seleccionp, name='seleccionp'),
+    path('seleccionp/<int:periodo_id>/<int:modulo_id>/', seleccionperfiles_views.seleccionp, name='seleccionp'),
     path('periodosacademicosp/', seleccionperfiles_views.periodosacademicosp, name='periodosacademicosp'),    
     path('datosposgradosp/<int:periodo_id>/', seleccionperfiles_views.datosposgradosp, name='datosposgradosp'),
     path('datosmodulossp/<int:programa_id>/', seleccionperfiles_views.datosmodulossp, name='datosmodulossp'),
@@ -171,6 +171,8 @@ urlpatterns = [
     path('crearternamodulopmmsp/<int:programa_id>/<int:modulo_id>/', seleccionperfiles_views.crearternamodulopmmsp, name='crearternamodulopmmsp'),
     path('docentesdpmmsp/create/<int:programa_id>/<int:modulo_id>/', user_views.docentepmmsp_create, name='docentesdpmmsp'),
     path('modificarternamodulopmmsp/<int:programa_id>/<int:modulo_id>/', seleccionperfiles_views.modificarternamodulopmmsp, name='modificarternamodulopmmsp'),
+    path('responsable/<int:programa_id>/<int:modulo_id>/', seleccionperfiles_views.responsablep, name='responsablep'),
+    path('asignar_responsable/<int:responsable_id>/<int:programa_id>/<int:modulo_id>/', seleccionperfiles_views.asignar_responsable, name='asignar_responsable'),
     #POSTULACION
     #UsuarioPostulacionEspecialidadesMédicas 
 

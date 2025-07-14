@@ -11,10 +11,12 @@ from django.db import transaction
 
 # Create your views here.
 @login_required
-def seleccionp(request):
+def seleccionp(request, periodo_id, modulo_id):
     perfiles_list = PerfilUsuario.objects.all()
     return render(request, 'seleccionp.html', {
         'perfiles_list': perfiles_list,
+        'periodo_id': periodo_id,
+        'modulo_id': modulo_id,
     })
 
 @login_required
@@ -154,32 +156,42 @@ def modificarternamodulopmmsp(request, programa_id, modulo_id):
     terna = get_object_or_404(TernaModuloPM, programa_posgrado_id=programa_id, modulo_id=modulo_id)
 
     if request.method == 'POST':
-        # Recolectar nuevos IDs y roles del form
-        docente1_id = request.POST.get('docente1_id')
-        docente2_id = request.POST.get('docente2_id')
-        docente3_id = request.POST.get('docente3_id')
+        docente_id = request.POST.get('docente_id')
+        estado = request.POST.get('Estado')
 
-        # Actualizar solo si vienen valores nuevos
-        if docente1_id:
-            terna.docente1_idoneo_id = docente1_id
-        if docente2_id:
-            terna.docente2_id = docente2_id
-        if docente3_id:
-            terna.docente3_id = docente3_id
+        if docente_id and estado:
+            docente_id = int(docente_id)
 
-        terna.save()
-        return redirect('ternapmmsp', programa_id=programa_id, modulo_id=modulo_id)
+            if estado == 'idoneo':
+                terna.docente1_idoneo_id = docente_id
+            elif estado == 'elegible1':
+                terna.docente2_id = docente_id
+            elif estado == 'elegible2':
+                terna.docente3_id = docente_id
 
+            # Quitar duplicados automáticos
+            ids = [terna.docente1_idoneo_id, terna.docente2_id, terna.docente3_id]
+            if ids.count(terna.docente1_idoneo_id) > 1:
+                terna.docente1_idoneo_id = None
+            if ids.count(terna.docente2_id) > 1:
+                terna.docente2_id = None
+            if ids.count(terna.docente3_id) > 1:
+                terna.docente3_id = None
+
+            terna.save()
+            return redirect('modificarternamodulopmmsp', programa_id=programa_id, modulo_id=modulo_id)
+
+    # Docentes disponibles: solo los que NO están ya asignados
     perfiles_docentes = PerfilUsuario.objects.filter(rol=2).select_related('user')
-
-    # FILTRA: que no estén ya en la terna
     docentes_list = []
+    asignados_ids = [
+        terna.docente1_idoneo_id,
+        terna.docente2_id,
+        terna.docente3_id
+    ]
+
     for perfil in perfiles_docentes:
-        if perfil.user.id not in [
-            terna.docente1_idoneo_id,
-            terna.docente2_id,
-            terna.docente3_id
-        ]:
+        if perfil.user.id not in asignados_ids:
             try:
                 perfil_academico = PerfilAcademicoUsuario.objects.get(usuario=perfil)
             except PerfilAcademicoUsuario.DoesNotExist:
@@ -194,13 +206,42 @@ def modificarternamodulopmmsp(request, programa_id, modulo_id):
                 'titulo_postgrado_doctorado': getattr(perfil_academico, 'titulo_postgrado_doctorado', ''),
             })
 
+    # Calcular roles que quedan libres
+    roles_disponibles = []
+    if not terna.docente1_idoneo_id:
+        roles_disponibles.append('idoneo')
+    if not terna.docente2_id:
+        roles_disponibles.append('elegible1')
+    if not terna.docente3_id:
+        roles_disponibles.append('elegible2')
+
     context = {
         'terna': terna,
         'programa_id': programa_id,
         'modulo_id': modulo_id,
         'docentes_list': docentes_list,
+        'roles_disponibles': roles_disponibles,
     }
     return render(request, 'modificar_terna_sp.html', context)
 
 
+@login_required
+def responsablep(request, programa_id, modulo_id):
+    responsables_list = User.objects.all()
+    return render(request, 'responsablep.html', {
+        'responsables_list': responsables_list,
+        'programa_id': programa_id,
+        'modulo_id': modulo_id,
+    })
+
+@login_required
+def asignar_responsable(request, responsable_id, programa_id, modulo_id):
+    responsable = get_object_or_404(User, pk=responsable_id)
+    terna = get_object_or_404(TernaModuloPM, programa_posgrado_id=programa_id, modulo_id=modulo_id)
+
+    terna.responsable = responsable
+    terna.save()
+
+    messages.success(request, "Responsable asignado correctamente.")
+    return redirect('ternapmmsp', programa_id=programa_id, modulo_id=modulo_id)
 
