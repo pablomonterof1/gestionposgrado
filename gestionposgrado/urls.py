@@ -173,6 +173,10 @@ urlpatterns = [
     path('modificarternamodulopmmsp/<int:programa_id>/<int:modulo_id>/', seleccionperfiles_views.modificarternamodulopmmsp, name='modificarternamodulopmmsp'),
     path('responsable/<int:programa_id>/<int:modulo_id>/', seleccionperfiles_views.responsablep, name='responsablep'),
     path('asignar_responsable/<int:responsable_id>/<int:programa_id>/<int:modulo_id>/', seleccionperfiles_views.asignar_responsable, name='asignar_responsable'),
+    path('ternamodulocoordinadorpmsp/<int:programa_id>/<int:modulo_id>/', seleccionperfiles_views.ternamodulocoordinadorpmsp, name='ternamodulocoordinadorpmsp'),
+    path('crearternamodulocoordinadorpmsp/<int:programa_id>/<int:modulo_id>/', seleccionperfiles_views.crearternamodulocoordinadorpmsp, name='crearternamodulocoordinadorpmsp'),
+    path('modificarternamodulocoordinadorpmsp/<int:programa_id>/<int:modulo_id>/', seleccionperfiles_views.modificarternamodulocoordinadorpmsp, name='modificarternamodulocoordinadorpmsp'),
+    path('asignar_responsable_coordinador/<int:responsable_id>/<int:programa_id>/<int:modulo_id>/', seleccionperfiles_views.asignar_responsable_coordinador, name='asignar_responsable_coordinador'),
     #POSTULACION
     #UsuarioPostulacionEspecialidadesMédicas 
 
