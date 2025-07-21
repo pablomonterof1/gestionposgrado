@@ -169,6 +169,7 @@ def crearternamodulopmmsp(request, programa_id, modulo_id):
 
 @login_required
 def crearternamodulocoordinadorpmsp(request, programa_id, modulo_id):
+    print ("si")
     terna, created = TernaModuloCoordinadorPM.objects.get_or_create(
         programa_posgrado_id=programa_id,
         modulo_id=modulo_id
@@ -200,6 +201,7 @@ def crearternamodulocoordinadorpmsp(request, programa_id, modulo_id):
 
     if request.method == 'POST':
         coordinador_id = request.POST.get('coordinador_id')
+        print(coordinador_id)
         estado = request.POST.get('Estado')
 
         try:
@@ -384,7 +386,7 @@ def modificarternamodulocoordinadorpmsp(request, programa_id, modulo_id):
         'coordinadores_list': coordinadores_list,
         'roles_disponibles': roles_disponibles,
     }
-    return render(request, 'modificar_ternacoordinador_sp.html', context)
+    return render(request, '#', context)
 
 
 @login_required

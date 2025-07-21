@@ -28,9 +28,9 @@
                         <td>{{ coordinador.ci }}</td>
                         <td>{{ coordinador.titulo_grado }}<br>{{ coordinador.titulo_postgrado_maestria }}<br>{{coordinador.titulo_postgrado_doctorado }}</td>
                         <td>
-                            <form method="POST" action="{% url 'crearternamodulopmmsp' programa_id modulo_id %}">
+                            <form method="POST" action="{% url 'crearternamodulocoordinadorpmsp' programa_id modulo_id %}">
                                 {% csrf_token %}
-                                <input type="hidden" name="docente_id" value="{{ docente.id }}">
+                                <input type="hidden" name="coordinador_id" value="{{ coordinador.id }}">
                                 <select name="Estado" class="form-select" required>
                                     <option value="" disabled selected>-- Seleccionar --</option>
                                     {% if not terna.coordinador_idoneo %}<option value="idoneo">Idóneo</option>{% endif %}
