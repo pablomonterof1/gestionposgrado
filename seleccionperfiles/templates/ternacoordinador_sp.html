@@ -18,7 +18,7 @@
         {% if terna.responsable %}
         <span>
             {{ terna.responsable.get_full_name }} - {{ terna.responsable.perfilusuario.ci }}
-            <a href="{% url 'responsablep' programa_id modulo_id %}" class="btn btn-outline-secondary btn-sm"
+            <a href="{% url 'responsablepcoordinador' programa_id modulo_id %}" class="btn btn-outline-secondary btn-sm"
                 title="Editar Responsable" style="display: inline-flex; align-items: center; margin-left: 8px;">
                 <i class="fas fa-edit"></i>
             </a>
@@ -29,7 +29,7 @@
 
         <div style="text-align: right;">
             {% if not terna.responsable %}
-            <a class="btn btn-primary" href="{% url 'responsablep' programa_id modulo_id %}">Seleccionar Responsable</a>
+            <a class="btn btn-primary" href="{% url 'responsablepcoordinador' programa_id modulo_id %}">Seleccionar Responsable</a>
             {% endif %}
 
             {% if terna and terna.coordinador_idoneo %}

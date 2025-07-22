@@ -169,15 +169,14 @@ def crearternamodulopmmsp(request, programa_id, modulo_id):
 
 @login_required
 def crearternamodulocoordinadorpmsp(request, programa_id, modulo_id):
-    print ("si")
     terna, created = TernaModuloCoordinadorPM.objects.get_or_create(
         programa_posgrado_id=programa_id,
         modulo_id=modulo_id
     )
 
-    coordinadores_list = PerfilUsuario.objects.filter(rol=3)
+    coordinadores_list = PerfilUsuario.objects.all()
 
-    # Excluir docentes ya asignados
+    # Excluir coordinadores ya asignados
     usados = []
     if terna.coordinador_idoneo:
         usados.append(terna.coordinador_idoneo.id)
@@ -350,7 +349,7 @@ def modificarternamodulocoordinadorpmsp(request, programa_id, modulo_id):
             terna.save()
             return redirect('modificarternamodulocoordinadorpmsp', programa_id=programa_id, modulo_id=modulo_id)
     # Coordinadores disponibles: solo los que NO están ya asignados
-    perfiles_coordinadores = PerfilUsuario.objects.filter(rol=3).select_related('user')
+    perfiles_coordinadores = PerfilUsuario.objects.all()
     coordinadores_list = []
     asignados_ids = [
         terna.coordinador_idoneo_id,
@@ -386,13 +385,22 @@ def modificarternamodulocoordinadorpmsp(request, programa_id, modulo_id):
         'coordinadores_list': coordinadores_list,
         'roles_disponibles': roles_disponibles,
     }
-    return render(request, '#', context)
+    return render(request, 'modificar_terna_coordinador.html', context)
 
 
 @login_required
 def responsablep(request, programa_id, modulo_id):
     responsables_list = User.objects.all()
     return render(request, 'responsablep.html', {
+        'responsables_list': responsables_list,
+        'programa_id': programa_id,
+        'modulo_id': modulo_id,
+    })
+
+@login_required
+def responsablepcoordinador(request, programa_id, modulo_id):
+    responsables_list = User.objects.all()
+    return render(request, 'responsablepcoordinador.html', {
         'responsables_list': responsables_list,
         'programa_id': programa_id,
         'modulo_id': modulo_id,
@@ -411,6 +419,7 @@ def asignar_responsable(request, responsable_id, programa_id, modulo_id):
 
 @login_required
 def asignar_responsable_coordinador(request, responsable_id, programa_id, modulo_id):
+    print("Asignando responsable coordinador")
     responsable = get_object_or_404(User, pk=responsable_id)
     terna = get_object_or_404(TernaModuloCoordinadorPM, programa_posgrado_id=programa_id, modulo_id=modulo_id)  
     terna.responsable = responsable
