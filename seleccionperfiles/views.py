@@ -33,6 +33,7 @@ def datosposgradosp(request, periodo_id):
         programa.maestria = Maestrias.objects.filter(id=programa.maestria).first()
         programa.periodoacademico = PeriodosAcademicos.objects.filter(id=programa.periodoacademico).first()
         programa.modalidad = Modalidad.objects.filter(id=programa.modalidad).first()
+    print()
     return render(request, 'datosposgrado_sp.html', {
         'periodo_id': periodo_id,
         'programaposgrado_list': programaposgrado_list,
