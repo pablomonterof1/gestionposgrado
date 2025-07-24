@@ -112,6 +112,83 @@ def actualizar_rol_usuario(request, usuario_id):
         perfil_usuario.save()
         return redirect('gestionusuarios')
 
+@login_required
+def coordinadorpmmsp_create(request, modulo_id, programa_id):
+    origen = request.GET.get('origen', '')
+
+    if request.method == 'POST':
+        origen = request.POST.get('origen', origen)
+        nombre = request.POST.get('nombre', '').strip()
+        apellido = request.POST.get('apellido', '').strip()
+        cedula = request.POST.get('cedula', '').strip()
+        titulo = request.POST.get('titulo_grado', '').strip()
+        titulo_maestria = request.POST.get('titulo_postgrado_maestria', '').strip()
+        titulo_doctorado = request.POST.get('titulo_postgrado_doctorado', '').strip()
+        correo = request.POST.get('correo', '').strip()
+    
+    # Validación básica de campos vacíos
+        if not nombre or not apellido or not cedula or not correo:
+            messages.error(request, 'Todos los campos son obligatorios.')
+            return redirect('coordinadorpmmsp_create', programa_id=programa_id, modulo_id=modulo_id)
+
+    # Validación de formato de correo
+        try:
+            validate_email(correo)
+        except ValidationError:
+            messages.error(request, 'El correo electrónico no es válido.')
+            return redirect('coordinadorpmmsp_create', programa_id=programa_id, modulo_id=modulo_id)
+
+    # Verificar duplicados
+        if User.objects.filter(username=cedula).exists():
+            messages.error(request, 'Ya existe un usuario con esa cédula.')
+            return render(request, 'coordinadorpmmsp_create.html', {
+                'programa_id': programa_id,
+                'modulo_id': modulo_id
+            })
+
+        if User.objects.filter(email=correo).exists():
+            messages.error(
+            request, 'Ya existe un usuario con ese correo electrónico.')
+            return render(request, 'coordinadorpmmsp_create.html', {
+                'programa_id': programa_id,
+                'modulo_id': modulo_id
+            })
+        # Crear el usuario
+        user = User.objects.create_user(
+            username=cedula,
+            email=correo,
+            first_name=nombre,
+            last_name=apellido,
+        )
+        user.set_password(cedula)
+        user.save()
+        # Crear el perfil del usuario
+        perfil = PerfilUsuario.objects.create(
+        user=user,
+        ci=cedula,
+        rol=3,  # Asignar rol de coordinador
+        )
+        perfil.save()
+        perfil_academico = PerfilAcademicoUsuario.objects.create(
+            usuario=perfil,
+            titulo_grado=titulo,
+            titulo_postgrado_maestria=titulo_maestria,
+            titulo_postgrado_doctorado=titulo_doctorado,
+        )
+        perfil_academico.save()
+        messages.success(request, 'Coordinador creado exitosamente.')
+        if origen == 'crear_ternacoordinador':
+            return redirect('crearternamodulocoordinadorpmsp', programa_id=programa_id, modulo_id=modulo_id)
+        elif origen == 'modificar_ternacoordinador':
+            return redirect('modificarternamodulocoordinadorpmsp', programa_id=programa_id, modulo_id=modulo_id)
+        else:
+            return redirect('ternamodulocoordinadorpmsp', programa_id=programa_id, modulo_id=modulo_id)
+
+    return render(request, 'coordinadorpmmsp_create.html', {
+        'programa_id': programa_id,
+        'modulo_id': modulo_id,
+        'origen': origen,
+    })
 
 @login_required
 def docentedp_create(request, periodo_id):

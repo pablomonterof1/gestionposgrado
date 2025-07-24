@@ -1,0 +1,165 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<main style="padding: 2%;">
+    <section class="card" style="padding: 2%;">
+
+        <p class="lead" style="font-size: 2em;">
+            Terna del módulo
+            {% if terna %}
+            <b>- {{ terna.modulo }}</b>
+            {% else %}
+            <b>N/A</b>
+            {% endif %}
+        </p>
+        <br>
+        Responsable:
+        {% if terna.responsable %}
+        <span>
+            {{ terna.responsable.get_full_name }} - {{ terna.responsable.perfilusuario.ci }}
+            <a href="{% url 'responsablepcoordinador' programa_id modulo_id %}" class="btn btn-outline-secondary btn-sm"
+                title="Editar Responsable" style="display: inline-flex; align-items: center; margin-left: 8px;">
+                <i class="fas fa-edit"></i>
+            </a>
+        </span>
+        {% else %}
+        <span style="color: red;">No asignado</span>
+        {% endif %}
+
+        <div style="text-align: right;">
+            {% if not terna.responsable %}
+            <a class="btn btn-primary" href="{% url 'responsablepcoordinador' programa_id modulo_id %}">Seleccionar Responsable</a>
+            {% endif %}
+
+            {% if terna and terna.coordinador_idoneo %}
+            <a class="btn btn-warning" href="{% url 'modificarternamodulocoordinadorpmsp' programa_id modulo_id %}">Modificar
+                Terna</a>
+            {% else %}
+            <a class="btn btn-primary" href="{% url 'crearternamodulocoordinadorpmsp' programa_id modulo_id %}">Crear Terna</a>
+            {% endif %}
+
+        </div>
+
+
+
+        <div class="table-responsive mt-4">
+            <table id="tablaTernapmmsp" class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th scope="col">Coordinador</th>
+                        <th scope="col">Cédula</th>
+                        <th scope="col">Perfil académico</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Fecha de registro</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if terna and terna.coordinador_idoneo %}
+                    <tr>
+                        <td>{{ terna.coordinador_idoneo.get_full_name }}</td>
+                        <td>{{ terna.coordinador_idoneo.perfilusuario.ci }}</td>
+                        <td>
+                            {% with perfil_acad=terna.coordinador_idoneo.perfilusuario.perfilacademicousuario_set.first %}
+                            {% if perfil_acad %}
+                            {{ perfil_acad.titulo_grado }}<br>
+                            {{ perfil_acad.titulo_postgrado_maestria }}<br>
+                            {{ perfil_acad.titulo_postgrado_doctorado }}
+                            {% else %}
+                            <span style="color: red;">Sin perfil académico registrado</span>
+                            {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td>Idóneo</td>
+                        <td>{{ terna.fecha_creacion|date:"d/m/Y H:i:s" }}</td>
+                    </tr>
+                    {% endif %}
+
+                    {% if terna and terna.coordinador2 %}
+                    <tr>
+                        <td>{{ terna.coordinador2.get_full_name }}</td>
+                        <td>{{ terna.coordinador2.perfilusuario.ci }}</td>
+                        <td>
+                            {% with perfil_acad=terna.coordinador2.perfilusuario.perfilacademicousuario_set.first %}
+                            {% if perfil_acad %}
+                            {{ perfil_acad.titulo_grado }}<br>
+                            {{ perfil_acad.titulo_postgrado_maestria }}<br>
+                            {{ perfil_acad.titulo_postgrado_doctorado }}
+                            {% else %}
+                            <span style="color: red;">Sin perfil académico registrado</span>
+                            {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td>Elegible 1</td>
+                        <td>{{ terna.fecha_creacion|date:"d/m/Y H:i:s" }}</td>
+                    </tr>
+                    {% endif %}
+
+                    {% if terna and terna.coordinador3 %}
+                    <tr>
+                        <td>{{ terna.coordinador3.get_full_name }}</td>
+                        <td>{{ terna.coordinador3.perfilusuario.ci }}</td>
+                        <td>
+                            {% with perfil_acad=terna.coordinador3.perfilusuario.perfilacademicousuario_set.first %}
+                            {% if perfil_acad %}
+                            {{ perfil_acad.titulo_grado }}<br>
+                            {{ perfil_acad.titulo_postgrado_maestria }}<br>
+                            {{ perfil_acad.titulo_postgrado_doctorado }}
+                            {% else %}
+                            <span style="color: red;">Sin perfil académico registrado</span>
+                            {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td>Elegible 2</td>
+                        <td>{{ terna.fecha_creacion|date:"d/m/Y H:i:s" }}</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+</main>
+
+<script>
+    $(document).ready(function () {
+        $('#tablaTernapmmsp').DataTable({
+            "language": {
+                "lengthMenu": "Mostrar _MENU_ registros por página",
+                "zeroRecords": "No se encontraron resultados",
+                "info": "Mostrando página _PAGE_ de _PAGES_",
+                "infoEmpty": "No hay registros disponibles",
+                "infoFiltered": "(filtrado de _MAX_ registros totales)",
+                "search": "Buscar:",
+                "paginate": {
+                    "first": "Primera",
+                    "last": "Última",
+                    "next": "Siguiente",
+                    "previous": "Anterior"
+                }
+            },
+            "bLengthChange": false,
+            "bFilter": false,
+            "bPaginate": false
+        });
+    });
+
+    function confirmarBorrado(id) {
+        Swal.fire({
+            title: '¿Estás seguro de borrar el contrato?',
+            text: "¡Esta acción no se puede deshacer!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, borrar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('form-borrar-' + id).submit();
+            }
+        })
+    }
+</script>
+
+{% endblock %}

@@ -18,6 +18,21 @@ class TernaModuloPM(models.Model):
     def _str_(self):
         return f"{self.programa_posgrado} - {self.modulo}"
     
+class TernaModuloCoordinadorPM(models.Model):
+    programa_posgrado = models.ForeignKey(ProgramaPosgrado, on_delete=models.CASCADE, related_name='terna_modulocoordinadorpm')
+    modulo = models.ForeignKey(Modulos, on_delete=models.CASCADE, related_name='terna_modulocoordinadorpm')
+    coordinador_idoneo = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='ternas_coordinador_idoneo')
+    coordinador2 = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='ternas_coordinador2')
+    coordinador3 = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='ternas_coordinador3')
+    responsable = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='ternas_coordinador_responsable')
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Terna de Coordinador de Módulo Maestría'
+        verbose_name_plural = 'Ternas de Coordinador de Módulo Maestría'
+    def _str_(self):
+        return f"{self.programa_posgrado} - {self.modulo}"
+    
 
 class DocenteContratadoPM(models.Model):
     id = models.AutoField(primary_key=True)
@@ -33,3 +48,15 @@ class DocenteContratadoPM(models.Model):
 
     def __str__(self):
         return f"{self.perfil_usuario} - {self.terna_modulo_maestria}"
+    
+class CoordinadorContratadoPM(models.Model):
+    id = models.AutoField(primary_key=True)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='coordinador_contratadopm')
+    terna_modulo_coordinador_maestria = models.ForeignKey(TernaModuloCoordinadorPM, on_delete=models.CASCADE, related_name='coordinador_contratadopm')
+    fecha_inicio = models.DateField()
+    fecha_fin = models.DateField()
+    class Meta:
+        verbose_name = 'Coordinador Contratado'
+        verbose_name_plural = 'Coordinadores Contratados'
+    def __str__(self):
+        return f"{self.usuario} - {self.terna_modulo_coordinador_maestria}"
