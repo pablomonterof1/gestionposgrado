@@ -13,8 +13,15 @@
         {% endfor %}
         {% endif %}
 
+        <div id="temporizador-flotante">
+            <p style="margin: 0;"><strong>Duración:</strong> {{ duracion }} minutos</p>
+            <div class="alert alert-warning" style="font-size: 1.2em; margin: 0;">
+                ⏰ <span id="tiempo-restante">--:--</span>
+            </div>
+        </div>
 
-        <form method="POST">
+
+        <form method="POST" id="form-evaluacion" action="{% url 'evaluacionrae_rendir' evaluacion_est.evaluacion.id %}">
             {% csrf_token %}
             {% for reactivo in reactivos %}
             <div class="card mb-3">
@@ -41,4 +48,118 @@
         </form>
     </section>
 </main>
+
+
+
+<script>
+    const duracionMinutos = '{{ duracion }}';
+    const duracionMilisegundos = duracionMinutos * 60 * 1000;
+    const tiempoLimite = Date.now() + duracionMilisegundos;
+    const timerElemento = document.getElementById('tiempo-restante');
+    const formEvaluacion = document.getElementById('form-evaluacion');
+    const urlResultado = "{% url 'evaluacionesrae_disponibles' %}";
+    let autoEnviado = false;
+
+    // Redirigir a resultados si se recarga o vuelve con el botón "Atrás"
+    if (sessionStorage.getItem("redirigirDespuesDeRecarga") === "true") {
+        sessionStorage.removeItem("redirigirDespuesDeRecarga");
+        window.location.href = urlResultado;
+    }
+
+
+    function actualizarTemporizador() {
+        const tiempoRestante = tiempoLimite - Date.now();
+
+        if (tiempoRestante <= 0) {
+            timerElemento.innerText = "00:00";
+            autoEnviado = true;
+            formEvaluacion.submit();
+        } else {
+            const minutos = Math.floor(tiempoRestante / 1000 / 60);
+            const segundos = Math.floor((tiempoRestante / 1000) % 60);
+            timerElemento.innerText = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+            setTimeout(actualizarTemporizador, 1000);
+        }
+    }
+
+    actualizarTemporizador();
+
+    function enviarEvaluacionParcialYRedirigir() {
+        if (autoEnviado) return;
+
+        const formData = new FormData(formEvaluacion);
+        const data = new URLSearchParams();
+        for (const [key, value] of formData.entries()) {
+            data.append(key, value);
+        }
+
+        navigator.sendBeacon(formEvaluacion.action, data);
+        autoEnviado = true;
+    }
+
+    // Guardado automático cada 20 segundos
+    setInterval(() => {
+        if (!autoEnviado) {
+            const formData = new FormData(formEvaluacion);
+            fetch(formEvaluacion.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+        }
+    }, 20000);
+
+    // Si el usuario recarga o cierra
+    window.addEventListener('beforeunload', function (e) {
+        if (!autoEnviado) {
+            enviarEvaluacionParcialYRedirigir();
+            e.preventDefault();
+            e.returnValue = '';
+            sessionStorage.setItem("redirigirDespuesDeRecarga", "true");
+            return '';
+        }
+    });
+
+
+    // Si el usuario hace submit normal
+    formEvaluacion.addEventListener('submit', function () {
+        autoEnviado = true;
+        window.removeEventListener('beforeunload', arguments.callee);
+    });
+
+    // Si vuelve con el botón "Atrás" o recarga con caché
+    window.addEventListener('pageshow', function (event) {
+        console.log("atras");
+        if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward") {
+            enviarEvaluacionParcialYRedirigir();
+        }
+    });
+
+
+</script>
+
+
+
+
+
+
+<style>
+    #temporizador-flotante {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        background-color: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 10px 15px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+        width: 200px;
+        text-align: center;
+    }
+</style>
+
+
 {% endblock %}

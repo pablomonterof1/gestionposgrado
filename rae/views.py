@@ -1,6 +1,6 @@
 from django.urls import reverse
 from django.utils import timezone
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 import random
 from usuarios.models import MatriculaUsuario
@@ -16,6 +16,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.template.loader import get_template
 from django.http import HttpResponse
 from xhtml2pdf import pisa
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 # Create your views here.
 
@@ -418,7 +420,7 @@ def obtener_reactivos_para_evaluacion(programa, tipo, estudiante=None):
 
     return seleccionados_estudiante
 
-
+@csrf_exempt
 @login_required
 def evaluacionrae_activar(request, programa_id, tipo):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
@@ -426,6 +428,7 @@ def evaluacionrae_activar(request, programa_id, tipo):
     if request.method == 'POST':
         fecha_inicio = request.POST['fecha_inicio']
         fecha_fin = request.POST['fecha_fin']
+        duracion = request.POST['duracion']
         # Desactivar cualquier evaluación activa del mismo tipo en este programa
         EvaluacionPrograma.objects.filter(
             programa=programa,
@@ -438,6 +441,7 @@ def evaluacionrae_activar(request, programa_id, tipo):
             tipo=tipo,
             fecha_inicio=fecha_inicio,
             fecha_fin=fecha_fin,
+            duracion_minutos=duracion,
             activa=True
         )
 
@@ -510,17 +514,18 @@ def evaluacionrae_rendir(request, evaluacion_id):
 
     if request.method == 'POST':
         score = 0
+        respuestas_guardadas = 0
         for reactivo_eval in reactivos:
             respuesta = request.POST.get(f"pregunta_{reactivo_eval.id}")
-            reactivo_eval.respuesta_estudiante = respuesta
-
-            if respuesta and reactivo_eval.reactivo.correcta == respuesta:
-                reactivo_eval.correcta = True
-                score += 2
-            else:
-                reactivo_eval.correcta = False
-
-            reactivo_eval.save()
+            if respuesta:
+                reactivo_eval.respuesta_estudiante = respuesta
+                if respuesta == reactivo_eval.reactivo.correcta:
+                    reactivo_eval.correcta = True
+                    score += 2
+                else:
+                    reactivo_eval.correcta = False
+                reactivo_eval.save()
+                respuestas_guardadas += 1
 
         evaluacion_est.calificacion = score
         evaluacion_est.respondido = True
@@ -529,10 +534,31 @@ def evaluacionrae_rendir(request, evaluacion_id):
         messages.success(request, f"Evaluación finalizada. Calificación: {score}/100")
         return redirect('evaluacionesrae_disponibles')
 
+            
+
     return render(request, 'evaluacionrae_rendir.html', {
         'reactivos': reactivos,
-        'evaluacion_est': evaluacion_est
+        'evaluacion_est': evaluacion_est,
+        'duracion': evaluacion_est.evaluacion.duracion_minutos
     })
+
+
+
+@csrf_exempt
+@require_POST
+@login_required
+def guardar_parcial_rae(request, evaluacion_id):
+    evaluacion_est = get_object_or_404(EvaluacionEstudiante, id=evaluacion_id, estudiante=request.user)
+    reactivos = ReactivoEvaluacion.objects.filter(evaluacion_estudiante=evaluacion_est)
+
+    for reactivo in reactivos:
+        respuesta = request.POST.get(f'pregunta_{reactivo.id}')
+        if respuesta:
+            reactivo.respuesta_estudiante = respuesta
+            reactivo.correcta = (respuesta == reactivo.reactivo.correcta)
+            reactivo.save()
+
+    return JsonResponse({'status': 'ok'})
 
 
 @login_required
@@ -543,6 +569,8 @@ def resultadorae_estudiante(request, evaluacion_id):
         estudiante=request.user
     )
 
+    evaluacion = get_object_or_404(EvaluacionPrograma, id=evaluacion_id)
+
     if not evaluacion_est.respondido:
         return redirect('evaluacionesrae_disponibles')
 
@@ -551,6 +579,7 @@ def resultadorae_estudiante(request, evaluacion_id):
     return render(request, 'resultadorae_estudiante.html', {
         'evaluacion_est': evaluacion_est,
         'reactivos': reactivos,
+        'evaluacion': evaluacion
     })
 
 
@@ -574,6 +603,7 @@ def resultadosrae_programa(request, programa_id, evaluacion_id):
             'respondido': evaluacion_est.respondido if evaluacion_est else False,
             'calificacion': evaluacion_est.calificacion if evaluacion_est else None,
             'detalle_url': reverse('detalle_resultado_estudiante', args=[evaluacion.id, mat.usuario.id]) if evaluacion_est.respondido else None,
+            'borrar_url': reverse('detalle_resultado_estudiante_borrar', args=[evaluacion.id, mat.usuario.id]) if evaluacion_est.respondido else None,
         })
    
 
@@ -582,6 +612,8 @@ def resultadosrae_programa(request, programa_id, evaluacion_id):
         'evaluacion': evaluacion,
         'resultados': resultados
     })
+
+
 
 
 @login_required
@@ -602,6 +634,29 @@ def detalle_resultado_estudiante(request, evaluacion_id, estudiante_id):
         'calificacion': evaluacion_est.calificacion
     })
 
+@login_required
+def detalle_resultado_estudiante_borrar(request, evaluacion_id, estudiante_id):
+
+    evaluacion = get_object_or_404(EvaluacionPrograma, id=evaluacion_id)
+    estudiante = get_object_or_404(User, id=estudiante_id)
+
+    evaluacion_est = get_object_or_404(EvaluacionEstudiante,
+        evaluacion=evaluacion, estudiante=estudiante
+    )
+    reactivos = ReactivoEvaluacion.objects.filter(evaluacion_estudiante=evaluacion_est)
+    for reactivo in reactivos:
+        reactivo.respuesta_estudiante = None
+        reactivo.correcta = False
+        reactivo.save()
+
+    if request.method == 'POST':
+        evaluacion_est.respondido = False
+        evaluacion_est.calificacion = None
+        evaluacion_est.save()
+        messages.error(request, "Resultados eliminados correctamente.")
+        return redirect('resultadosrae_programa', programa_id=evaluacion.programa.id, evaluacion_id=evaluacion.id)
+
+    return redirect('resultadosrae_programa', programa_id=evaluacion.programa.id, evaluacion_id=evaluacion.id)
 
 
 def resultado_estudiante_pdf(request, evaluacion_id):

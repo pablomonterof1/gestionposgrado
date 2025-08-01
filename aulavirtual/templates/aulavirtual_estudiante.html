@@ -5,10 +5,12 @@
 <main class="container py-5 ">
 
     <section class="card" style="padding: 2%;">
+        <div class="text-center mb-4">
+            <p class="lead" style="font-size: 1.8em;">{{maestria}}</p>
+        </div>
         <p class="lead" style="font-size: 1.5em;">
-            <b>
-                {{programadeposgrado}}
-            </b>
+            <b>Periodo académico:</b> {{periodoacademico.nombre}}<br>
+            <b>Cohorte:</b> {{programadeposgrado.get_cohorte_display}}
         </p>
         
         <br>
@@ -20,7 +22,7 @@
                         <div class="nav-divider"></div>
                         <li class="nav-item">
                             <a class="nav-link fs-5" aria-current="page" href="{% url 'evaluacionesrae_disponibles' %}" style="color: white !important;">
-                                RAE
+                                Evaluación RAE
                             </a>
                         </li>
                         <div class="nav-divider"></div>

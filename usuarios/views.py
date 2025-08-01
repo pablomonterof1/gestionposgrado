@@ -57,24 +57,26 @@ def signup(request):
 
 def signin(request):
     if request.method == 'GET':
+        next_url = request.GET.get('next', '')
         return render(request, 'signin.html', {
-            'form': AuthenticationForm
+            'form': AuthenticationForm(),
+            'next': next_url
         })
     else:
-        user = authenticate(
-            request,
-            username=request.POST['username'],
-            password=request.POST['password']
-        )
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+
         if user is None:
             return render(request, 'signin.html', {
-                'form': AuthenticationForm,
-                'error': 'Usuario o contraseña incorrectos'
+                'form': AuthenticationForm(),
+                'error': 'Usuario o contraseña incorrectos',
+                'next': request.POST.get('next', '')
             })
         else:
             login(request, user)
-            # Aquí revisamos si viene el next
-            next_url = request.GET.get('next')
+            # ✅ Captura next desde el POST (no GET)
+            next_url = request.POST.get('next')
             if next_url:
                 return redirect(next_url)
             else:

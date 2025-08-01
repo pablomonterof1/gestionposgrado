@@ -102,8 +102,8 @@ WSGI_APPLICATION = 'gestionposgrado.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': "django.db.backends.mysql",
-        'NAME': 'labarbad_posgradounach1',
-        'USER': 'labarbad_userposgradounach1',
+        'NAME': 'ailectus_posgradounach1',
+        'USER': 'ailectus_userposgradounach1',
         'PASSWORD': 'dGZ$L~L*5qd4',
         'HOST': '66.45.232.106',
         'PORT': '3306',
@@ -161,6 +161,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Seguridad de la sesión
-SESSION_COOKIE_AGE = 3600  
+SESSION_COOKIE_AGE = 7200  
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 

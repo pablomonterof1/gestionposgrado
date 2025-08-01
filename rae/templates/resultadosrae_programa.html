@@ -18,7 +18,9 @@
 
     {% if messages %}
     {% for message in messages %}
-    <div class="alert alert-info">{{ message }}</div>
+    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+        {{ message }}
+    </div>
     {% endfor %}
     {% endif %}
 
@@ -32,6 +34,7 @@
                     <th>Estado</th>
                     <th>Calificación</th>
                     <th>Detalles</th>
+                    <th>Borrar</th>
                 </tr>
             </thead>
             <tbody>
@@ -55,6 +58,18 @@
                     <td style="text-align: center;">
                         {% if res.detalle_url %}
                         <a href="{{ res.detalle_url }}" class="btn btn-info ">🔍</a>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                    <td style="text-align: center;">
+                        {% if res.borrar_url %}
+                        <form id="form-borrar-{{ res.id }}" action="{{ res.borrar_url }}" method="post"
+                            class="d-inline">
+                            {% csrf_token %}
+                            <button type="button" class="btn btn-danger"
+                                onclick="confirmarBorrado('{{ res.id }}')">🗑️</button>
+                        </form>
                         {% else %}
                         -
                         {% endif %}
@@ -87,6 +102,25 @@
             }
         });
     });
+
+
+
+    function confirmarBorrado(id) {
+        Swal.fire({
+            title: '¿Estás seguro de borrar el resultado?',
+            text: "¡Esto borrará todos los datos de la evaluación!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, borrar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('form-borrar-' + id).submit();
+            }
+        })
+    }
 
 
 </script>

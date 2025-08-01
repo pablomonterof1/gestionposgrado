@@ -16,7 +16,7 @@
 
         {% if evaluaciones %}
         <p class="lead">
-            <strong>
+            <strong class="text-primary">
                 Evaluaciones por realizar
             </strong>
         </p>
@@ -25,7 +25,7 @@
                 <tr>
                     <th>#</th>
                     <th>Programa</th>
-                      <th style="color: red;" >Tipo</th>
+                    <th style="color: red;">Tipo</th>
                     <th>Fecha disponible</th>
                     <th>Acciones</th>
                 </tr>
@@ -40,7 +40,10 @@
                             {{ eval.evaluacion.get_tipo_display }}
                         </strong>
                     </td>
-                    <td>{{ eval.evaluacion.fecha_inicio|date:"d/m/Y H:i" }} - {{ eval.evaluacion.fecha_fin|date:"d/m/YH:i" }}</td>
+                    <td><span style="color: green;">Inicio: </span>{{ eval.evaluacion.fecha_inicio|date:"d/m/Y H:i" }} 
+                        <br>
+                        <span style="color: red;">Cierre: </span>{{ eval.evaluacion.fecha_fin|date:"d/m/Y H:i" }}
+                    </td>
                     <td>
                         <a href="{% url 'evaluacionrae_rendir' eval.evaluacion.id %}"
                             class="btn btn-warning btn-sm">Rendir</a>
@@ -50,12 +53,12 @@
             </tbody>
         </table>
         {% else %}
-        <div class="alert alert-info">No tienes evaluaciones disponibles en este momento.</div>
+        <div class="alert alert-warning">No tienes evaluaciones por realizar disponibles en este momento.</div>
         {% endif %}
         <hr style="border: solid 2px;">
         {% if evaluacionesrealizadas %}
         <p class="lead">
-            <strong>
+            <strong class="text-success">
                 Evaluaciones realizadas
             </strong>
         </p>
@@ -64,7 +67,7 @@
                 <tr>
                     <th>#</th>
                     <th>Programa</th>
-                    <th style="color: red;" >Tipo</th>
+                    <th style="color: red;">Tipo</th>
                     <th>Fecha disponible</th>
                     <th>Acciones</th>
                 </tr>
@@ -79,7 +82,10 @@
                             {{ eval.evaluacion.get_tipo_display }}
                         </strong>
                     </td>
-                    <td>{{ eval.evaluacion.fecha_inicio|date:"d/m/Y H:i" }} - {{ eval.evaluacion.fecha_fin|date:"d/m/YH:i" }}</td>
+                    <td>
+                         <span style="color: green;" >Inicio: </span> {{ eval.evaluacion.fecha_inicio|date:"d/m/Y H:i" }} 
+                        <br>
+                        <span style="color: red;" >Cierre: </span> {{ eval.evaluacion.fecha_fin|date:"d/m/Y H:i" }}</td>
                     <td>
                         <a href="{% url 'resultadorae_estudiante' eval.evaluacion.id %}"
                             class="btn btn-info btn-sm">Ver</a>
@@ -89,8 +95,19 @@
             </tbody>
         </table>
         {% else %}
-        <div class="alert alert-info">No tienes evaluaciones disponibles en este momento.</div>
+        <div class="alert alert-warning">No tienes evaluaciones realizadas en este momento.</div>
         {% endif %}
     </section>
 </main>
+
+
+<script>
+    window.addEventListener('pageshow', function (event) {
+        if (event.persisted || (window.performance && performance.getEntriesByType("navigation")[0].type === "back_forward")) {
+            // Si es desde el historial (atrás o adelante), recarga la página
+            window.location.reload();
+        }
+    });
+</script>
+
 {% endblock %}

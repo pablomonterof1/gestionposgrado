@@ -92,6 +92,8 @@ def AulaVirtual_Docente(request, programa_id, modulo_id):
 
 def AulaVirtual_Estudiante(request, programa_id):
     programadeposgrado = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    maestria = get_object_or_404(Maestrias, id=programadeposgrado.maestria)
+    periodoacademico = get_object_or_404(PeriodosAcademicos, id=programadeposgrado.periodoacademico)
     modulos_list = Modulos.objects.filter(maestria=programadeposgrado.maestria)
     for modulo in modulos_list:
         matriculadocebte = MatriculaDocenteModulo.objects.filter(object_id=modulo.id)
@@ -102,5 +104,7 @@ def AulaVirtual_Estudiante(request, programa_id):
             modulo.docente = None
     return render(request, 'aulavirtual_estudiante.html', {
         'programadeposgrado': programadeposgrado,
-        'modulos_list': modulos_list
+        'modulos_list': modulos_list,
+        'maestria': maestria,
+        'periodoacademico': periodoacademico
     })

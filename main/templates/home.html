@@ -6,15 +6,20 @@
 
     <section class="card" style="padding: 1%;">
 
-
+        {% if user.is_superuser %}
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark menuprogposgrado" style="border-radius: 5px;">
             <div class="container-fluid">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
 
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ">
                         <div class="nav-divider"></div>
                         <li class="nav-item">
-                            <a class="nav-link fs-5" aria-current="page" href="{% url 'programasdemaestria' %}" style="color: white !important;">
+                            <a class="nav-link fs-5" aria-current="page" href="{% url 'programasdemaestria' %}"
+                                style="color: white !important;">
                                 Programas de maestría
                             </a>
                         </li>
@@ -25,9 +30,9 @@
                                 Especialidades médicas
                             </a>
                         </li>
-                       
+
                         <div class="nav-divider"></div>
-                         <li class="nav-item">
+                        <li class="nav-item">
                             <a class="nav-link fs-5" aria-current="page" href="{% url 'periodosacademicosdp' %}"
                                 style="color: white !important;">
                                 Base de datos Pogrado
@@ -35,7 +40,7 @@
                         </li>
 
                         <div class="nav-divider"></div>
-                         <li class="nav-item">
+                        <li class="nav-item">
                             <a class="nav-link fs-5" aria-current="page" href="{% url 'periodosacademicosp' %}"
                                 style="color: white !important;">
                                 Seleccion de perfiles
@@ -44,41 +49,41 @@
 
 
                         <div class="nav-divider"></div>
-                        
+
 
                     </ul>
                 </div>
             </div>
         </nav>
+        {% endif %}
         <hr style="border: 1px solid #000;">
-        <h1 class="display-4">Inicio</h1>
-        <p style="text-align: justify;">Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo ipsa doloribus,
-            rerum inventore ut sint cum
-            veritatis!
-            Porro delectus excepturi quibusdam et laboriosam animi ducimus neque quisquam est doloremque, dolore
-            voluptatum
-            eveniet officiis eius sit deleniti aut iste enim sed aliquam voluptate vero non, rem esse. Quaerat
-            repudiandae
-            minima in velit beatae assumenda temporibus, repellendus dolor quam animi fugiat nisi placeat suscipit eius
-            amet
-            veritatis officia repellat. Sint dolore aut quia fugiat aspernatur ea quas, doloremque rem eveniet tempore
-            recusandae praesentium dolor blanditiis incidunt? Hic optio mollitia nulla id beatae, eveniet totam quas. Ab
-            doloremque in eius sint magni quae voluptate nisi ipsum neque quisquam repellat nesciunt enim incidunt
-            accusamus,
-            minima quia magnam officiis suscipit. Possimus, adipisci harum ducimus autem, labore fuga dolores quos earum
-            quia
-            explicabo molestiae veniam natus consequatur dolorem enim atque velit sapiente perferendis repudiandae,
-            repellendus
-            corrupti! Dicta, hic. Eius aperiam, veniam delectus eveniet eligendi deserunt aut facilis nesciunt
-            consectetur
-            magni
-            corrupti vero ullam voluptatem inventore quibusdam nam quae modi at similique soluta, nulla voluptatum
-            impedit
-            minima deleniti? Aliquid illum libero veritatis, soluta vel, alias velit consectetur, error nesciunt dolor
-            quibusdam
-            aut laborum maxime magnam ad! Quod magni facere totam odit, omnis sed rem maxime placeat suscipit! 23 de junio del 2025</p>
+        <div style="text-align: center;">
+            <img src="../static/Unach3.png" alt="Descripción de la imagen"
+                style="width: 20%; height: auto; border-radius: 10px;">
+            <h1 class="display-5" style="font-size: 2em;">Sistema de gestión <br> <b>Dirección de Posgrado</b> </h1>
+        </div>
+        <br>
+        <p style="text-align: justify;">
+            En esta plataforma encontrarás información esencial sobre el programa de posgrado que estás cursando,
+            incluyendo módulos e información relevante. Además, aquí podrás rendir la Evaluación RAE cuando esté
+            habilitada, de acuerdo con las fechas establecidas en el cronograma.
+        </p>
 
         <hr style="border: 1px solid #000;">
+
+        <div class="card text-center">
+            <div class="card-header text-white" style="background-color: #0e1424;">
+                Mis cursos
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Programa de Posgrado</h5>
+                <p class="card-text">en el que te encuentras matriculado/a.</p>
+                <a href="{% url 'miscursos' %}" class="btn btn-info">Ingresar</a>
+
+            </div>
+            <div class="card-footer " style="background-color: #0e1424;">
+            </div>
+        </div>
 
 
 

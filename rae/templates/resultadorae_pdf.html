@@ -20,14 +20,28 @@
             <p><strong>{{ forloop.counter }}. {{ reactivo.reactivo.enunciado|safe }}</strong></p>
             <ul>
                 {% for letra, opcion in reactivo.reactivo.get_opciones %}
-                    <li {% if letra == reactivo.respuesta_estudiante %} style="font-weight: bold;" {% endif %}>
+                    <li {% if letra == reactivo.respuesta_estudiante %} style="font-weight: bold; font-size: 1.1em;" {% endif %}>
                         {{ letra }}) {{ opcion }}
                         {% if letra == reactivo.reactivo.correcta %}
-                            ✅
+                            ✔
                         {% endif %}
                     </li>
                 {% endfor %}
+
+                   
             </ul>
+                    {% if reactivo.correcta == 1 and reactivo.respuesta_estudiante %}
+                    <strong>Tu respuesta:</strong> {{ reactivo.respuesta_estudiante }}
+                    <span class="text-success">✔ Correcta</span>
+                    {% elif reactivo.correcta == 0 and reactivo.respuesta_estudiante %}
+                    <strong>Tu respuesta:</strong> {{ reactivo.respuesta_estudiante }}
+                    <span class="text-danger">✘ Incorrecta</span><br>
+                    <strong>Respuesta correcta:</strong> {{ reactivo.reactivo.correcta }}
+                    {% elif reactivo.correcta == 0 %}
+                    <strong>Tu respuesta:</strong> 
+                    <span class="text-warning">- No respondida</span><br>
+                    <strong>Respuesta correcta:</strong> {{ reactivo.reactivo.correcta }}
+                    {% endif %}
             <p><strong>Justificación:</strong> {{ reactivo.reactivo.justificacion }}</p>
             <hr>
         </div>

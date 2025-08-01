@@ -6,6 +6,21 @@
 
 }
 
+.backgeneral {
+    gap: 0px !important;
+    background-image: url('https://online.unach.edu.ec/pluginfile.php/1/local_edwiserpagebuilder/media/849567915/fghhdfghj.png') !important;
+    background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
+    background-size: cover !important;
+
+
+}
+
+.fontsistema {
+    font-family: 'Poppins', sans-serif;
+}
+
+
 .navbar-dark {
     background-color: #0e1424 !important;
 }
@@ -31,4 +46,18 @@
     border-left: 1px solid rgba(255, 255, 255, 0.5);
     height: 24px;
     margin: auto 10px;
+}
+
+.temporizador-flotante {
+    position: fixed !important;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 10px 15px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+    width: 200px;
+    text-align: center;
 }

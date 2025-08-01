@@ -12,14 +12,14 @@
 
         {% if usuarioprogramaslist %}
 
-        <p class="lead">
+        <p class="lead" style="font-size: 1.5em;">
             <b>Estudiante</b>
         </p>
 
-        <div class="row row-cols-1 row-cols-md-3 g-4">
+     
             {% for programa in usuarioprogramaslist %}
-            <div class="col">
-                <div class="card h-100">
+            
+                <div class="card ">
 
                     <div class="card-header">
                         <h5 class="card-title">Programa</h5>
@@ -41,11 +41,12 @@
 
                     </div>
                 </div>
-            </div>
+                <br>
+          
             {% endfor %}
 
 
-        </div>
+ 
 
         {% endif %}
 
