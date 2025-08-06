@@ -46,7 +46,7 @@
                 {% for radio in form.correcta %}
                 <tr>
                     <td style="text-align: center;">
-                        {{ radio.tag }}
+                        {{ radio.choice_label }} {{ radio.tag }}
                     </td>
                     <td>
                         {% if radio.choice_label == "Opción A" %}{{ form.opciona }}
