@@ -4,7 +4,7 @@ from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 import random
 from usuarios.models import MatriculaUsuario
-from .models import ReactivosMultipleChoice, ReactivosModuloRAE, EvaluacionPrograma, EvaluacionEstudiante, ReactivoEvaluacion
+from .models import ReactivosMultipleChoice, ReactivosModuloRAE, EvaluacionPrograma, EvaluacionEstudiante, ReactivoEvaluacion, ReactivoPorEvaluacion
 from programasposgrado.models import Maestrias, PeriodosAcademicos, Modalidad, ProgramaPosgrado, Modulos
 from django.contrib.auth.decorators import login_required
 from .forms import ReactivosMultipleChoiceForm
@@ -424,12 +424,13 @@ def obtener_reactivos_para_evaluacion(programa, tipo, estudiante=None):
 @login_required
 def evaluacionrae_activar(request, programa_id, tipo):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
-    
+
     if request.method == 'POST':
         fecha_inicio = request.POST['fecha_inicio']
         fecha_fin = request.POST['fecha_fin']
         duracion = request.POST['duracion']
-        # Desactivar cualquier evaluación activa del mismo tipo en este programa
+
+        # Desactivar cualquier evaluación activa del mismo tipo
         EvaluacionPrograma.objects.filter(
             programa=programa,
             tipo=tipo,
@@ -445,31 +446,40 @@ def evaluacionrae_activar(request, programa_id, tipo):
             activa=True
         )
 
-        # Asignar a todos los estudiantes matriculados
-        content_type = ContentType.objects.get_for_model(ProgramaPosgrado)
-        estudiantes = MatriculaUsuario.objects.filter(
-            content_type=content_type,
-            object_id=programa.id,
-            rol_en_programa='estudiante'
-        )
+        # Obtener reactivos aleatorios por módulo y guardarlos para esta evaluación
+        import random
+        modulos = Modulos.objects.filter(maestria=programa.maestria)
 
-        for est in estudiantes:
-            evaluacion_estudiante, creado = EvaluacionEstudiante.objects.get_or_create(
-                evaluacion=evaluacion,
-                estudiante=est.usuario
+        usados_ids = []
+        for modulo in modulos:
+            try:
+                config = ReactivosModuloRAE.objects.get(programadeposgrado=programa, modulo=modulo)
+            except ReactivosModuloRAE.DoesNotExist:
+                continue
+
+            reactivos = ReactivosMultipleChoice.objects.filter(
+                programadeposgrado=programa,
+                modulo=modulo,
+                estado=2
             )
 
-            # Eliminar los anteriores
-            ReactivoEvaluacion.objects.filter(evaluacion_estudiante=evaluacion_estudiante).delete()
-            # Obtener los reactivos únicos para este estudiante
-            reactivos = obtener_reactivos_para_evaluacion(programa, tipo, estudiante=est.usuario)
-            
-            for reactivo in reactivos:
-                ReactivoEvaluacion.objects.create(
-                    evaluacion_estudiante=evaluacion_estudiante,
-                    reactivo=reactivo
-                )
-        
+            if tipo == 'final':
+                simulacro = EvaluacionPrograma.objects.filter(programa=programa, tipo='simulacro').first()
+                if simulacro:
+                    usados_ids = ReactivoPorEvaluacion.objects.filter(
+                        evaluacion=simulacro
+                    ).values_list('reactivo_id', flat=True)
+                    reactivos = reactivos.exclude(id__in=usados_ids)
+
+            reactivos_list = list(reactivos)
+            if len(reactivos_list) >= config.numero_reactivos_modulo:
+                seleccionados = random.sample(reactivos_list, config.numero_reactivos_modulo)
+            else:
+                seleccionados = reactivos_list
+
+            for reactivo in seleccionados:
+                ReactivoPorEvaluacion.objects.create(evaluacion=evaluacion, reactivo=reactivo)
+
         messages.success(request, f"Evaluación {tipo} activada correctamente.")
         return redirect('evaluacionrae_programaposgrado', programa_id=programa.id)
 
@@ -484,48 +494,67 @@ def evaluacionrae_activar(request, programa_id, tipo):
 @login_required
 def evaluacionesrae_disponibles(request):
     ahora = timezone.now()
-    evaluaciones = EvaluacionEstudiante.objects.filter(
-        estudiante=request.user,
-        evaluacion__activa=True,
-        evaluacion__fecha_inicio__lte=ahora,
-        evaluacion__fecha_fin__gte=ahora,
-        respondido=False
-    ).select_related('evaluacion')
-    evaluacionesrealizadas = EvaluacionEstudiante.objects.filter(
+
+    # 1. Todas las evaluaciones activas para el programa del usuario, y en fecha
+    evaluaciones_programa = EvaluacionPrograma.objects.filter(
+        activa=True,
+        fecha_inicio__lte=ahora,
+        fecha_fin__gte=ahora
+    )
+
+    # 2. Evaluaciones ya respondidas por este estudiante
+    evaluaciones_respondidas_ids = EvaluacionEstudiante.objects.filter(
         estudiante=request.user,
         respondido=True
-    ).select_related('evaluacion')
+    ).values_list('evaluacion_id', flat=True)
+
+    # 3. Filtrar para mostrar solo las que NO ha respondido aún
+    evaluaciones_disponibles = evaluaciones_programa.exclude(id__in=evaluaciones_respondidas_ids)
+    print(f"Evaluaciones disponibles: {evaluaciones_disponibles}")
 
     return render(request, 'evaluacionesrae_disponibles.html', {
-        'evaluaciones': evaluaciones,
-        'evaluacionesrealizadas': evaluacionesrealizadas
+        'evaluaciones': evaluaciones_disponibles,
+        'evaluacionesrealizadas': EvaluacionEstudiante.objects.filter(
+            estudiante=request.user,
+            respondido=True
+        ).select_related('evaluacion')
     })
 
 
 
 @login_required
 def evaluacionrae_rendir(request, evaluacion_id):
-    evaluacion_est = get_object_or_404(EvaluacionEstudiante, evaluacion__id=evaluacion_id, estudiante=request.user)
+    evaluacion = get_object_or_404(EvaluacionPrograma, id=evaluacion_id)
 
-    if timezone.now() < evaluacion_est.evaluacion.fecha_inicio or timezone.now() > evaluacion_est.evaluacion.fecha_fin:
+    if timezone.now() < evaluacion.fecha_inicio or timezone.now() > evaluacion.fecha_fin:
         return HttpResponseForbidden("Evaluación no disponible")
+
+    evaluacion_est, creado = EvaluacionEstudiante.objects.get_or_create(
+        evaluacion=evaluacion,
+        estudiante=request.user
+    )
+
+    # Si es la primera vez que entra, le asignamos los reactivos desde la evaluación general
+    if creado or not ReactivoEvaluacion.objects.filter(evaluacion_estudiante=evaluacion_est).exists():
+        reactivos_generales = ReactivoPorEvaluacion.objects.filter(evaluacion=evaluacion)
+        for r in reactivos_generales:
+            ReactivoEvaluacion.objects.create(
+                evaluacion_estudiante=evaluacion_est,
+                reactivo=r.reactivo
+            )
 
     reactivos = ReactivoEvaluacion.objects.filter(evaluacion_estudiante=evaluacion_est)
 
     if request.method == 'POST':
         score = 0
-        respuestas_guardadas = 0
         for reactivo_eval in reactivos:
             respuesta = request.POST.get(f"pregunta_{reactivo_eval.id}")
             if respuesta:
                 reactivo_eval.respuesta_estudiante = respuesta
-                if respuesta == reactivo_eval.reactivo.correcta:
-                    reactivo_eval.correcta = True
+                reactivo_eval.correcta = (respuesta == reactivo_eval.reactivo.correcta)
+                if reactivo_eval.correcta:
                     score += 2
-                else:
-                    reactivo_eval.correcta = False
                 reactivo_eval.save()
-                respuestas_guardadas += 1
 
         evaluacion_est.calificacion = score
         evaluacion_est.respondido = True
@@ -534,15 +563,11 @@ def evaluacionrae_rendir(request, evaluacion_id):
         messages.success(request, f"Evaluación finalizada. Calificación: {score}/100")
         return redirect('evaluacionesrae_disponibles')
 
-            
-
     return render(request, 'evaluacionrae_rendir.html', {
         'reactivos': reactivos,
         'evaluacion_est': evaluacion_est,
-        'duracion': evaluacion_est.evaluacion.duracion_minutos
+        'duracion': evaluacion.duracion_minutos
     })
-
-
 
 @csrf_exempt
 @require_POST
@@ -598,13 +623,14 @@ def resultadosrae_programa(request, programa_id, evaluacion_id):
     resultados = []
     for mat in matriculas:
         evaluacion_est = EvaluacionEstudiante.objects.filter(evaluacion=evaluacion, estudiante=mat.usuario).first()
-        resultados.append({
-            'estudiante': mat.usuario,
-            'respondido': evaluacion_est.respondido if evaluacion_est else False,
-            'calificacion': evaluacion_est.calificacion if evaluacion_est else None,
-            'detalle_url': reverse('detalle_resultado_estudiante', args=[evaluacion.id, mat.usuario.id]) if evaluacion_est.respondido else None,
-            'borrar_url': reverse('detalle_resultado_estudiante_borrar', args=[evaluacion.id, mat.usuario.id]) if evaluacion_est.respondido else None,
-        })
+        if evaluacion_est:
+            resultados.append({
+                'estudiante': mat.usuario,
+                'respondido': evaluacion_est.respondido if evaluacion_est else False,
+                'calificacion': evaluacion_est.calificacion if evaluacion_est else None,
+                'detalle_url': reverse('detalle_resultado_estudiante', args=[evaluacion.id, mat.usuario.id]) if evaluacion_est.respondido else None,
+                'borrar_url': reverse('detalle_resultado_estudiante_borrar', args=[evaluacion.id, mat.usuario.id]) if evaluacion_est.respondido else None,
+            })
    
 
     return render(request, 'resultadosrae_programa.html', {
@@ -691,8 +717,13 @@ def evaluacionrae_eliminar(request, evaluacion_id):
         messages.error(request, "No se puede eliminar esta evaluación porque ya ha sido respondida.")
         return redirect('evaluacionrae_programaposgrado', programa_id=evaluacion.programa.id)
 
-    # Eliminar todos los datos asociados
+    # Eliminar reactivos intermedios asociados a la evaluación
+    ReactivoPorEvaluacion.objects.filter(evaluacion=evaluacion).delete()
+
+    # Eliminar estudiantes (si existieran)
     EvaluacionEstudiante.objects.filter(evaluacion=evaluacion).delete()
+
+    # Eliminar la evaluación
     evaluacion.delete()
 
     messages.success(request, "Evaluación eliminada correctamente.")

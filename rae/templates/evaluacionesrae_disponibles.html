@@ -34,18 +34,18 @@
                 {% for eval in evaluaciones %}
                 <tr>
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ eval.evaluacion.programa }}</td>
+                    <td>{{ eval.programa }}</td>
                     <td>
                         <strong>
-                            {{ eval.evaluacion.get_tipo_display }}
+                            {{ eval.get_tipo_display }}
                         </strong>
                     </td>
-                    <td><span style="color: green;">Inicio: </span>{{ eval.evaluacion.fecha_inicio|date:"d/m/Y H:i" }} 
+                    <td><span style="color: green;">Inicio: </span>{{ eval.fecha_inicio|date:"d/m/Y H:i" }} 
                         <br>
-                        <span style="color: red;">Cierre: </span>{{ eval.evaluacion.fecha_fin|date:"d/m/Y H:i" }}
+                        <span style="color: red;">Cierre: </span>{{ eval.fecha_fin|date:"d/m/Y H:i" }}
                     </td>
                     <td>
-                        <a href="{% url 'evaluacionrae_rendir' eval.evaluacion.id %}"
+                        <a href="{% url 'evaluacionrae_rendir' eval.id %}"
                             class="btn btn-warning btn-sm">Rendir</a>
                     </td>
                 </tr>

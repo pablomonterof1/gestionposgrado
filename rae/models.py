@@ -73,6 +73,14 @@ class EvaluacionPrograma(models.Model):
 
     def __str__(self):
         return f"{self.programa} - {self.get_tipo_display()}"
+    
+
+class ReactivoPorEvaluacion(models.Model):
+    evaluacion = models.ForeignKey(EvaluacionPrograma, on_delete=models.CASCADE)
+    reactivo = models.ForeignKey(ReactivosMultipleChoice, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('evaluacion', 'reactivo')
 
 
 class EvaluacionEstudiante(models.Model):
