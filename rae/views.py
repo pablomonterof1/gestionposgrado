@@ -528,14 +528,15 @@ def reactivos_por_evaluacion(request, evaluacion_id):
 
 
 @login_required
-def evaluacionesrae_disponibles(request):
+def evaluacionesrae_disponibles(request, programa_id):
     ahora = timezone.now()
 
     # 1. Todas las evaluaciones activas para el programa del usuario, y en fecha
     evaluaciones_programa = EvaluacionPrograma.objects.filter(
         activa=True,
         fecha_inicio__lte=ahora,
-        fecha_fin__gte=ahora
+        fecha_fin__gte=ahora,
+        programa=programa_id
     )
 
     # 2. Evaluaciones ya respondidas por este estudiante
@@ -546,7 +547,6 @@ def evaluacionesrae_disponibles(request):
 
     # 3. Filtrar para mostrar solo las que NO ha respondido aún
     evaluaciones_disponibles = evaluaciones_programa.exclude(id__in=evaluaciones_respondidas_ids)
-    print(f"Evaluaciones disponibles: {evaluaciones_disponibles}")
 
     return render(request, 'evaluacionesrae_disponibles.html', {
         'evaluaciones': evaluaciones_disponibles,
