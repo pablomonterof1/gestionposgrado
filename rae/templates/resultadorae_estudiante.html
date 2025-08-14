@@ -45,7 +45,7 @@
         </div>
         {% endfor %}
 
-        <a href="{% url 'evaluacionesrae_disponibles' %}" class="btn btn-secondary mt-4">Volver</a>
+        <a href="{% url 'evaluacionesrae_disponibles' evaluacion.programa.id %}" class="btn btn-secondary mt-4">Volver</a>
 
         <br>
         {% if evaluacion.tipo == 'final' %}

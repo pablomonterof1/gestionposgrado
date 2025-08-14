@@ -57,7 +57,7 @@
     const tiempoLimite = Date.now() + duracionMilisegundos;
     const timerElemento = document.getElementById('tiempo-restante');
     const formEvaluacion = document.getElementById('form-evaluacion');
-    const urlResultado = "{% url 'evaluacionesrae_disponibles' %}";
+    const urlResultado = "{% url 'evaluacionesrae_disponibles' evaluacion.programa.id %}";
     let autoEnviado = false;
 
     // Redirigir a resultados si se recarga o vuelve con el botón "Atrás"

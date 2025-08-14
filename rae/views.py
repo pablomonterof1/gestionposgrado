@@ -597,12 +597,13 @@ def evaluacionrae_rendir(request, evaluacion_id):
         evaluacion_est.save()
 
         messages.success(request, f"Evaluación finalizada. Calificación: {score}/100")
-        return redirect('evaluacionesrae_disponibles')
+        return redirect('evaluacionesrae_disponibles', programa_id=evaluacion.programa.id)
 
     return render(request, 'evaluacionrae_rendir.html', {
         'reactivos': reactivos,
         'evaluacion_est': evaluacion_est,
-        'duracion': evaluacion.duracion_minutos
+        'duracion': evaluacion.duracion_minutos,
+        'evaluacion': evaluacion,
     })
 
 @csrf_exempt
@@ -633,7 +634,7 @@ def resultadorae_estudiante(request, evaluacion_id):
     evaluacion = get_object_or_404(EvaluacionPrograma, id=evaluacion_id)
 
     if not evaluacion_est.respondido:
-        return redirect('evaluacionesrae_disponibles')
+        return redirect('evaluacionesrae_disponibles', programa_id=evaluacion.programa.id)
 
     reactivos = ReactivoEvaluacion.objects.filter(evaluacion_estudiante=evaluacion_est)
 
