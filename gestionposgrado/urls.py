@@ -133,6 +133,7 @@ urlpatterns = [
     path('reactivosmodulorae/create/<int:programa_id>/<int:modulo_id>/', rae_views.reactivosmodulorae_create, name='reactivosmodulorae_create'),
     path('programa/<int:programa_id>/evaluaciones/', rae_views.evaluacionrae_programaposgrado, name='evaluacionrae_programaposgrado'),
     path('evaluacionrae_activar/<int:programa_id>/<str:tipo>/', rae_views.evaluacionrae_activar, name='evaluacionrae_activar' ),
+    path('evaluacionrae_update/<int:evaluacion_id>/', rae_views.evaluacionrae_update, name='evaluacionrae_update' ),
     path('evaluaciones/disponibles/', rae_views.evaluacionesrae_disponibles, name='evaluacionesrae_disponibles'),
     path('evaluacion/rendir/<int:evaluacion_id>/', rae_views.evaluacionrae_rendir, name='evaluacionrae_rendir'),
     path('evaluacion/guardar_parcial/<int:evaluacion_id>/', rae_views.guardar_parcial_rae, name='guardar_parcial_rae'),
@@ -142,6 +143,7 @@ urlpatterns = [
     path('evaluacion/<int:evaluacion_id>/estudiante/<int:estudiante_id>/borrar/', rae_views.detalle_resultado_estudiante_borrar, name='detalle_resultado_estudiante_borrar'),
     path('evaluacion/<int:evaluacion_id>/resultado/pdf/', rae_views.resultado_estudiante_pdf, name='resultado_estudiante_pdf'),
     path('evaluacion/<int:evaluacion_id>/eliminar/', rae_views.evaluacionrae_eliminar, name='evaluacionrae_eliminar'),
+    path('reactivos_por_evaluacion/<int:evaluacion_id>/', rae_views.reactivos_por_evaluacion,name='reactivos_por_evaluacion' ),
 
 
 

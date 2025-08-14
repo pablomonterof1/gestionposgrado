@@ -69,7 +69,8 @@ class EvaluacionPrograma(models.Model):
     fecha_inicio = models.DateTimeField()
     fecha_fin = models.DateTimeField()
     activa = models.BooleanField(default=False)
-    duracion_minutos = models.PositiveIntegerField(default=30)
+    duracion_minutos = models.PositiveIntegerField(default=90)
+    valorpregunta = models.DecimalField(max_digits=5, decimal_places=3, default=2.000)
 
     def __str__(self):
         return f"{self.programa} - {self.get_tipo_display()}"

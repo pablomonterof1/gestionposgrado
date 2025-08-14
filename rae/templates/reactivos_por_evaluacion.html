@@ -1,0 +1,63 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+
+<main class="container py-5">
+    <section class="card p-4">
+
+
+        <div class="container mt-4">
+            <h2>Reactivos de la Evaluación: <b>{{ evaluacion.tipo }}</b> </h2>
+            <h4>{{ evaluacion.programa }}</h4>
+           
+            <br>
+
+            <a href="{% url 'evaluacionrae_programaposgrado' evaluacion.programa.id %}" class="btn btn-outline-dark mb-3"
+                data-bs-toggle="tooltip" title="Volver">
+                <i class="fa fa-arrow-left"></i>
+            </a>
+
+            {% if reactivos %}
+            <table class="table table-bordered table-striped mt-3">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Módulo</th>
+                        <th>Pregunta</th>
+                        <th>Opción A</th>
+                        <th>Opción B</th>
+                        <th>Opción C</th>
+                        <th>Opción D</th>
+                        <th>Respuesta Correcta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rp in reactivos %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ rp.reactivo.modulo.nombre }}</td>
+                        <td>{{ rp.reactivo.enunciado|safe }}</td>
+                        <td>{{ rp.reactivo.opciona }}</td>
+                        <td>{{ rp.reactivo.opcionb }}</td>
+                        <td>{{ rp.reactivo.opcionc }}</td>
+                        <td>{{ rp.reactivo.opciond }}</td>
+                        <td>{{ rp.reactivo.correcta|upper }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="alert alert-info mt-4">
+                No se han asignado reactivos a esta evaluación.
+            </div>
+            {% endif %}
+
+            <a href="{% url 'evaluacionrae_programaposgrado' evaluacion.programa.id %}"
+                class="btn btn-secondary mt-3">Volver</a>
+        </div>
+
+    </section>
+</main>
+
+
+{% endblock %}

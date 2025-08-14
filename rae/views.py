@@ -319,11 +319,14 @@ def rae_programaposgrado(request, programa_id):
 
     modulos_list = Modulos.objects.filter(
         maestria=maestria).order_by('codificacion')
+    totalreactivosrae = 0
     for modulo in modulos_list:
         modulo.reactivos = ReactivosMultipleChoice.objects.filter(
             programadeposgrado=programa_id, modulo=modulo.id)
         modulo.numeroreactivosmodulorae = ReactivosModuloRAE.objects.filter(
             programadeposgrado=programa_id, modulo=modulo).first()
+        if modulo.numeroreactivosmodulorae:
+            totalreactivosrae = modulo.numeroreactivosmodulorae.numero_reactivos_modulo + totalreactivosrae
         modulo.total_reactivos = modulo.reactivos.count()
         modulo.max_para_input = modulo.total_reactivos // 2
 
@@ -333,6 +336,7 @@ def rae_programaposgrado(request, programa_id):
         'modalidadnombre': modalidadnombre,
         'programaposgrado': programaposgrado,
         'modulos_list': modulos_list,
+        'totalreactivosrae': totalreactivosrae,
     })
 
 
@@ -429,6 +433,7 @@ def evaluacionrae_activar(request, programa_id, tipo):
         fecha_inicio = request.POST['fecha_inicio']
         fecha_fin = request.POST['fecha_fin']
         duracion = request.POST['duracion']
+        valor = request.POST['valor']
 
         # Desactivar cualquier evaluación activa del mismo tipo
         EvaluacionPrograma.objects.filter(
@@ -443,6 +448,7 @@ def evaluacionrae_activar(request, programa_id, tipo):
             fecha_inicio=fecha_inicio,
             fecha_fin=fecha_fin,
             duracion_minutos=duracion,
+            valorpregunta=valor,
             activa=True
         )
 
@@ -488,6 +494,36 @@ def evaluacionrae_activar(request, programa_id, tipo):
         'tipo': tipo
     })
 
+@login_required
+def evaluacionrae_update(request, evaluacion_id):
+    evaluacion = get_object_or_404(EvaluacionPrograma, id=evaluacion_id)
+    if request.method == 'POST':
+        fecha_inicio = request.POST['fecha_inicio']
+        fecha_fin = request.POST['fecha_fin']
+        duracion = request.POST['duracion']
+        valor = request.POST['valor']
+
+        evaluacion.fecha_inicio = fecha_inicio
+        evaluacion.fecha_fin = fecha_fin
+        evaluacion.duracion_minutos = duracion
+        evaluacion.valorpregunta = valor
+
+        evaluacion.save()
+        messages.success(request, "Evaluación actualizada correctamente.")
+        return redirect('evaluacionrae_programaposgrado', programa_id=evaluacion.programa.id)
+    return render(request, 'evaluacionrae_update.html', {
+        'evaluacion': evaluacion
+    })
+
+@login_required
+def reactivos_por_evaluacion(request, evaluacion_id):
+    evaluacion = get_object_or_404(EvaluacionPrograma, id=evaluacion_id)
+    reactivos = ReactivoPorEvaluacion.objects.filter(evaluacion=evaluacion).select_related('reactivo')
+
+    return render(request, 'reactivos_por_evaluacion.html', {
+        'evaluacion': evaluacion,
+        'reactivos': reactivos
+    })
 
 
 
@@ -553,7 +589,7 @@ def evaluacionrae_rendir(request, evaluacion_id):
                 reactivo_eval.respuesta_estudiante = respuesta
                 reactivo_eval.correcta = (respuesta == reactivo_eval.reactivo.correcta)
                 if reactivo_eval.correcta:
-                    score += 2
+                    score += evaluacion.valorpregunta
                 reactivo_eval.save()
 
         evaluacion_est.calificacion = score

@@ -1,0 +1,55 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+{% load tz %}
+<main class="container py-5">
+    <section class="card p-4">
+        <h3 class="display-6">Activar Evaluación {{ evaluacion.tipo|title }}</h3>
+        <p class="lead">
+            <strong>Programa:</strong> {{ evaluacion.programa }}
+        </p>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+                <label for="fecha_inicio" class="form-label">Fecha de inicio - {{evaluacion.fecha_inicio}}</label>
+                <input type="datetime-local" class="form-control" name="fecha_inicio" value="{{ evaluacion.fecha_inicio|localtime|date:'Y-m-d\\TH:i' }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="fecha_fin" class="form-label">Fecha de fin  - {{evaluacion.fecha_fin}}</label>
+                <input type="datetime-local" class="form-control" name="fecha_fin" value="{{ evaluacion.fecha_fin|localtime|date:'Y-m-d\\TH:i' }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="descripcion" class="form-label">Duración</label>
+                <input type="number" class="form-control" name="duracion" value="{{evaluacion.duracion_minutos}}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="valor" class="form-label">Valor de cada pregunta</label>
+                <input type="number" class="form-control" name="valor" step="0.001" min="0" value="{{evaluacion.valorpregunta}}" required>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                Actualizar evaluación {{ evaluacion.tipo }} 
+            </button>
+
+
+            <a href="{% url 'evaluacionrae_programaposgrado' evaluacion.programa.id %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+
+ 
+    </section>
+</main>
+{% endblock %}
