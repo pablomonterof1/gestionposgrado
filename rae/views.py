@@ -322,7 +322,7 @@ def rae_programaposgrado(request, programa_id):
     totalreactivosrae = 0
     for modulo in modulos_list:
         modulo.reactivos = ReactivosMultipleChoice.objects.filter(
-            programadeposgrado=programa_id, modulo=modulo.id)
+            programadeposgrado=programa_id, modulo=modulo.id, estado=2)
         modulo.numeroreactivosmodulorae = ReactivosModuloRAE.objects.filter(
             programadeposgrado=programa_id, modulo=modulo).first()
         if modulo.numeroreactivosmodulorae:
