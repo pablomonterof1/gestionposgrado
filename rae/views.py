@@ -552,6 +552,7 @@ def evaluacionesrae_disponibles(request, programa_id):
         'evaluaciones': evaluaciones_disponibles,
         'evaluacionesrealizadas': EvaluacionEstudiante.objects.filter(
             estudiante=request.user,
+            evaluacion__programa=programa_id,
             respondido=True
         ).select_related('evaluacion')
     })
