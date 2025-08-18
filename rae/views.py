@@ -18,6 +18,7 @@ from django.http import HttpResponse
 from xhtml2pdf import pisa
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from datetime import timedelta
 
 # Create your views here.
 
@@ -529,7 +530,7 @@ def reactivos_por_evaluacion(request, evaluacion_id):
 
 @login_required
 def evaluacionesrae_disponibles(request, programa_id):
-    ahora = timezone.now()
+    ahora = timezone.localtime()
 
     # 1. Todas las evaluaciones activas para el programa del usuario, y en fecha
     evaluaciones_programa = EvaluacionPrograma.objects.filter(
@@ -563,7 +564,7 @@ def evaluacionesrae_disponibles(request, programa_id):
 def evaluacionrae_rendir(request, evaluacion_id):
     evaluacion = get_object_or_404(EvaluacionPrograma, id=evaluacion_id)
 
-    if timezone.now() < evaluacion.fecha_inicio or timezone.now() > evaluacion.fecha_fin:
+    if timezone.localtime() < evaluacion.fecha_inicio or timezone.localtime() > (evaluacion.fecha_fin + timedelta(minutes=evaluacion.duracion_minutos+10)):
         return HttpResponseForbidden("Evaluación no disponible")
 
     evaluacion_est, creado = EvaluacionEstudiante.objects.get_or_create(
