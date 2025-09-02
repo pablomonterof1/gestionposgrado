@@ -5,8 +5,6 @@
 
 <body class="backlogin">
 
-  
-
     <main class="backlogin" style="align-items: center; display: flex; justify-content: center; height: 93vh;">
 
 
@@ -21,7 +19,7 @@
                     </div>
 
                     <p style="text-align: center; font-size: 2.1rem;" class="display-5">Inicar sesión</p>
-                    {{error}}
+                    <p class="text-danger" >{{error}}</p>
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="username" class="form-label">Nombre de usuario</label>

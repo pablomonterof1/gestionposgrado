@@ -14,6 +14,9 @@ from django.core.exceptions import ValidationError
 from programasposgrado.models import ProgramaPosgrado, ProgramaPosgradoEM, Maestrias, Modulos, ModulosEM
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
+from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
+from django.urls import reverse
+from django.utils.decorators import method_decorator
 
 # Create your views here.
 
@@ -82,6 +85,16 @@ def signin(request):
             else:
                 return redirect('home')
 
+@method_decorator(login_required, name='dispatch')
+class CustomPasswordChangeView(PasswordChangeView):
+    template_name = 'password_change_form.html'
+
+    def get_success_url(self):
+        return reverse('password_change_done')
+
+@method_decorator(login_required, name='dispatch')
+class CustomPasswordChangeDoneView(PasswordChangeDoneView):
+    template_name = 'password_change_done.html'
 
 @login_required
 def signout(request):

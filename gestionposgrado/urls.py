@@ -49,6 +49,8 @@ urlpatterns = [
     path('docentedp/create/<int:periodo_id>', user_views.docentedp_create, name='docentedp_create'),
     path('tutordp/create/<int:periodo_id>', user_views.tutordp_create, name='tutordp_create'),
     path('coordinadordp/create/<int:periodo_id>', user_views.coordinadordp_create, name='coordinadordp_create'),
+    path('password/change/', user_views.CustomPasswordChangeView.as_view(), name='password_change'),
+    path('password/change/done/', user_views.CustomPasswordChangeDoneView.as_view(), name='password_change_done'),
     
     
     path('docentepm/create/<int:programa_id>', user_views.docentepm_create, name='docentepm_create'),

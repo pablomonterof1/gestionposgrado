@@ -73,6 +73,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'gestionposgrado.middleware.ForcePasswordChangeMiddleware',  # Middleware personalizado
 ]
 
 ROOT_URLCONF = 'gestionposgrado.urls'
@@ -133,7 +134,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es'
 
 TIME_ZONE = 'America/Guayaquil'
 
@@ -161,6 +162,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Seguridad de la sesión
-SESSION_COOKIE_AGE = 7200  
+SESSION_COOKIE_AGE = 14400  
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
