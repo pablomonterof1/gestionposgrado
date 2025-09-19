@@ -19,6 +19,9 @@ from xhtml2pdf import pisa
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from datetime import timedelta
+import xlsxwriter
+import io
+from django.utils.html import strip_tags
 
 # Create your views here.
 
@@ -767,3 +770,93 @@ def evaluacionrae_eliminar(request, evaluacion_id):
 
     messages.success(request, "Evaluación eliminada correctamente.")
     return redirect('evaluacionrae_programaposgrado', programa_id=evaluacion.programa.id)
+
+
+@login_required
+def exportar_resultados_excel(request, programa_id, evaluacion_id):
+    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    evaluacion = get_object_or_404(EvaluacionPrograma, id=evaluacion_id, programa=programa)
+
+    # Traer los estudiantes matriculados en el programa
+    content_type = ContentType.objects.get_for_model(ProgramaPosgrado)
+    matriculas = MatriculaUsuario.objects.filter(
+        content_type=content_type,
+        object_id=programa.id,
+        rol_en_programa='estudiante'
+    ).select_related("usuario")
+
+    # Todas las evaluaciones de esos estudiantes en esta evaluación
+    evaluaciones_estudiantes = (
+        EvaluacionEstudiante.objects
+        .filter(evaluacion=evaluacion, estudiante__in=[m.usuario for m in matriculas])
+        .select_related("estudiante")
+    )
+
+    # Cargar los reactivos de la evaluación
+    reactivos = (
+        ReactivoPorEvaluacion.objects
+        .filter(evaluacion=evaluacion)
+        .select_related("reactivo")
+        .order_by("reactivo__id")
+    )
+    reactivos_list = [r.reactivo for r in reactivos]
+
+    # Para acceso rápido: {evaluacion_estudiante_id: [ReactivoEvaluacion...]}
+    respuestas = (
+        ReactivoEvaluacion.objects
+        .filter(evaluacion_estudiante__in=evaluaciones_estudiantes)
+        .select_related("evaluacion_estudiante", "reactivo")
+    )
+
+    respuestas_dict = {}
+    for r in respuestas:
+        respuestas_dict.setdefault(r.evaluacion_estudiante_id, {})[r.reactivo_id] = r
+
+    # === CREAR ARCHIVO EN MEMORIA ===
+    output = io.BytesIO()
+    workbook = xlsxwriter.Workbook(output, {"in_memory": True})
+    ws = workbook.add_worksheet("Resultados")
+
+    # === ENCABEZADOS ===
+    headers = ["Estudiante", "Usuario", "Calificación"]
+    for reactivo in reactivos_list:
+        enunciado_limpio = strip_tags(reactivo.enunciado)
+        headers.append(f"{enunciado_limpio[:50]}")  
+    bold = workbook.add_format({"bold": True})
+    ws.write_row(0, 0, headers, bold)
+
+    # === FILAS DE DATOS ===
+    row = 1
+    for m in matriculas:
+        evaluacion_est = next((e for e in evaluaciones_estudiantes if e.estudiante_id == m.usuario.id), None)
+
+        calificacion = evaluacion_est.calificacion if evaluacion_est else None
+        row_data = [
+            f"{m.usuario.first_name} {m.usuario.last_name}",
+            m.usuario.username,
+            float(calificacion) if calificacion is not None else ""
+        ]
+
+        # Respuestas por cada reactivo
+        for reactivo in reactivos_list:
+            respuesta = ""
+            if evaluacion_est and evaluacion_est.id in respuestas_dict:
+                resp = respuestas_dict[evaluacion_est.id].get(reactivo.id)
+                if resp:
+                    respuesta = f"{resp.respuesta_estudiante or ''} ({'✔' if resp.correcta else '✘'})"
+            row_data.append(respuesta)
+
+        ws.write_row(row, 0, row_data)
+        row += 1
+
+    workbook.close()
+    output.seek(0)
+
+    # === RESPUESTA HTTP ===
+    filename = f"resultados_{programa.id}_{evaluacion.tipo}.xlsx"
+    response = HttpResponse(
+        output.read(),
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response

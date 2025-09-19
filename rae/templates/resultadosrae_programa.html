@@ -78,6 +78,10 @@
                 {% endfor %}
             </tbody>
         </table>
+        <a href="{% url 'exportar_resultados_excel' programa.id evaluacion.id %}" class="btn btn-success">
+            Descargar resultados (Excel)
+        </a>
+
     </div>
 </main>
 

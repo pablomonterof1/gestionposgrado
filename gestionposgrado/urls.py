@@ -146,6 +146,7 @@ urlpatterns = [
     path('evaluacion/<int:evaluacion_id>/resultado/pdf/', rae_views.resultado_estudiante_pdf, name='resultado_estudiante_pdf'),
     path('evaluacion/<int:evaluacion_id>/eliminar/', rae_views.evaluacionrae_eliminar, name='evaluacionrae_eliminar'),
     path('reactivos_por_evaluacion/<int:evaluacion_id>/', rae_views.reactivos_por_evaluacion,name='reactivos_por_evaluacion' ),
+    path('exportar_resultados_excel/<int:programa_id>/<int:evaluacion_id>/', rae_views.exportar_resultados_excel, name='exportar_resultados_excel'),
 
 
 
