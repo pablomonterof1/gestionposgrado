@@ -9,10 +9,11 @@ from django.http import JsonResponse
 from .forms import ContratosDocentesForm, ContratoTutorForm, ContratoCoordinadorForm
 from .forms import ContratosDocentesForm
 from django.contrib import messages
+from main.decorators import role_required
 
 # Create your views here.
 
-
+@role_required([4, 7])  # Solo editores y analistas
 def periodosacademicosdp(request):
     periodosacademicos_list = PeriodosAcademicos.objects.all()
     return render(request, 'periodosacademicos_dp.html', {
@@ -21,8 +22,10 @@ def periodosacademicosdp(request):
 
 
 def datosposgrado(request, periodo_id):
+    periodoacademico = PeriodosAcademicos.objects.get(id=periodo_id)
     return render(request, 'datosposgrado.html', {
         'periodo_id': periodo_id,
+        'periodoacademico': periodoacademico,
     })
 
 
@@ -58,7 +61,7 @@ def contratosdocentes(request, periodo_id):
     return render(request, 'contratosdocentes.html', {
         'docentes_list': docentes_list,
         'contratos_por_periordo': contratos_por_periordo,
-        'contratosdocentes': contratosdocentes,
+        #'contratosdocentes': contratosdocentes,
         'periodo_id': periodo_id,
         'periodoacademico': periodoacademico,
 
@@ -97,7 +100,7 @@ def contratotutor(request, periodo_id):
         'periodo_id': periodo_id,
         'tutor_list': tutor_list,
         'contratos_por_periordo': contratos_por_periordo,
-        'contratotutor': contratotutor,
+        #'contratotutor': contratotutor,
         'periodoacademico': periodoacademico,
 
     })
@@ -133,7 +136,7 @@ def contratocoordinador(request, periodo_id):
         'periodo_id': periodo_id,
         'coordinadores_list': coordinadores_list,
         'contratos_por_periordo': contratos_por_periordo,
-        'contratocoordinador': contratocoordinador,
+        #'contratocoordinador': contratocoordinador,
         'periodoacademico': periodoacademico,
 
     })

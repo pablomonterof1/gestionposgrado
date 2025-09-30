@@ -5,12 +5,15 @@
 <main class="container py-5 ">
     <section class="card" style="padding: 2%;">
 
-       
 
+        <a href="{% url 'home' %}"
+            class="btn btn-secondary position-fixed bottom-0 start-0 m-3 shadow">
+            <i class="fas fa-arrow-left"></i> Atrás
+        </a>
 
         <div class="card" style="width: 100%;">
             <div class="card-header text-bg-dark ">
-                 <h3 class="display-6"> Seleccione un periodo académico</h3>
+                <h3 class="display-6"> Seleccione un periodo académico</h3>
             </div>
             <ul class="list-group list-group-flush ">
                 {% for periodo in periodosacademicos_list %}
