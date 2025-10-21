@@ -7,6 +7,8 @@ from django.db import models
 class Maestrias(models.Model):
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField()
+    titulootorgado = models.CharField(max_length=200, blank=True, null=True)
+    resolucion = models.TextField(blank=True, null=True)
     evaluado = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
 
@@ -84,12 +86,28 @@ class CampoAmplio(models.Model):
         ordering = ['-created']
         verbose_name = 'Campo Amplio'
 
+class ModalidadDeTitulacion(models.Model):
+    modalidadtitulacion = models.CharField(max_length=100)
+    descripcion = models.TextField(blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.modalidadtitulacion
+
+    class Meta:
+        ordering = ['-created']
+        verbose_name = 'Modalidad de Titulación'
+
 
 class ProgramaPosgrado(models.Model):
     maestria = models.BigIntegerField()
     campoamplio = models.BigIntegerField()
     periodoacademico = models.BigIntegerField() 
     modalidad = models.BigIntegerField()
+    fechainicio = models.DateField(blank=True, null=True)
+    fechafin = models.DateField(blank=True, null=True)
+    horarioclases = models.TextField(blank=True, null=True)
+    ultimoajuste = models.CharField(max_length=200, blank=True, null=True)
     cohorte = models.IntegerField(choices=[
         (1, 'Primera'),
         (2, 'Segunda'),

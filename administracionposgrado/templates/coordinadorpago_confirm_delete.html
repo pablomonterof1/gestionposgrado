@@ -1,0 +1,30 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<main class="container py-5">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="mb-0">Eliminar pago — <span class="text-primary">{{ programa }}</span></h4>
+    <a href="{% url 'pagos_coordinadores_programa' programa.id %}" class="btn btn-secondary">
+      <i class="fa fa-arrow-left"></i> Volver
+    </a>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <p>Vas a eliminar el pago del contrato <strong>{{ contrato.numerocontrato }}</strong> del coordinador
+        <strong>{{ coordinador.get_full_name|default:coordinador.username }}</strong>:</p>
+      <ul>
+        <li>Mes: <strong>{{ pago.mes_pago|date:"Y-m" }}</strong></li>
+        <li>N° Factura: <strong>{{ pago.numero_factura }}</strong></li>
+        <li>Valor: <strong>{{ pago.valor_total }} {{ pago.moneda }}</strong></li>
+        <li>Oficio trámite: <strong>{{ pago.numero_oficio_tramite|default:"—" }}</strong></li>
+      </ul>
+
+      <form method="post">
+        {% csrf_token %}
+        <button class="btn btn-danger" type="submit"><i class="fa fa-trash"></i> Eliminar</button>
+        <a class="btn btn-light" href="{% url 'pagos_coordinadores_programa' programa.id %}">Cancelar</a>
+      </form>
+    </div>
+  </div>
+</main>
+{% endblock %}

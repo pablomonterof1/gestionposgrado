@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.contrib.auth import login, logout, authenticate
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from .forms import CustomUserCreationForm
 from django.contrib.auth.decorators import login_required
 from .models import PerfilUsuario, MatriculaUsuario, MatriculaDocenteModulo, PerfilAcademicoUsuario
@@ -695,3 +695,151 @@ def BorrarDocentesMatricularModuloM(request,programa_id, docente_id, modulo_id):
     return redirect('docentesmatriculadosmodulom', programa_id)
 
 
+@login_required
+@transaction.atomic
+def CrearUsuarioCompleto(request):
+    if request.method == 'POST':
+        # Validación básica de contraseñas
+        if request.POST['password1'] != request.POST['password2']:
+            messages.error(request, "Las contraseñas no coinciden.")
+            return render(request, 'crearusuariocompleto.html', {'form': CustomUserCreationForm()})
+
+        # Validar si el correo o CI ya existen
+        if User.objects.filter(email=request.POST['email']).exists():
+            messages.error(request, "El correo electrónico ya está registrado.")
+            return render(request, 'crearusuariocompleto.html', {'form': CustomUserCreationForm()})
+        if PerfilUsuario.objects.filter(ci=request.POST['ci']).exists():
+            messages.error(request, "La cédula ya está registrada.")
+            return render(request, 'crearusuariocompleto.html', {'form': CustomUserCreationForm()})
+
+        try:
+            ci = request.POST['ci'].strip()
+
+            # Si no se proporciona username, usa la cédula
+            username = request.POST.get('username', ci).strip() or ci
+
+            # Si no se proporcionan contraseñas, usa la cédula
+            password = request.POST.get('password1', ci).strip() or ci
+
+            # Crear usuario principal
+            user = User.objects.create_user(
+                username=username,
+                password=password,
+                first_name=request.POST.get('first_name', '').strip(),
+                last_name=request.POST.get('last_name', '').strip(),
+                email=request.POST.get('email', '').strip(),
+            )
+            user.save()
+
+            # Crear perfil general
+            perfil = PerfilUsuario.objects.create(
+                user=user,
+                ci=ci,
+                rol=request.POST.get('rol'),
+                telefono=request.POST.get('telefono', '').strip() or None,
+                fecha_nacimiento=request.POST.get('fecha_nacimiento') or None,
+                nacionalidad=request.POST.get('nacionalidad', '').strip() or None,
+                sexo=request.POST.get('sexo') or None,
+                provincia=request.POST.get('provincia', '').strip() or None,
+            )
+
+            # Crear perfil académico
+            PerfilAcademicoUsuario.objects.create(
+                usuario=perfil,
+                titulo_grado=request.POST.get('titulo_grado', '').strip(),
+                titulo_postgrado_maestria=request.POST.get('titulo_postgrado_maestria', '').strip(),
+                titulo_postgrado_doctorado=request.POST.get('titulo_postgrado_doctorado', '').strip(),
+            )
+
+            messages.success(request, f"✅ Usuario {user.get_full_name()} creado correctamente.")
+            return redirect('gestionusuarios')
+
+        except IntegrityError:
+            messages.error(request, "El nombre de usuario ya existe o los datos son inválidos.")
+            return render(request, 'crearusuariocompleto.html', {'form': CustomUserCreationForm()})
+
+    # GET
+    return render(request, 'crearusuariocompleto.html', {'form': CustomUserCreationForm()})
+
+
+
+@login_required
+@transaction.atomic
+def usuario_editar(request, user_id):
+    user = get_object_or_404(User, pk=user_id)
+    perfil, _ = PerfilUsuario.objects.get_or_create(user=user)
+    academico, _ = PerfilAcademicoUsuario.objects.get_or_create(usuario=perfil)
+
+    if request.method == 'POST':
+        # --------- User ---------
+        username = request.POST.get('username', '').strip()
+        first_name = request.POST.get('first_name', '').strip()
+        last_name  = request.POST.get('last_name', '').strip()
+        email      = request.POST.get('email', '').strip()
+
+        # Unicidad de email (excluyendo al propio usuario)
+        if email and User.objects.exclude(pk=user.pk).filter(email=email).exists():
+            messages.error(request, 'El correo electrónico ya está registrado por otro usuario.')
+            return render(request, 'usuario_editar.html', {'user_obj': user, 'perfil': perfil, 'academico': academico})
+
+        # --------- PerfilUsuario ---------
+        ci              = (request.POST.get('ci') or '').strip() or None
+        rol             = request.POST.get('rol') or None
+        telefono        = (request.POST.get('telefono') or '').strip() or None
+        fecha_nacimiento= request.POST.get('fecha_nacimiento') or None
+        nacionalidad    = (request.POST.get('nacionalidad') or '').strip() or None
+        sexo            = request.POST.get('sexo') or None
+        provincia       = (request.POST.get('provincia') or '').strip() or None
+
+        # Unicidad de CI (excluyendo su propio perfil)
+        if ci and PerfilUsuario.objects.exclude(pk=perfil.pk).filter(ci=ci).exists():
+            messages.error(request, 'La cédula/CI ya está registrada en otro usuario.')
+            return render(request, 'usuario_editar.html', {'user_obj': user, 'perfil': perfil, 'academico': academico})
+
+        # --------- PerfilAcademicoUsuario ---------
+        titulo_grado   = (request.POST.get('titulo_grado') or '').strip() or None
+        titulo_maestria= (request.POST.get('titulo_postgrado_maestria') or '').strip() or None
+        titulo_doctor  = (request.POST.get('titulo_postgrado_doctorado') or '').strip() or None
+
+        # --------- Password (opcional) ---------
+        new_pass1 = request.POST.get('password1') or ''
+        new_pass2 = request.POST.get('password2') or ''
+        if new_pass1 or new_pass2:
+            if new_pass1 != new_pass2:
+                messages.error(request, 'Las contraseñas no coinciden.')
+                return render(request, 'usuario_editar.html', {'user_obj': user, 'perfil': perfil, 'academico': academico})
+            if len(new_pass1) < 6:
+                messages.error(request, 'La contraseña debe tener al menos 6 caracteres.')
+                return render(request, 'usuario_editar.html', {'user_obj': user, 'perfil': perfil, 'academico': academico})
+            user.set_password(new_pass1)
+
+        # --------- Guardar ---------
+        user.username  = username or user.username
+        user.first_name= first_name
+        user.last_name = last_name
+        user.email     = email
+        user.save()
+
+        perfil.ci               = ci
+        perfil.rol              = rol if rol else None
+        perfil.telefono         = telefono
+        perfil.fecha_nacimiento = fecha_nacimiento or None
+        perfil.nacionalidad     = nacionalidad
+        perfil.sexo             = sexo if sexo else None
+        perfil.provincia        = provincia
+        perfil.save()
+
+        academico.titulo_grado                 = titulo_grado
+        academico.titulo_postgrado_maestria    = titulo_maestria
+        academico.titulo_postgrado_doctorado   = titulo_doctor
+        academico.save()
+
+        messages.success(request, 'Datos actualizados correctamente.')
+        return redirect('gestionusuarios')  # o vuelve a la misma página: return redirect('usuario_editar', user_id=user.id)
+
+    # GET
+    return render(request, 'usuario_editar.html', {
+        'user_obj': user,
+        'perfil': perfil,
+        'academico': academico,
+    })

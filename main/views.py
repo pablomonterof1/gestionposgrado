@@ -18,8 +18,14 @@ def dashboard(request):
         'programasdeposgrado_list': programasdeposgrado_list
     })
 
-def programasdemaestria(request):
-    programasdeposgrado_list = ProgramaPosgrado.objects.all().order_by('-created')
+def periodosacademicosmain(request):
+    periodosacademicos_list = PeriodosAcademicos.objects.all().order_by('-fecha_inicio')
+    return render(request, 'periodosacademicos_main.html', {
+        'periodosacademicos_list': periodosacademicos_list
+    })
+
+def programasdemaestria(request, periodo_id):
+    programasdeposgrado_list = ProgramaPosgrado.objects.filter(periodoacademico=periodo_id).order_by('-created')
     for programa in programasdeposgrado_list:
         programa.maestria = Maestrias.objects.get(id=programa.maestria)
         programa.periodoacademico = PeriodosAcademicos.objects.get(id=programa.periodoacademico)

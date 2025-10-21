@@ -1,0 +1,36 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+
+<main class="container py-5 ">
+
+    <section class="card" style="padding: 2%;">
+
+        <h3 class="display-6"> Modalidades de titulación</h3>
+
+        <div class="row">
+
+            {% for modalidadtitulacion in modalidadtitulacion_list %}
+            <div class="card col-md-4" style="width: 25rem; margin: 0.5%;" > 
+                <div class="card-body">
+                    <h5 class="card-title">{{ modalidadtitulacion.modalidadtitulacion }}</h5>
+                    <p class="card-text">Descripción: {{ modalidadtitulacion.descripcion }}</p>
+
+                </div>
+            </div>
+
+    
+            
+            {% endfor %}
+
+        </div>
+        <br>
+        <div style="text-align: right;">
+            <b>Importante:</b> Para agregar o editar una modalidad de titulación, por favor dirígete al <a href="/admin" target="_blank">Panel de
+                administración</a>.
+        </div>
+    </section>
+
+</main>
+
+
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<main class="container py-5">
+
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="mb-0">Contratos de Coordinadores — <span class="text-primary">{{ programa }}</span></h2>
+
+  </div>
+  <a href="{% url 'informacionprogramaposgrado' programa.id %}" class="btn btn-secondary">
+    <i class="fa fa-arrow-left"></i> Volver
+  </a>
+  <br><br>
+
+  {% if messages %}
+  <div class="mb-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }} mb-2" role="alert">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if filas %}
+  {% for fila in filas %}
+  {% with c=fila.contrato u=fila.usuario lista=fila.periodos %}
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <div>
+        <strong>Coordinador:</strong>
+        {% if u %}
+        {{ u.get_full_name|default:u.username }} <small class="text-muted">(ID: {{ u.id }})</small>
+        {% else %}
+        <span class="text-danger">Usuario no encontrado</span>
+        <small class="text-muted">(ID en contrato: {{ c.coordinador }})</small>
+        {% endif %}
+        <br>
+        <small class="text-muted">Contrato #{{ c.numerocontrato }} — Cargo: {{ c.cargo }}</small>
+      </div>
+
+      {% if u %}
+      <a class="btn btn-sm btn-primary" href="{% url 'coordinadorperiodo_create' programa.id u.id %}">
+        <i class="fa fa-plus"></i> Agregar fechas
+      </a>
+      {% endif %}
+    </div>
+
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-lg-8">
+          <table class="table table-sm table-bordered mb-0">
+            <tbody>
+              <tr>
+                <th style="width:280px;">Certificación presupuestaria</th>
+                <td>{{ c.certificacionpresupuestaria }} ({{ c.fechacertificacionpresupuestaria }})</td>
+              </tr>
+              <tr>
+                <th>Plazo</th>
+                <td>{{ c.plazo }}</td>
+              </tr>
+              <tr>
+                <th>Honorario</th>
+                <td>{{ c.honorario }}</td>
+              </tr>
+              <tr>
+                <th>Acta de selección</th>
+                <td>{{ c.noactasseleccion }}</td>
+              </tr>
+              <tr>
+                <th>Oficio RR.HH.</th>
+                <td>{{ c.oficioentregadoporth }}</td>
+              </tr>
+              <tr>
+                <th>Modalidad contractual</th>
+                <td>{{ c.modalidadcontractuar }}</td>
+              </tr>
+              <tr>
+                <th>Observaciones</th>
+                <td>{{ c.obsevaciones|default:"—" }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="col-lg-4">
+          <h6 class="mb-2">Fechas registradas</h6>
+          {% if lista and lista|length > 0 %}
+          <table class="table table-sm table-striped align-middle">
+            <thead>
+              <tr>
+                <th>Inicio</th>
+                <th>Fin</th>
+                <th class="text-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in lista %}
+              <tr>
+                <td>{{ p.fecha_inicio }}</td>
+                <td>{{ p.fecha_fin }}</td>
+                <td class="text-end">
+                  <a class="btn btn-xs btn-outline-secondary"
+                    href="{% url 'coordinadorperiodo_update' programa.id p.coordinador.id p.id %}">
+                    <i class="fa fa-pen"></i>
+                  </a>
+                  <a class="btn btn-xs btn-outline-danger"
+                    href="{% url 'coordinadorperiodo_delete' programa.id p.coordinador.id p.id %}">
+                    <i class="fa fa-trash"></i>
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <div class="alert alert-warning py-2 px-3 mb-0">
+            Aún no se han registrado fechas para este contrato.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endwith %}
+  {% endfor %}
+  {% else %}
+  <div class="alert alert-info">No hay contratos registrados para este programa.</div>
+  {% endif %}
+
+</main>
+{% endblock %}

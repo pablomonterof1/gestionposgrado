@@ -1,0 +1,136 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<main class="container py-5">
+  <section class="card border-0 shadow-sm p-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h3 class="mb-0">Editar usuario</h3>
+      <a href="{% url 'gestionusuarios' %}" class="btn btn-outline-secondary">
+        <i class="fa fa-arrow-left"></i> Volver
+      </a>
+    </div>
+
+    <!-- Mensajes -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <!-- Datos de acceso -->
+      <h5 class="text-primary mt-2">Datos de acceso</h5>
+      <div class="row g-3 mt-1">
+        <div class="col-md-4">
+          <label class="form-label">Usuario</label>
+          <input type="text" class="form-control" name="username" value="{{ user_obj.username }}" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Nueva contraseña (opcional)</label>
+          <input type="password" class="form-control" name="password1" placeholder="Dejar vacío para no cambiar">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Confirmar contraseña</label>
+          <input type="password" class="form-control" name="password2" placeholder="Repite la nueva contraseña">
+        </div>
+      </div>
+
+      <!-- Datos personales -->
+      <h5 class="text-primary mt-4">Datos personales</h5>
+      <div class="row g-3 mt-1">
+        <div class="col-md-4">
+          <label class="form-label">Nombre</label>
+          <input type="text" class="form-control" name="first_name" value="{{ user_obj.first_name }}" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Apellido</label>
+          <input type="text" class="form-control" name="last_name" value="{{ user_obj.last_name }}" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Correo electrónico</label>
+          <input type="email" class="form-control" name="email" value="{{ user_obj.email }}" required>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Cédula / CI</label>
+          <input type="text" class="form-control" name="ci" value="{{ perfil.ci|default_if_none:'' }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Rol</label>
+          <select class="form-select" name="rol">
+            <option value="" {% if not perfil.rol %}selected{% endif %}>— Sin rol —</option>
+            <option value="1" {% if perfil.rol == 1 %}selected{% endif %}>Estudiante</option>
+            <option value="2" {% if perfil.rol == 2 %}selected{% endif %}>Docente</option>
+            <option value="3" {% if perfil.rol == 3 %}selected{% endif %}>Coordinador</option>
+            <option value="4" {% if perfil.rol == 4 %}selected{% endif %}>Editor</option>
+            <option value="5" {% if perfil.rol == 5 %}selected{% endif %}>Tutor</option>
+            <option value="6" {% if perfil.rol == 6 %}selected{% endif %}>Técnico</option>
+            <option value="7" {% if perfil.rol == 7 %}selected{% endif %}>Analista</option>
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Teléfono</label>
+          <input type="text" class="form-control" name="telefono" value="{{ perfil.telefono|default_if_none:'' }}">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Provincia</label>
+          <input type="text" class="form-control" name="provincia" value="{{ perfil.provincia|default_if_none:'' }}">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Nacionalidad</label>
+          <input type="text" class="form-control" name="nacionalidad" value="{{ perfil.nacionalidad|default_if_none:'' }}">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Sexo</label>
+          <select class="form-select" name="sexo">
+            <option value="" {% if not perfil.sexo %}selected{% endif %}>Seleccione</option>
+            <option value="M" {% if perfil.sexo == 'M' %}selected{% endif %}>Masculino</option>
+            <option value="F" {% if perfil.sexo == 'F' %}selected{% endif %}>Femenino</option>
+            <option value="O" {% if perfil.sexo == 'O' %}selected{% endif %}>Otro</option>
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Fecha de nacimiento</label>
+          <input type="date" class="form-control" name="fecha_nacimiento" value="{{ perfil.fecha_nacimiento|date:'Y-m-d' }}">
+        </div>
+      </div>
+
+      <!-- Perfil académico -->
+      <h5 class="text-primary mt-4">Perfil académico</h5>
+      <div class="row g-3 mt-1">
+        <div class="col-md-4">
+          <label class="form-label">Título de grado</label>
+          <input type="text" class="form-control" name="titulo_grado" value="{{ academico.titulo_grado|default_if_none:'' }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Título de maestría</label>
+          <input type="text" class="form-control" name="titulo_postgrado_maestria" value="{{ academico.titulo_postgrado_maestria|default_if_none:'' }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Título de doctorado</label>
+          <input type="text" class="form-control" name="titulo_postgrado_doctorado" value="{{ academico.titulo_postgrado_doctorado|default_if_none:'' }}">
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end mt-4">
+        <a href="{% url 'gestionusuarios' %}" class="btn btn-outline-secondary me-2">
+          <i class="fa fa-times"></i> Cancelar
+        </a>
+        <button class="btn btn-primary" type="submit">
+          <i class="fa fa-save"></i> Guardar cambios
+        </button>
+      </div>
+    </form>
+  </section>
+</main>
+{% endblock %}

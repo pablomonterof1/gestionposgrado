@@ -1,142 +1,164 @@
 {% extends 'layouts/base.html' %}
 
 {% block content %}
+<main class=" py-5" style="max-width: 95%; margin: auto;">
 
-<main style="padding: 2%;">
-    <section class="card" style="padding: 2%;">
+    <!-- Encabezado -->
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <h2 class="fw-bold mb-1">Lista de contratos de docentes</h2>
+      <div class="text-muted" style="font-size: 1.3em;">
+        Periodo: <strong>{{ periodoacademico.nombre }}</strong>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'datosposgrado' periodo_id %}" class="btn btn-dark btn-sm" data-bs-toggle="tooltip" title="Volver">
+        <i class="fa fa-arrow-left"></i> <span class="d-none d-sm-inline ms-1">Volver</span>
+      </a>
+      <a class="btn btn-success btn-sm" href="{% url 'contratosdocentes_create' periodo_id %}">
+        <i class="fa fa-plus"></i> <span class="d-none d-sm-inline ms-1">Crear nuevo contrato</span>
+      </a>
+    </div>
+  </div>
 
-
-        <p class="lead" style="font-size: 2em;">Lista de contratos del periodo: <b>{{periodoacademico.nombre}}</b> </p>
-
-        <a href="{% url 'datosposgrado' periodo_id %}" class="btn btn-outline-dark mb-3"
-            data-bs-toggle="tooltip" title="Volver" style="width: 3%;">
-            <i class="fa fa-arrow-left"></i>
-        </a>
-
-        <div style="text-align: right;">
-
-            <a class="btn  btn-primary" href="{% url 'contratosdocentes_create' periodo_id %}"> Crear nuevo contrato</a>
-        </div>
-
-        <!-- Lista de contrados x docente -->
-
-        <div class="table-responsive mt-4">
-
-
-
-            <table id="tablaContratos" class="table table-striped table-bordered">
-                <thead>
-                    <tr>
-                        <th scope="col">Cédula</th>
-                        <th scope="col">Docente</th>
-                        <th scope="col">Programa</th>
-                        <th scope="col">Campo amplio</th>
-                        <th scope="col">Modalidad</th>
-                        <th scope="col">Cohorte</th>
-                        <th scope="col">Módulo</th>
-                        <th scope="col">Horas académicoas</th>
-                        <th scope="col">Valor por hora</th>
-                        <th scope="col">Certificación presupuestaria</th>
-                        <th scope="col">Fecha - Certificación presupuestaria</th>
-                        <th scope="col">Plazo</th>
-                        <th scope="col">No. Contrato</th>
-                        <th scope="col">No. Memorando TTHH</th>
-                        <th scope="col">Tipo de personal académico</th>
-                        <th scope="col">Adenda</th>
-                        <th scope="col">Observaciones</th>
-                        <th scope="col">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="contratosTableBody">
-                    {% for contrato in contratos_por_periordo %}
-                    <tr>
-                        <td>{{ contrato.docente_obj.perfilusuario.ci }}</td>
-                        <td>{{ contrato.docente_obj.get_full_name }}</td>
-                        <td>{{ contrato.maestria_obj.nombre }}</td>
-                        <td>{{ contrato.campoamplio_obj.nombre }}</td>
-                        <td>{{ contrato.modalidad_obj.modalidad }}</td>
-                        <td>{{ contrato.programadeposgrado_obj.get_cohorte_display }}</td>
-                        <td>{{ contrato.modulo_obj.nombre }}</td>
-                        <td>{{ contrato.horasacademicas }}</td>
-                        <td>${{ contrato.valorxhora }}</td>
-                        <td>{{ contrato.certificacionpresupuestaria }}</td>
-                        <td>{{ contrato.fechacertificacionpresupuestaria }}</td>
-                        <td>{{ contrato.plazo }}</td>
-                        <td>{{ contrato.numerocontrato }}</td>
-                        <td>{{ contrato.numeromemorandotthh }}</td>
-                        <td>{{ contrato.get_tipopersonalacademico_display }}</td>
-                        <td>{{ contrato.adenda }}</td>
-                        <td>{{ contrato.obsevaciones }}</td>
-                        <td>
-
-                            <div class="d-flex gap-2">
-
-                                <a href="{% url 'contratosdocentes_update' contrato.id periodo_id %}"
-                                    class="btn btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
-                                <form id="form-borrar-{{ contrato.id }}"
-                                    action="{% url 'contratosdocentes_delete' contrato.id periodo_id %}" method="POST"
-                                    class="form-borrar">
-                                    {% csrf_token %}
-
-                                    <button type="button" class="btn btn-danger"
-                                        onclick="confirmarBorrado('{{ contrato.id }}')"><i
-                                            class="fa-solid fa-trash"></i></button>
-                                </form>
-                            </div>
-
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-    </section>
+  <!-- Contenedor tabla -->
+  <section class="card border-2 shadow-lg " style="padding: 1%;">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table id="tablaContratos" class="table table-striped table-bordered mb-0 align-middle">
+          <thead class="table-primary sticky-header">
+            <tr>
+              <th scope="col">Cédula</th>
+              <th scope="col">Docente</th>
+              <th scope="col">Programa</th>
+              <th scope="col">Campo amplio</th>
+              <th scope="col">Modalidad</th>
+              <th scope="col">Cohorte</th>
+              <th scope="col">Módulo</th>
+              <th scope="col">Horas académicoas</th>
+              <th scope="col">Valor por hora</th>
+              <th scope="col">Certificación presupuestaria</th>
+              <th scope="col">Fecha - Certificación presupuestaria</th>
+              <th scope="col">Plazo</th>
+              <th scope="col">No. Contrato</th>
+              <th scope="col">No. Memorando TTHH</th>
+              <th scope="col">Tipo de personal académico</th>
+              <th scope="col">Adenda</th>
+              <th scope="col">Observaciones</th>
+              <th scope="col">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="contratosTableBody">
+            {% for contrato in contratos_por_periordo %}
+            <tr>
+              <td>{{ contrato.docente_obj.perfilusuario.ci }}</td>
+              <td class="fw-semibold">{{ contrato.docente_obj.get_full_name }}</td>
+              <td>{{ contrato.maestria_obj.nombre }}</td>
+              <td>{{ contrato.campoamplio_obj.nombre }}</td>
+              <td>{{ contrato.modalidad_obj.modalidad }}</td>
+              <td>{{ contrato.programadeposgrado_obj.get_cohorte_display }}</td>
+              <td>{{ contrato.modulo_obj.nombre }}</td>
+              <td class="text-center">{{ contrato.horasacademicas }}</td>
+              <td class="text-end">${{ contrato.valorxhora }}</td>
+              <td class="text-truncate" style="max-width: 220px;" title="{{ contrato.certificacionpresupuestaria }}">
+                {{ contrato.certificacionpresupuestaria }}
+              </td>
+              <td class="text-center">{{ contrato.fechacertificacionpresupuestaria }}</td>
+              <td class="text-center">{{ contrato.plazo }}</td>
+              <td class="text-nowrap">{{ contrato.numerocontrato }}</td>
+              <td class="text-nowrap">{{ contrato.numeromemorandotthh }}</td>
+              <td>{{ contrato.get_tipopersonalacademico_display }}</td>
+              <td class="text-truncate" style="max-width: 140px;" title="{{ contrato.adenda }}">{{ contrato.adenda }}
+              </td>
+              <td class="text-truncate" style="max-width: 180px;" title="{{ contrato.observaciones }}">{{ contrato.observaciones }}</td>
+              <td>
+                <div class="d-flex gap-2">
+                  <a href="{% url 'contratosdocentes_update' contrato.id periodo_id %}" class="btn btn-warning btn-sm"
+                    data-bs-toggle="tooltip" title="Editar">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </a>
+                  <form id="form-borrar-{{ contrato.id }}"
+                    action="{% url 'contratosdocentes_delete' contrato.id periodo_id %}" method="POST"
+                    class="form-borrar m-0">
+                    {% csrf_token %}
+                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="tooltip" title="Eliminar"
+                      onclick="confirmarBorrado('{{ contrato.id }}')">
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 </main>
 
-
-
-
-
+<!-- Scripts -->
 <script>
-    const buscador = document.getElementById('buscador');
+  const buscador = document.getElementById('buscador'); // (se mantiene, por si lo usas en otro lado)
 
-    $(document).ready(function () {
-        $('#tablaContratos').DataTable({
-            "language": {
-                "lengthMenu": "Mostrar _MENU_ registros por página",
-                "zeroRecords": "No se encontraron resultados",
-                "info": "Mostrando página _PAGE_ de _PAGES_",
-                "infoEmpty": "No hay registros disponibles",
-                "infoFiltered": "(filtrado de _MAX_ registros totales)",
-                "search": "Buscar:",
-                "paginate": {
-                    "first": "Primera",
-                    "last": "Última",
-                    "next": "Siguiente",
-                    "previous": "Anterior"
-                },
-            }
-        });
+  $(document).ready(function () {
+    $('#tablaContratos').DataTable({
+      language: {
+        lengthMenu: "Mostrar _MENU_ registros por página",
+        zeroRecords: "No se encontraron resultados",
+        info: "Mostrando página _PAGE_ de _PAGES_",
+        infoEmpty: "No hay registros disponibles",
+        infoFiltered: "(filtrado de _MAX_ registros totales)",
+        search: "Buscar:",
+        paginate: {
+          first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior"
+        },
+      },
+      // Clases de alineación por columna (solo visual; no cambia datos)
+      columnDefs: [
+        { targets: [7], className: 'text-center' },     // horas
+        { targets: [8], className: 'text-end' },        // valor hora
+        { targets: [10, 11], className: 'text-center' }, // fechas / plazo
+        { targets: [16], className: 'text-truncate' },  // observaciones
+        { targets: [17], className: 'text-center' }     // acciones
+      ],
+      // Mantenerlo simple; no agrego extensiones para no cambiar librerías cargadas
     });
+  });
 
-    function confirmarBorrado(id) {
-        Swal.fire({
-            title: '¿Estás seguro de borrar el contrato?',
-            text: "¡Esta acción no se puede deshacer!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sí, borrar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById('form-borrar-' + id).submit();
-            }
-        })
-    }
+  function confirmarBorrado(id) {
+    Swal.fire({
+      title: '¿Estás seguro de borrar el contrato?',
+      text: "¡Esta acción no se puede deshacer!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, borrar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        document.getElementById('form-borrar-' + id).submit();
+      }
+    })
+  }
 </script>
 
+<!-- Estilos finos -->
+<style>
+  .sticky-header th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
 
+  .table td,
+  .table th {
+    vertical-align: middle !important;
+  }
+
+  .table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, .06);
+  }
+</style>
 {% endblock %}

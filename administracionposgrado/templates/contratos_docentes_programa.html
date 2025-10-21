@@ -1,0 +1,139 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<main class="container-fluid py-5" style="max-width: 98%;">
+
+  <!-- ENCABEZADO -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <h2 class="fw-bold mb-0 text-dark">
+      <i class="fa fa-chalkboard-teacher text-primary me-2"></i>
+      Contratos Docentes — <span class="text-primary">{{ programa }}</span>
+    </h2>
+
+  </div>
+
+      <a href="{% url 'informacionprogramaposgrado' programa.id %}" class="btn btn-secondary shadow-sm">
+      <i class="fa fa-arrow-left"></i> Volver
+    </a>
+    <br><br>
+
+  <!-- MENSAJES -->
+  {% if messages %}
+  <div class="mb-3">
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fa fa-info-circle me-2"></i>{{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- TABLA -->
+  {% if filas and filas|length > 0 %}
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+      <div class="table-responsive" style="max-height: 75vh; overflow-y: auto;">
+        <table class="table table-hover table-striped table-bordered align-middle text-sm mb-0">
+          <thead class="table-primary text-center ">
+            <tr>
+              <th>Apellidos y Nombres</th>
+              <th>N. RUC</th>
+              <th>Teléfono</th>
+              <th>Correo</th>
+              <th>Título (TDR)</th>
+              <th>Módulo</th>
+              <th>N. horas</th>
+              <th>Valor hora</th>
+              <th>Valor total</th>
+              <th>Fecha de contratación</th>
+              <th>Fecha de ejecución (Plazo)</th>
+              <th>N. contrato</th>
+              <th>N° certificación presupuestaria</th>
+              <th>Pago realizado</th>
+              <th>N. factura</th>
+              <th>Observaciones</th>
+              <th style="width: 110px;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for f in filas %}
+            {% with c=f.contrato u=f.usuario p=f.perfil g=f.gestion %}
+            <tr id="contrato-{{ c.id }}">
+              <td class="fw-semibold">
+                {% if u %}{{ u.get_full_name|default:u.username }}{% else %}<span class="text-muted">ID {{ c.docente }}</span>{% endif %}
+              </td>
+              <td>{% if p and p.ci %}{{ p.ci }}001{% else %}<span class="text-muted">—</span>{% endif %}</td>
+              <td>{{ p.telefono|default:"—" }}</td>
+              <td class="text-break">{{ u.email|default:"—" }}</td>
+              <td>{{ f.titulo|default:"—" }}</td>
+              <td>{{ f.modulo_nombre }}</td>
+              <td class="text-center">{{ c.horasacademicas }}</td>
+              <td class="text-end">$ {{ c.valorxhora }}</td>
+              <td class="text-end fw-bold">$ {{ f.valor_total }}</td>
+              <td class="text-center">{% if g and g.fecha_contratacion %}{{ g.fecha_contratacion }}{% else %}—{% endif %}</td>
+              <td class="text-center">{{ c.plazo }}</td>
+              <td>{{ c.numerocontrato }}</td>
+              <td>{{ c.certificacionpresupuestaria }}</td>
+              <td class="text-center">
+                {% if g %}
+                  {% if g.pago_realizado %}
+                    <span class="badge rounded-pill text-bg-success px-3 py-2">Sí</span>
+                  {% else %}
+                    <span class="badge rounded-pill text-bg-warning px-3 py-2 text-dark">No</span>
+                  {% endif %}
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+              <td class="text-center">{% if g %}{{ g.numero_factura|default:"—" }}{% else %}—{% endif %}</td>
+              <td class="small">{{ g.observaciones|default:"—" }}</td>
+              <td class="text-center">
+                {% if g %}
+                  <a class="btn btn-sm btn-outline-secondary" href="{% url 'contratodocente_gestion_update' programa.id c.id %}">
+                    <i class="fa fa-pen"></i>
+                  </a>
+                {% else %}
+                  <a class="btn btn-sm btn-primary" href="{% url 'contratodocente_gestion_create' programa.id c.id %}">
+                    <i class="fa fa-plus"></i>
+                  </a>
+                {% endif %}
+              </td>
+            </tr>
+            {% endwith %}
+            {% endfor %}
+          </tbody>
+          <tfoot class="table-light fw-bold text-end">
+            <tr>
+              <td colspan="8">TOTAL CONTRATADO:</td>
+              <td>$ {{ total_contratado }}</td>
+              <td colspan="5">TOTAL PAGADO:</td>
+              <td colspan="2">$ {{ total_pagado }}</td>
+              <td>PENDIENTE:</td>
+              <td class="text-danger">$ {{ total_pendiente }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% else %}
+    <div class="alert alert-info shadow-sm">
+      <i class="fa fa-info-circle me-2"></i> No hay contratos de docentes para este programa.
+    </div>
+  {% endif %}
+</main>
+
+<!-- PEQUEÑOS ESTILOS EXTRA -->
+<style>
+  .table th, .table td { vertical-align: middle !important; }
+  .table thead th {
+    position: sticky; top: 0; z-index: 2;
+    background: var(--bs-primary-bg-subtle, #e9f2ff);
+    color: #0d3055;
+  }
+  .table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.08);
+    transition: background-color 0.2s ease;
+  }
+</style>
+{% endblock %}

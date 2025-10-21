@@ -1,0 +1,116 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<main class="container py-5">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="mb-0">Pagos de Coordinadores — <span class="text-primary">{{ programa }}</span></h2>
+
+    </div>
+    <a href="{% url 'informacionprogramaposgrado' programa.id %}" class="btn btn-secondary">
+        <i class="fa fa-arrow-left"></i> Volver
+    </a>
+
+    {% if messages %}
+    <div class="mb-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} mb-2">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <br>
+    <br>
+    <div class="alert alert-info d-flex justify-content-between">
+        <strong>Total general del programa:</strong>
+        <span>{{ total_programa }} USD</span>
+    </div>
+
+    {% if secciones %}
+    {% for sec in secciones %}
+    {% with contrato=sec.contrato u=sec.usuario lista=sec.pagos total=sec.total_contrato %}
+    <div class="card border-0 shadow-sm mb-3" id="contrato-{{ contrato.id }}">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <strong>Contrato:</strong> {{ contrato.numerocontrato }}
+                <br>
+                <small class="text-muted">
+                    Coordinador:
+                    {% if u %}{{ u.get_full_name|default:u.username }}{% else %}ID {{ contrato.coordinador }}{% endif %}
+                    — Cargo: {{ contrato.cargo }} — Honorario: {{ contrato.honorario }} USD
+                </small>
+            </div>
+            <a class="btn btn-sm btn-success"
+                href="{% url 'coordinadorpago_create_by_contrato' programa.id contrato.id %}">
+                <i class="fa fa-plus"></i> Registrar pago
+            </a>
+        </div>
+
+        <div class="card-body">
+            {% if lista and lista|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-sm table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>N° Factura</th>
+                            <th>N° Oficio trámite</th>
+                            <th class="text-end">Valor</th>
+                            <th class="text-end" style="width:140px">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in lista %}
+                        <tr>
+                            <td>{{ p.mes_pago|date:"Y-m" }}</td>
+                            <td>{{ p.numero_factura }}</td>
+                            <td>{{ p.numero_oficio_tramite|default:"—" }}</td>
+                            <td class="text-end">{{ p.valor_total }} {{ p.moneda }}</td>
+                            <td class="text-end">
+                                <a class="btn btn-xs btn-outline-secondary"
+                                    href="{% url 'coordinadorpago_update' programa.id p.id %}">
+                                    <i class="fa fa-pen"></i>
+                                </a>
+                                <a class="btn btn-xs btn-outline-danger"
+                                    href="{% url 'coordinadorpago_delete' programa.id p.id %}">
+                                    <i class="fa fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="3" class="text-end">Total contrato:</th>
+                            <th class="text-end">{{ total }} USD</th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-warning mb-0">Aún no hay pagos registrados para este contrato.</div>
+            {% endif %}
+        </div>
+    </div>
+    {% endwith %}
+    {% endfor %}
+    {% else %}
+    <div class="alert alert-info">No hay contratos registrados para este programa.</div>
+    {% endif %}
+</main>
+
+<script>
+    // Resalta y hace scroll a la sección del contrato cuando llega ?contrato=ID
+    (function () {
+        const params = new URLSearchParams(window.location.search);
+        const cid = params.get('contrato');
+        if (!cid) return;
+        const el = document.getElementById(`contrato-${cid}`);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            el.style.transition = 'box-shadow .6s ease';
+            el.style.boxShadow = '0 0 0 3px rgba(25,135,84,.5)';
+            setTimeout(() => { el.style.boxShadow = ''; }, 1500);
+        }
+    })();
+</script>
+{% endblock %}

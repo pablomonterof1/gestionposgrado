@@ -1,0 +1,142 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<main class="container py-5">
+
+  <a href="{% url 'informacionprogramaposgrado' programa.id %}"
+    class="btn btn-secondary position-fixed bottom-0 start-0 m-3 shadow">
+    <i class="fa fa-arrow-left"></i>
+  </a>
+
+  <section class="card border-0 shadow-sm">
+    <div class="card-header text-bg-dark d-flex justify-content-between align-items-center">
+      <div>
+        <h4 class="mb-0">
+          {% if modo == 'editar' %}Editar{% else %}Crear{% endif %} valor del programa
+        </h4>
+        <small class="opacity-75">
+          Programa: <strong>{{ programa }}</strong>
+        </small>
+      </div>
+      {% if modo == 'editar' and vp %}
+      <span class="badge text-bg-secondary">Creado: {{ vp.created|date:"d/m/Y H:i" }}</span>
+      {% endif %}
+    </div>
+
+    {% if messages %}
+    <div class="p-3">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }} mb-2" role="alert">
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" class="p-3">
+      {% csrf_token %}
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Valor inscripción (USD)</label>
+          {{ form.valorinscripcion }}
+          {% if form.valorinscripcion.errors %}
+          <div class="text-danger small">{{ form.valorinscripcion.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Valor matrícula (USD)</label>
+          {{ form.valormatricula }}
+          {% if form.valormatricula.errors %}
+          <div class="text-danger small">{{ form.valormatricula.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Primera colegiatura (USD)</label>
+          {{ form.primeracolegiatura }}
+          {% if form.primeracolegiatura.errors %}
+          <div class="text-danger small">{{ form.primeracolegiatura.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Segunda colegiatura (USD)</label>
+          {{ form.segundacolegiatura }}
+          {% if form.segundacolegiatura.errors %}
+          <div class="text-danger small">{{ form.segundacolegiatura.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Moneda</label>
+          {{ form.moneda }}
+          <div class="form-text">Fijo en USD por ahora.</div>
+        </div>
+      </div>
+
+      <!-- Total del Programa -->
+      <div class="px-3 pt-3">
+        <div class="alert alert-info d-flex justify-content-between align-items-center mb-0">
+          <strong>Total del programa (USD):</strong>
+          <span id="total-programa" class="fs-5">$0.00</span>
+        </div>
+      </div>
+      <div class="d-flex justify-content-end gap-2 mt-4">
+        <a href="{% url 'informacionprogramaposgrado' programa.id %}" class="btn btn-outline-secondary">
+          <i class="fa fa-times"></i> Cancelar
+        </a>
+        <button type="submit" class="btn btn-primary">
+          <i class="fa fa-save"></i> Guardar
+        </button>
+      </div>
+      
+    </form>
+  </section>
+</main>
+<script>
+(function(){
+  function parseVal(selector){
+    const el = document.querySelector(selector);
+    if(!el) return 0;
+    // admite coma o punto
+    const v = (el.value || '').replace(',', '.');
+    const n = parseFloat(v);
+    return isNaN(n) ? 0 : n;
+  }
+  function formatUSD(n){
+    try {
+      return new Intl.NumberFormat('es-EC', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 2
+      }).format(n);
+    } catch(e){
+      return '$' + n.toFixed(2);
+    }
+  }
+  function updateTotal(){
+    const total =
+      parseVal('#{{ form.valorinscripcion.id_for_label }}') +
+      parseVal('#{{ form.valormatricula.id_for_label }}') +
+      parseVal('#{{ form.primeracolegiatura.id_for_label }}') +
+      parseVal('#{{ form.segundacolegiatura.id_for_label }}');
+
+    const out = document.getElementById('total-programa');
+    if (out) out.textContent = formatUSD(total);
+  }
+
+  // Actualiza al cargar y cuando el usuario escribe
+  document.addEventListener('DOMContentLoaded', updateTotal);
+  document.addEventListener('input', function(e){
+    if ([
+      '{{ form.valorinscripcion.html_name }}',
+      '{{ form.valormatricula.html_name }}',
+      '{{ form.primeracolegiatura.html_name }}',
+      '{{ form.segundacolegiatura.html_name }}'
+    ].includes(e.target.name)) {
+      updateTotal();
+    }
+  });
+})();
+</script>
+{% endblock %}

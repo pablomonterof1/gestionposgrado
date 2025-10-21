@@ -1,137 +1,162 @@
 {% extends 'layouts/base.html' %}
 
 {% block content %}
+<main class="py-5" style="max-width: 95%; margin: auto;">
 
-<main style="padding: 2%;">
-    <section class="card" style="padding: 2%;">
+  <!-- Encabezado -->
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <h2 class="fw-bold mb-1">Lista de contratos de tutores</h2>
+      <div class="text-muted" style="font-size: 1.3em;">
+        Periodo: <strong>{{ periodoacademico.nombre }}</strong>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'datosposgrado' periodo_id %}" class="btn btn-dark btn-sm" data-bs-toggle="tooltip" title="Volver">
+        <i class="fa fa-arrow-left"></i> <span class="d-none d-sm-inline ms-1">Volver</span>
+      </a>
+      <a class="btn btn-success btn-sm" href="{% url 'contratotutor_create' periodo_id %}">
+        <i class="fa fa-plus"></i> <span class="d-none d-sm-inline ms-1">Crear nuevo contrato</span>
+      </a>
+    </div>
+  </div>
 
+  <!-- Contenedor tabla -->
+  <section class="card border-2 shadow-lg" style="padding: 1%;">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table id="tablaContratos" class="table table-striped table-bordered mb-0 align-middle">
+          <thead class="table-success sticky-header">
+            <tr>
+              <th scope="col">Cédula</th>
+              <th scope="col">Tutor</th>
+              <th scope="col">Programa</th>
+              <th scope="col">Campo amplio</th>
+              <th scope="col">Modalidad</th>
+              <th scope="col">Cohorte</th>
+              <th scope="col">Maestrante</th>
+              <th scope="col">Plazo</th>
+              <th scope="col">Certificación presupuestaria</th>
+              <th scope="col">Fecha - Certificación presupuestaria</th>
+              <th scope="col">Valor del contrato</th>
+              <th scope="col">No. Contrato</th>
+              <th scope="col">No. Memorando TTHH</th>
+              <th scope="col">Tipo de personal académico</th>
+              <th scope="col">Adenda</th>
+              <th scope="col">Observaciones</th>
+              <th scope="col">Acciones</th>
+            </tr>
+          </thead>
 
-        <p class="lead" style="font-size: 2em;">Lista de contratos del periodo: <b>{{periodoacademico.nombre}}</b> </p>
+          <tbody id="contratosTableBody">
+            {% for contrato in contratos_por_periordo %}
+            <tr>
+              <td class="text-nowrap">{{ contrato.tutor_obj.perfilusuario.ci }}</td>
+              <td class="fw-semibold">{{ contrato.tutor_obj.get_full_name }}</td>
+              <td>{{ contrato.maestria_obj.nombre }}</td>
+              <td>{{ contrato.campoamplio_obj.nombre }}</td>
+              <td>{{ contrato.modalidad_obj.modalidad }}</td>
+              <td class="text-nowrap">{{ contrato.programadeposgrado_obj.get_cohorte_display }}</td>
+              <td class="text-nowrap">{{ contrato.maestrante_obj.get_full_name }}</td>
 
-        <a href="{% url 'datosposgrado' periodo_id %}" class="btn btn-outline-dark mb-3" data-bs-toggle="tooltip"
-            title="Volver" style="width: 3%;">
-            <i class="fa fa-arrow-left"></i>
-        </a>
+              <td class="text-center">{{ contrato.plazo }}</td>
 
+              <td class="text-truncate" style="max-width: 240px;" title="{{ contrato.certificacionpresupuestaria }}">
+                {{ contrato.certificacionpresupuestaria }}
+              </td>
 
-        <div style="text-align: right;">
+              <td class="text-center text-nowrap">{{ contrato.fechacertificacionpresupuestaria }}</td>
 
-            <a class="btn  btn-primary" href="{% url 'contratotutor_create' periodo_id %}"> Crear nuevo contrato</a>
-        </div>
+              <td class="text-end text-nowrap">${{ contrato.valorcontrato }}</td>
+              <td class="text-nowrap">{{ contrato.numerocontrato }}</td>
+              <td class="text-nowrap">{{ contrato.numeromemorandotthh }}</td>
+              <td>{{ contrato.get_tipopersonalacademico_display }}</td>
 
-        <!-- Lista de contrados x tutor -->
+              <td class="text-truncate" style="max-width: 160px;" title="{{ contrato.adenda }}">
+                {{ contrato.adenda }}
+              </td>
+              <td class="text-truncate" style="max-width: 200px;" title="{{ contrato.obsevaciones }}">
+                {{ contrato.obsevaciones }}
+              </td>
 
-        <div class="table-responsive mt-4">
-
-
-
-            <table id="tablaContratos" class="table table-striped table-bordered">
-                <thead>
-                    <tr>
-                        <th scope="col">Cédula</th>
-                        <th scope="col">Tutor</th>
-                        <th scope="col">Programa</th>
-                        <th scope="col">Campo amplio</th>
-                        <th scope="col">Modalidad</th>
-                        <th scope="col">Cohorte</th>
-                        <th scope="col">Maestrante</th>
-                        <th scope="col">Plazo</th>
-                        <th scope="col">Certificación presupuestaria</th>
-                        <th scope="col">Fecha - Certificación presupuestaria</th>
-                        <th scope="col">Valor del contrato</th>
-                        <th scope="col">No. Contrato</th>
-                        <th scope="col">No. Memorando TTHH</th>
-                        <th scope="col">Tipo de personal académico</th>
-                        <th scope="col">Adenda</th>
-                        <th scope="col">Observaciones</th>
-                        <th scope="col">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="contratosTableBody">
-                    {% for contrato in contratos_por_periordo %}
-                    <tr>
-                        <td>{{ contrato.tutor_obj.perfilusuario.ci }}</td>
-                        <td>{{ contrato.tutor_obj.get_full_name }}</td>
-                        <td>{{ contrato.maestria_obj.nombre }}</td>
-                        <td>{{ contrato.campoamplio_obj.nombre }}</td>
-                        <td>{{ contrato.modalidad_obj.modalidad }}</td>
-                        <td>{{ contrato.programadeposgrado_obj.get_cohorte_display }}</td>
-                        <td>{{ contrato.maestrante_obj.get_full_name }}</td>
-                        <td>{{ contrato.plazo }}</td>
-                        <td>{{ contrato.certificacionpresupuestaria }}</td>
-                        <td>{{ contrato.fechacertificacionpresupuestaria }}</td>
-                        <td>{{ contrato.valorcontrato }}</td>
-                        <td>{{ contrato.numerocontrato }}</td>
-                        <td>{{ contrato.numeromemorandotthh }}</td>
-                        <td>{{ contrato.get_tipopersonalacademico_display }}</td>
-                        <td>{{ contrato.adenda }}</td>
-                        <td>{{ contrato.obsevaciones }}</td>
-                        <td>
-
-                            <div class="d-flex gap-2">
-
-                                <a href="{% url 'contratotutor_update' contrato.id periodo_id %}"
-                                    class="btn btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
-                                <form id="form-borrar-{{ contrato.id }}"
-                                    action="{% url 'contratotutor_delete' contrato.id periodo_id %}" method="POST"
-                                    class="form-borrar">
-                                    {% csrf_token %}
-
-                                    <button type="button" class="btn btn-danger"
-                                        onclick="confirmarBorrado('{{ contrato.id }}')"><i
-                                            class="fa-solid fa-trash"></i></button>
-                                </form>
-                            </div>
-
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-    </section>
+              <td>
+                <div class="d-flex gap-2">
+                  <a href="{% url 'contratotutor_update' contrato.id periodo_id %}"
+                     class="btn btn-warning btn-sm" data-bs-toggle="tooltip" title="Editar">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </a>
+                  <form id="form-borrar-{{ contrato.id }}"
+                        action="{% url 'contratotutor_delete' contrato.id periodo_id %}"
+                        method="POST" class="form-borrar m-0">
+                    {% csrf_token %}
+                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="tooltip" title="Eliminar"
+                            onclick="confirmarBorrado('{{ contrato.id }}')">
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 </main>
 
 <script>
-    const buscador = document.getElementById('buscador');
+  const buscador = document.getElementById('buscador');
 
-    $(document).ready(function () {
-        $('#tablaContratos').DataTable({
-            "language": {
-                "lengthMenu": "Mostrar _MENU_ registros por página",
-                "zeroRecords": "No se encontraron resultados",
-                "info": "Mostrando página _PAGE_ de _PAGES_",
-                "infoEmpty": "No hay registros disponibles",
-                "infoFiltered": "(filtrado de _MAX_ registros totales)",
-                "search": "Buscar:",
-                "paginate": {
-                    "first": "Primera",
-                    "last": "Última",
-                    "next": "Siguiente",
-                    "previous": "Anterior"
-                },
-            }
-        });
+  $(document).ready(function () {
+    $('#tablaContratos').DataTable({
+      language: {
+        lengthMenu: "Mostrar _MENU_ registros por página",
+        zeroRecords: "No se encontraron resultados",
+        info: "Mostrando página _PAGE_ de _PAGES_",
+        infoEmpty: "No hay registros disponibles",
+        infoFiltered: "(filtrado de _MAX_ registros totales)",
+        search: "Buscar:",
+        paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
+      },
+      columnDefs: [
+        { targets: [7,9], className: 'text-center' },   // plazo / fecha cert.
+        { targets: [10], className: 'text-end' },       // valor contrato
+        { targets: [8,15], className: 'text-truncate' },// certificación / observaciones
+        { targets: [16], className: 'text-center' }     // acciones
+      ]
     });
+  });
 
-    function confirmarBorrado(id) {
-        Swal.fire({
-            title: '¿Estás seguro de borrar el contrato?',
-            text: "¡Esta acción no se puede deshacer!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sí, borrar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById('form-borrar-' + id).submit();
-            }
-        })
-    }
+  function confirmarBorrado(id) {
+    Swal.fire({
+      title: '¿Estás seguro de borrar el contrato?',
+      text: "¡Esta acción no se puede deshacer!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, borrar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        document.getElementById('form-borrar-' + id).submit();
+      }
+    })
+  }
 </script>
 
-
+<style>
+  .sticky-header th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  .table td, .table th {
+    vertical-align: middle !important;
+  }
+  .table-hover tbody tr:hover {
+    background-color: rgba(13,110,253,.06);
+  }
+</style>
 {% endblock %}

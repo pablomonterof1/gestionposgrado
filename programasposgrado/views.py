@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .forms import MaestriaForm, ModuloForm, EspecialidadesMedicasForm, ModuloEMForm
-from .models import Maestrias, PeriodosAcademicos, PerfildeIngreso, Modalidad, ProgramaPosgrado, CampoAmplio, Modulos, EspecialidadesMedicas, ModulosEM, ProgramaPosgradoEM
+from .models import Maestrias, PeriodosAcademicos, PerfildeIngreso, Modalidad, ProgramaPosgrado, CampoAmplio, Modulos, EspecialidadesMedicas, ModulosEM, ProgramaPosgradoEM, ModalidadDeTitulacion
 
 
 # Create your views here.
@@ -81,6 +81,17 @@ def modalidad(request):
     return render(request, 'modalidad.html', {
         'modalidad_list': modalidad_list
     })
+
+################################## MODALIDAD DE TITULACION############################################
+
+
+@login_required
+def modalidadtitulacion(request):
+    modalidadtitulacion_list = ModalidadDeTitulacion.objects.all().order_by('-created')
+    return render(request, 'modalidadtitulacion.html', {
+        'modalidadtitulacion_list': modalidadtitulacion_list
+    })
+
 
 ################################## PERFILDEINGRESO############################################
 

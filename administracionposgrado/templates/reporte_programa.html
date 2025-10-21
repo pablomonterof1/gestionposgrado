@@ -1,0 +1,282 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Reporte del Programa</title>
+<style>
+   /*@page { size: A4; margin: 18mm 15mm; }
+   /* Página normal */
+  @page vertical {
+    size: A4 portrait;
+    margin: 18mm 15mm;
+  }
+
+
+  /* Página horizontal SOLO para el listado de estudiantes */
+  @page horizontal {
+    size: A4 landscape;
+    margin: 2cm;
+  }
+
+  body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 11px; color:#222; }
+  h1, h2, h3 { margin: 0 0 6px 0; }
+  h1 { font-size: 18px; } h2 { font-size: 15px; } h3 { font-size: 13px; }
+  .muted { color:#666; }
+  .box { border:1px solid #bbb; padding:8px; border-radius:4px; }
+  .mb { margin-bottom:10px; } .mt { margin-top:10px; } .page-break { page-break-before: always; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border:1px solid #cc9933; padding:5px; }
+  th { background:#0e1424; color:#ffffff; }
+  .right { text-align:right; } .center { text-align:center; }
+  .total { font-weight:bold; background:#212F54; color: #ffffff; }
+  .cols { width:100%; } .col { vertical-align:top; } .col-33{width:33.33%;} .col-50{width:50%;}
+  table.alumnos { border-collapse: collapse; width: 100%; table-layout: fixed; }
+  table.alumnos th, table.alumnos td { border: 1px solid #cc9933; padding: 3px; font-size: 9px; vertical-align: top; }
+  table.alumnos th { background: #0e1424; }
+  .center { text-align: center; }
+  .right  { text-align: right;  }
+  .nowrap { white-space: nowrap; }            /* para números, CI, etc. */
+  .wrap   { word-wrap: break-word; }          /* rompe palabras largas */
+  .break  { word-break: break-word; }   
+</style>
+</head>
+<body>
+<div style="page: vertical;">
+<table class="mb">
+  <tr>
+    <td>
+      <h1>Reporte general del programa</h1>
+      <div class="muted">
+        Programa: <strong>{{ programa }}</strong><br>
+        Moneda: {{ fin.moneda|default_if_none:"USD" }}
+      </div>
+    </td>
+    <td class="right">
+      <!-- opcional: coloca tu logo en static/img/logo.png -->
+      <img src="https://ailectus.com/static/posgrado.jpg" alt="Logo" width="120"> 
+    </td>
+  </tr>
+</table>
+
+<table class="mb">
+  <tr>
+    <td class="box col col-33">
+      <h3>Total ingresos</h3>
+      <div class="right" style="font-size:18px;">$ {{ fin.total_ingresos|default_if_none:"0"|floatformat:2 }}</div>
+    </td>
+    <td class="box col col-33">
+      <h3>Total egresos</h3>
+      <div class="right" style="font-size:18px;">$ {{ fin.total_egresos|default_if_none:"0"|floatformat:2 }}</div>
+    </td>
+    <td class="box col col-33">
+      <h3>Saldo</h3>
+      <div class="right" style="font-size:18px;">$ {{ fin.saldo|default_if_none:"0"|floatformat:2 }}</div>
+    </td>
+  </tr>
+</table>
+
+{% if vp %}
+<div class="mb">
+  <strong>Valores del programa:</strong>
+  Inscripción $ {{ vp.valorinscripcion|floatformat:2 }},
+  Matrícula $ {{ vp.valormatricula|floatformat:2 }},
+  1ra Colegiatura $ {{ vp.primeracolegiatura|floatformat:2 }},
+  2da Colegiatura $ {{ vp.segundacolegiatura|floatformat:2 }} ({{ vp.moneda }})
+</div>
+{% endif %}
+
+<table class="mb">
+  <tr>
+    <td class="col col-50">
+      <h3>Ingresos (estudiantes)</h3>
+      <table>
+        <tbody>
+          <tr><th>Inscripción</th><td class="right">$ {{ fin.ingresos_inscripcion|default_if_none:"0"|floatformat:2 }}</td></tr>
+          <tr><th>Matrícula</th><td class="right">$ {{ fin.ingresos_matricula|default_if_none:"0"|floatformat:2 }}</td></tr>
+          <tr><th>1ra Colegiatura</th><td class="right">$ {{ fin.ingresos_colegiatura1|default_if_none:"0"|floatformat:2 }}</td></tr>
+          <tr><th>2da Colegiatura</th><td class="right">$ {{ fin.ingresos_colegiatura2|default_if_none:"0"|floatformat:2 }}</td></tr>
+          <tr class="total"><th>Total</th><td class="right">$ {{ fin.total_ingresos|default_if_none:"0"|floatformat:2 }}</td></tr>
+        </tbody>
+      </table>
+    </td>
+    <td class="col col-50">
+      <h3>Egresos</h3>
+      <table>
+        <tbody>
+          <tr><th>Coordinadores</th><td class="right">$ {{ fin.egresos_coordinadores|default_if_none:"0"|floatformat:2 }}</td></tr>
+          <tr><th>Docentes</th><td class="right">$ {{ fin.egresos_docentes|default_if_none:"0"|floatformat:2 }}</td></tr>
+          <tr><th>Tutores</th><td class="right">$ {{ fin.egresos_tutores|default_if_none:"0"|floatformat:2 }}</td></tr>
+          <tr class="total"><th>Total</th><td class="right">$ {{ fin.total_egresos|default_if_none:"0"|floatformat:2 }}</td></tr>
+        </tbody>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<div class="page-break"></div>
+<h2>Pagos a Coordinadores</h2>
+{% if coord_detalle %}
+  {% for sec in coord_detalle %}
+    <h3 class="mt">
+      {% if sec.usuario %}{{ sec.usuario.get_full_name|default:sec.usuario.username }}{% else %}Coordinador {{ sec.contrato.coordinador }}{% endif %}
+      — Contrato {{ sec.contrato.numerocontrato }}
+    </h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Mes pago</th>
+          <th>N° factura</th>
+          <th>N° oficio trámite</th>
+          <th class="right">Valor</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in sec.pagos %}
+        <tr>
+          <td>{{ p.mes_pago }}</td>
+          <td>{{ p.numero_factura }}</td>
+          <td>{{ p.numero_oficio_tramite|default:"" }}</td>
+          <td class="right">$ {{ p.valor_total|floatformat:2 }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="center">Sin pagos registrados</td></tr>
+        {% endfor %}
+        <tr class="total"><td colspan="3">Total contrato</td><td class="right">$ {{ sec.total|floatformat:2 }}</td></tr>
+      </tbody>
+    </table>
+  {% endfor %}
+{% else %}
+  <p class="muted">No hay contratos/pagos de coordinadores.</p>
+{% endif %}
+
+<div class="page-break"></div>
+<h2>Contratos Docentes</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Docente</th>
+      <th>Módulo</th>
+      <th>Horas</th>
+      <th>Valor/hora</th>
+      <th class="right">Valor total</th>
+      <th>Fecha contratación</th>
+      <th>Pagado</th>
+      <th>N° factura</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in doc_detalle %}
+    <tr>
+      <td>{% if r.docente %}{{ r.docente.get_full_name|default:r.docente.username }}{% else %}ID {{ r.contrato.docente }}{% endif %}</td>
+      <td>{{ r.modulo }}</td>
+      <td>{{ r.contrato.horasacademicas }}</td>
+      <td>$ {{ r.contrato.valorxhora|floatformat:2 }}</td>
+      <td class="right">$ {{ r.valor_total|floatformat:2 }}</td>
+      <td>{% if r.gestion %}{{ r.gestion.fecha_contratacion|default:"" }}{% endif %}</td>
+      <td>{% if r.gestion and r.gestion.pago_realizado %}Sí{% else %}No{% endif %}</td>
+      <td>{% if r.gestion %}{{ r.gestion.numero_factura|default:"" }}{% endif %}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="8" class="center">No hay contratos de docentes.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="page-break"></div>
+<h2>Contratos Tutores</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Tutor</th>
+      <th>Estudiante</th>
+      <th>Plazo</th>
+      <th class="right">Valor contrato</th>
+      <th>Fecha contratación</th>
+      <th>Defendido</th>
+      <th>Pagado</th>
+      <th>N° factura</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in tut_detalle %}
+    <tr>
+      <td>{% if r.tutor %}{{ r.tutor.get_full_name|default:r.tutor.username }}{% else %}ID {{ r.contrato.tutor }}{% endif %}</td>
+      <td>{% if r.estudiante %}{{ r.estudiante.get_full_name|default:r.estudiante.username }}{% else %}ID {{ r.contrato.maestrante }}{% endif %}</td>
+      <td>{{ r.contrato.plazo }}</td>
+      <td class="right">$ {{ r.contrato.valorcontrato|floatformat:2 }}</td>
+      <td>{% if r.gestion %}{{ r.gestion.fecha_contratacion|default:"" }}{% endif %}</td>
+      <td>{% if r.gestion and r.gestion.defendido %}Sí{% else %}No{% endif %}</td>
+      <td>{% if r.gestion and r.gestion.pago_realizado %}Sí{% else %}No{% endif %}</td>
+      <td>{% if r.gestion %}{{ r.gestion.numero_factura|default:"" }}{% endif %}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="8" class="center">No hay contratos de tutores.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+<div class="page-break"></div>
+<div style="page: horizontal;">
+<h2>Estudiantes del programa</h2>
+<table class="alumnos">
+
+
+  <thead>
+    <tr>
+      <th style="width: 38mm">Estudiante</th>
+      <th style="width: 20mm">CI</th>
+      <th style="width: 8mm" class="center">Ins.</th>
+      <th style="width: 8mm" class="center">Matri.</th>
+      <th style="width: 8mm" class="center">1ra</th>
+      <th style="width: 8mm" class="center">2da</th>
+      <th style="width: 15mm"class="right">Total pagado</th>
+      <th style="width: 25mm">Modalidad</th>
+      <th style="width: 15mm">Rúbrica (fecha)</th>
+      <th style="width: 20mm">Tutor (resol.<br/>fecha)</th>
+      <th style="width: 20mm"class="center">Contr.<br/>tutor</th>
+      <th style="width: 20mm" class="center">Avance</th>
+      <th style="width: 20mm">Sustentación</th>
+      <th style="width: 20mm">Complexivo</th>
+      <th style="width: 20mm">Estado título</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for r in est_detalle %}
+    <tr>
+      <td class="wrap">{{ r.user.get_full_name|default:r.user.username }}</td>
+      <td class="nowrap">{% if r.perfil %}{{ r.perfil.ci }}{% endif %}</td>
+
+      <td class="center">{% if r.gestion and r.gestion.pago_inscripcion %}✔{% else %}—{% endif %}</td>
+      <td class="center">{% if r.gestion and r.gestion.pago_matricula %}✔{% else %}—{% endif %}</td>
+      <td class="center">{% if r.gestion and r.gestion.pago_primera_colegiatura %}✔{% else %}—{% endif %}</td>
+      <td class="center">{% if r.gestion and r.gestion.pago_segunda_colegiatura %}✔{% else %}—{% endif %}</td>
+
+      <td class="right nowrap">$ {{ r.total_pagado|default_if_none:"0"|floatformat:2 }}</td>
+
+      <td class="center nowrap">{% if r.gestion and r.gestion.modalidad %}{{ r.gestion.modalidad.modalidadtitulacion }}{% else %}—{% endif %}</td>
+      <td class="center nowrap">{% if r.gestion and r.gestion.fecha_rubrica_aprobada %}{{ r.gestion.fecha_rubrica_aprobada|date:"Y-m-d" }}{% else %}—{% endif %}</td>
+
+      <td class="wrap">
+        {% if r.gestion %}
+          {% if r.gestion.tutor_resolucion %}{{ r.gestion.tutor_resolucion }}{% endif %}
+          {% if r.gestion.tutor_resolucion or r.gestion.tutor_resolucion_fecha %}<br/>{% endif %}
+          {% if r.gestion.tutor_resolucion_fecha %}{{ r.gestion.tutor_resolucion_fecha|date:"Y-m-d" }}{% endif %}
+        {% endif %}
+      </td>
+
+      <td class="center">{% if r.gestion and r.gestion.tutor_contratado %}Sí{% else %}No{% endif %}</td>
+      <td class="center nowrap">{% if r.gestion and r.gestion.avance_porcentaje is not None %}{{ r.gestion.get_avance_porcentaje_display }}{% else %}—{% endif %}</td>
+      <td class="center nowrap">{% if r.gestion and r.gestion.fecha_sustentacion_oral %}{{ r.gestion.fecha_sustentacion_oral|date:"Y-m-d" }}{% else %}—{% endif %}</td>
+      <td class="center nowrap">{% if r.gestion and r.gestion.fecha_aprob_complexivo %}{{ r.gestion.fecha_aprob_complexivo|date:"Y-m-d" }}{% else %}—{% endif %}</td>
+      <td class="wrap break">{% if r.gestion and r.gestion.estado_titulo %}{{ r.gestion.get_estado_titulo_display }}{% else %}—{% endif %}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="15" class="center">No hay estudiantes matriculados.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+</body>
+</html>

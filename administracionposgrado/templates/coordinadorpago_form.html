@@ -1,0 +1,105 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<main class="container py-5">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="mb-0">
+      {% if modo == 'crear' %}Registrar pago{% else %}Editar pago{% endif %}
+      — <span class="text-primary">{{ programa }}</span>
+    </h4>
+    <a href="{% url 'pagos_coordinadores_programa' programa.id %}" class="btn btn-secondary">
+      <i class="fa fa-arrow-left"></i> Volver
+    </a>
+  </div>
+
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} mb-2">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <p class="text-muted mb-2">
+        Coordinador: <strong>{{ coordinador.get_full_name|default:coordinador.username }}</strong>
+      </p>
+      {% if contrato %}
+        <p class="text-muted mb-3">
+          Contrato: <strong>{{ contrato.numerocontrato }}</strong> — Cargo: {{ contrato.cargo }} — Honorario: {{ contrato.honorario }} USD
+        </p>
+      {% endif %}
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          <ul class="mb-0">
+            {% for err in form.non_field_errors %}<li>{{ err }}</li>{% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      <form method="post" class="row g-3">
+        {% csrf_token %}
+
+        <div class="col-md-6">
+          <label class="form-label" for="{{ form.contrato.id_for_label }}">Contrato</label>
+          {{ form.contrato }}
+          {% if form.contrato.errors %}
+            <div class="text-danger small">{{ form.contrato.errors }}</div>
+          {% endif %}
+          {% if contrato %}
+            <div class="form-text">Bloqueado a este contrato.</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label" for="{{ form.mes_pago.id_for_label }}">Mes pagado</label>
+          {{ form.mes_pago }}
+          {% if form.mes_pago.errors %}
+            <div class="text-danger small">{{ form.mes_pago.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label" for="{{ form.numero_factura.id_for_label }}">N° Factura</label>
+          {{ form.numero_factura }}
+          {% if form.numero_factura.errors %}
+            <div class="text-danger small">{{ form.numero_factura.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label" for="{{ form.valor_total.id_for_label }}">Valor total</label>
+          {{ form.valor_total }}
+          {% if form.valor_total.errors %}
+            <div class="text-danger small">{{ form.valor_total.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.numero_oficio_tramite.id_for_label }}">N° Oficio de trámite</label>
+          {{ form.numero_oficio_tramite }}
+          {% if form.numero_oficio_tramite.errors %}
+            <div class="text-danger small">{{ form.numero_oficio_tramite.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label" for="{{ form.moneda.id_for_label }}">Moneda</label>
+          {{ form.moneda }}
+          {% if form.moneda.errors %}
+            <div class="text-danger small">{{ form.moneda.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="col-12 d-flex gap-2 mt-3">
+          <button class="btn btn-primary" type="submit">
+            <i class="fa fa-save"></i> Guardar
+          </button>
+          <a class="btn btn-light" href="{% url 'pagos_coordinadores_programa' programa.id %}">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+{% endblock %}

@@ -13,7 +13,8 @@ def MisCursos(request):
     # Matriculas del usuario
     usuarioprogramaslist = MatriculaUsuario.objects.filter(usuario=request.user)
     docentemoduloslist = MatriculaDocenteModulo.objects.filter(docente=request.user)
-
+    print(usuarioprogramaslist)
+    print(docentemoduloslist)
     for estudiante in usuarioprogramaslist:
         maestria = Maestrias.objects.filter(id=estudiante.programa.maestria)
         periodocademico = PeriodosAcademicos.objects.filter(id=estudiante.programa.periodoacademico)

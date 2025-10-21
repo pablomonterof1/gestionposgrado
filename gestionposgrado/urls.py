@@ -31,13 +31,15 @@ from aulavirtual import views as aulavirtual_views
 from django.conf.urls.static import static
 from django.conf import settings
 from datosposgrado import views as datosposgrado_views
+from administracionposgrado import views as administracionposgrado_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', main_views.home, name='home'),
     path('dashboard/', main_views.dashboard, name='dashboard'),
+    path('periodosacademicosmain/', main_views.periodosacademicosmain, name='periodosacademicosmain'),
+    path('programasdemaestria/<int:periodo_id>/', main_views.programasdemaestria, name='programasdemaestria'),
     path('programamaestria/<int:programa_id>/', main_views.ProgramaMaestria, name='programamaestria'),
-    path('programasdemaestria/', main_views.programasdemaestria, name='programasdemaestria'),
     
     #Gestion de usuarios
     path('signup/', user_views.signup, name='signup'),
@@ -51,8 +53,10 @@ urlpatterns = [
     path('coordinadordp/create/<int:periodo_id>', user_views.coordinadordp_create, name='coordinadordp_create'),
     path('password/change/', user_views.CustomPasswordChangeView.as_view(), name='password_change'),
     path('password/change/done/', user_views.CustomPasswordChangeDoneView.as_view(), name='password_change_done'),
-    
-    
+    path('usuarioscompletos/', user_views.CrearUsuarioCompleto, name='usuarioscompletos'),
+    path('usuarios/<int:user_id>/editar/', user_views.usuario_editar, name='usuario_editar'),
+
+
     path('docentepm/create/<int:programa_id>', user_views.docentepm_create, name='docentepm_create'),
     path('estudiantepm/create/<int:programa_id>', user_views.estudiantepm_create, name='estudiantepm_create'),
 
@@ -68,6 +72,7 @@ urlpatterns = [
     path('modulos/<int:modulo_id>/delete', programasposgrado_views.modulos_delete, name='modulos_delete'),
     path('periodosacademicos/', programasposgrado_views.periodosacademicos, name='periodosacademicos'),
     path('modalidad/', programasposgrado_views.modalidad, name='modalidad'),
+    path('modalidadtitulacion/', programasposgrado_views.modalidadtitulacion, name='modalidadtitulacion'),
     path('perfilingreso/', programasposgrado_views.perfildeingreso, name='perfilingreso'),
     path('programasdeposgrado/', programasposgrado_views.programasdeposgrado, name='programasdeposgrado'),
     path('programadeposgrado/select/', programasposgrado_views.programadeposgrado_select, name='programadeposgrado_select'),
@@ -75,6 +80,35 @@ urlpatterns = [
     path('programadeposgrado/<int:programadeposgrado_id>/delete', programasposgrado_views.programadeposgrado_delete, name='programadeposgrado_delete'),
     path('programadeposgrado/<int:programadeposgrado_id>', programasposgrado_views.programadeposgrado_update, name='programadeposgrado_update'),
     path('campoamplio/', programasposgrado_views.campoamplio, name='campoamplio'),
+
+    #Información del programa de posgrado
+    path('informacionprogramaposgrado/<int:programa_id>/', administracionposgrado_views.informacionprogramaposgrado, name='informacionprogramaposgrado'),
+    path('valorprogramaposgrado/<int:programa_id>/', administracionposgrado_views.valorprogramaposgrado_detail, name='valorprogramaposgrado_detail'),
+    path('valorprogramaposgrado/create/<int:programa_id>', administracionposgrado_views.valorprogramaposgrado_create, name='valorprogramaposgrado_create'),
+    path('valorprogramaposgrado/<int:programa_id>/update', administracionposgrado_views.valorprogramaposgrado_update, name='valorprogramaposgrado_update'),
+    path('programa/<int:programa_id>/contratos/', administracionposgrado_views.contratos_coordinadores_programa, name='contratos_coordinadores_programa'),
+    path('programa/<int:programa_id>/coordinador/<int:coordinador_id>/periodo/nuevo/', administracionposgrado_views.coordinadorperiodo_create, name='coordinadorperiodo_create'),
+    path('programa/<int:programa_id>/coordinador/<int:coordinador_id>/periodo/<int:pk>/editar/', administracionposgrado_views.coordinadorperiodo_update, name='coordinadorperiodo_update'),
+    path('programa/<int:programa_id>/coordinador/<int:coordinador_id>/periodo/<int:pk>/eliminar/', administracionposgrado_views.coordinadorperiodo_delete, name='coordinadorperiodo_delete'),
+
+    path('programa/<int:programa_id>/pagos/coordinadores/', administracionposgrado_views.pagos_coordinadores_programa, name='pagos_coordinadores_programa'),
+    path('programa/<int:programa_id>/pagos/contrato/<int:contrato_id>/nuevo/', administracionposgrado_views.coordinadorpago_create_by_contrato, name='coordinadorpago_create_by_contrato'),
+    path('programa/<int:programa_id>/pagos/<int:pago_id>/editar/', administracionposgrado_views.coordinadorpago_update, name='coordinadorpago_update'),
+    path('programa/<int:programa_id>/pagos/<int:pago_id>/eliminar/', administracionposgrado_views.coordinadorpago_delete, name='coordinadorpago_delete'),
+
+    path('programa/<int:programa_id>/docentes/contratos/', administracionposgrado_views.docentes_contratos_programa, name='docentes_contratos_programa'),
+    path('programa/<int:programa_id>/docentes/contrato/<int:contrato_id>/gestion/nuevo/', administracionposgrado_views.contratodocente_gestion_create, name='contratodocente_gestion_create'),
+    path('programa/<int:programa_id>/docentes/contrato/<int:contrato_id>/gestion/editar/', administracionposgrado_views.contratodocente_gestion_update, name='contratodocente_gestion_update'),
+
+    path('programa/<int:programa_id>/tutores/contratos/', administracionposgrado_views.tutores_contratos_programa, name='tutores_contratos_programa'),
+    path('programa/<int:programa_id>/tutores/contrato/<int:contrato_id>/gestion/nuevo/', administracionposgrado_views.contratotutor_gestion_create, name='contratotutor_gestion_create'),
+    path('programa/<int:programa_id>/tutores/contrato/<int:contrato_id>/gestion/editar/', administracionposgrado_views.contratotutor_gestion_update, name='contratotutor_gestion_update'),
+
+    path('programa/<int:programa_id>/estudiantes/', administracionposgrado_views.estudiantes_programa_list, name='estudiantes_programa_list'),
+    path('programa/<int:programa_id>/estudiantes/<int:user_id>/editar/', administracionposgrado_views.estudiante_programa_gestion_upsert, name='estudiante_programa_gestion_upsert'),
+
+    path("programa/<int:programa_id>/reporte.pdf", administracionposgrado_views.programa_reporte_pdf,  name="programa_reporte_pdf"),
+
 
     #Especialidades Medicas
     path('especialidadesmedicas/', programasposgrado_views.especialidadesmedicas, name='especialidadesmedicas'),

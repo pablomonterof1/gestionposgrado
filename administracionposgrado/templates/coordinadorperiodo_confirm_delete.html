@@ -1,0 +1,29 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<main class="container py-5">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="mb-0">Eliminar periodo — <span class="text-primary">{{ programa }}</span></h4>
+    <a href="{% url 'contratos_coordinadores_programa' programa.id %}" class="btn btn-secondary">
+      <i class="fa fa-arrow-left"></i> Volver
+    </a>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <p>Vas a eliminar el periodo del coordinador
+        <strong>{{ coordinador.get_full_name|default:coordinador.username }}</strong>:</p>
+      <ul>
+        <li>Inicio: <strong>{{ periodo.fecha_inicio }}</strong></li>
+        <li>Fin: <strong>{{ periodo.fecha_fin }}</strong></li>
+      </ul>
+
+      <form method="post">
+        {% csrf_token %}
+        <button class="btn btn-danger" type="submit"><i class="fa fa-trash"></i> Eliminar</button>
+        <a class="btn btn-light" href="{% url 'contratos_coordinadores_programa' programa.id %}">Cancelar</a>
+      </form>
+    </div>
+  </div>
+</main>
+{% endblock %}

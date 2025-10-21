@@ -11,7 +11,7 @@
     <div class="card-header text-bg-dark d-flex align-items-center justify-content-between">
       <div>
         <h3 class="m-0">Seleccione un periodo académico</h3>
-        <small class="opacity-75">Filtre y elija un periodo para ver su información</small>
+        <small class="opacity-75">Filtre y elija un periodo para ver sus maestrías</small>
       </div>
 
       <!-- Buscador -->
@@ -26,7 +26,7 @@
     <div class="list-group list-group-flush" id="listaPeriodos">
       {% if periodosacademicos_list %}
         {% for periodo in periodosacademicos_list %}
-          <a href="{% url 'datosposgrado' periodo.id %}"
+          <a href="{% url 'programasdemaestria' periodo.id %}"
              class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
             <div class="d-flex align-items-center gap-3">
               <span class="badge rounded-pill text-bg-primary p-2" aria-hidden="true">
@@ -43,7 +43,7 @@
             </div>
 
             <span class="btn btn-outline-primary btn-sm">
-              Abrir <i class="fa fa-chevron-right ms-1"></i>
+              Ver maestrías <i class="fa fa-chevron-right ms-1"></i>
             </span>
           </a>
         {% endfor %}

@@ -11,6 +11,14 @@
 
         <p class="lead">Seleccione un programa de posgrado</p>
 
+        <div class="mb-3">
+
+            <a href="{% url 'periodosacademicosmain' %}"
+                class="btn btn-outline-dark " data-bs-toggle="tooltip" title="Volver">
+                <i class="fa fa-arrow-left"></i>
+            </a>
+        </div>
+
         <div class="table-responsive" style="padding: 2%;">
 
             <div style="text-align: right;">
@@ -25,7 +33,7 @@
                         <th>Periodo Académico</th>
                         <th>Maestría</th>
                         <th>Modalidad</th>
-                        <th>Ver</th>
+                        <th style="text-align: center;">Ver</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -35,8 +43,8 @@
                         <td>{{ programa.maestria }}</td>
                         <td>{{ programa.modalidad }}</td>
                         <td>
-                            <a class="btn btn-success" href="{% url 'programamaestria' programa.id %}">Ver
-                                información</a>
+                            <a class="btn btn-warning  " data-bs-toggle="tooltip" title="Ver información"
+                                href="{% url 'programamaestria' programa.id %}"><i class="fa fa-folder-open"></i></a>
 
                         </td>
                     </tr>

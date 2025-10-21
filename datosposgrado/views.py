@@ -15,7 +15,7 @@ from main.decorators import role_required
 
 @role_required([4, 7])  # Solo editores y analistas
 def periodosacademicosdp(request):
-    periodosacademicos_list = PeriodosAcademicos.objects.all()
+    periodosacademicos_list = PeriodosAcademicos.objects.all().order_by('-fecha_inicio')
     return render(request, 'periodosacademicos_dp.html', {
         'periodosacademicos_list': periodosacademicos_list,
     })
@@ -264,7 +264,6 @@ def contratotutor_create(request, periodo_id):
 
     # GET o POST con errores
     tutor_list = PerfilUsuario.objects.filter(rol=5)
-    print(tutor_list)
     programasdeposgrado_list = ProgramaPosgrado.objects.filter(
         periodoacademico=periodo_id)
     for p in programasdeposgrado_list:
@@ -338,7 +337,6 @@ def contratocoordinador_create(request, periodo_id):
 
     # GET o POST con errores
     coordinadores_list = PerfilUsuario.objects.filter(rol=3)
-    print(coordinadores_list)
     programasdeposgrado_list = ProgramaPosgrado.objects.filter(
         periodoacademico=periodo_id)
     for p in programasdeposgrado_list:          

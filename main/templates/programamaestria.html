@@ -16,10 +16,9 @@
 
         <div class="mb-3">
 
-            <a class="btn btn-sm btn-danger" href="{% url 'programasdemaestria' %}">
-
-                Regresar
-
+            <a href="{% url 'programasdemaestria' programaposgrado.periodoacademico %}" class="btn btn-outline-dark mb-3"
+                data-bs-toggle="tooltip" title="Volver">
+                <i class="fa fa-arrow-left"></i>
             </a>
         </div>
 
@@ -28,6 +27,12 @@
 
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ">
+                        <div class="nav-divider"></div>
+                         <li class="nav-item">
+                            <a class="nav-link fs-5" aria-current="page" href="{% url 'informacionprogramaposgrado' programaposgrado.id %}">
+                                Informarmación general
+                            </a>
+                        </li>
                         <div class="nav-divider"></div>
                         <li class="nav-item">
                             <a class="nav-link fs-5" aria-current="page" href="{% url 'usuariosmatriculadosprogramam' programaposgrado.id %}">
@@ -72,7 +77,8 @@
                     </div>
                     <div class="card-footer text-end">
 
-                        <a id="btnAdmision" class="btn btn-info" href="{% url 'admision' programaposgrado.id %}">Ingresar</a>
+                        <a id="btnAdmision" class="btn btn-info"
+                            href="{% url 'admision' programaposgrado.id %}">Ingresar</a>
                     </div>
                 </div>
             </div>

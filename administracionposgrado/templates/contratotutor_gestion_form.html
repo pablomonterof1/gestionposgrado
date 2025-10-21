@@ -1,0 +1,87 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<main class="container py-5">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="mb-0">
+      {% if modo == 'crear' %}Agregar datos adicionales{% else %}Editar datos adicionales{% endif %}
+      — <span class="text-primary">{{ programa }}</span>
+    </h4>
+    <a href="{% url 'tutores_contratos_programa' programa.id %}" class="btn btn-secondary">
+      <i class="fa fa-arrow-left"></i> Volver
+    </a>
+  </div>
+
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} mb-2">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <p class="text-muted mb-1">
+        Tutor: <strong>{% if tutor_user %}{{ tutor_user.get_full_name|default:tutor_user.username }}{% else %}ID {{ contrato.tutor }}{% endif %}</strong>
+      </p>
+      <p class="text-muted mb-3">
+        Estudiante: <strong>{% if est_user %}{{ est_user.get_full_name|default:est_user.username }}{% else %}ID {{ contrato.maestrante }}{% endif %}</strong> — Valor contrato: <strong>$ {{ contrato.valorcontrato }}</strong>
+      </p>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          <ul class="mb-0">
+            {% for err in form.non_field_errors %}<li>{{ err }}</li>{% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      <form method="post" class="row g-3">
+        {% csrf_token %}
+
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.fecha_contratacion.id_for_label }}">Fecha de contratación</label>
+          {{ form.fecha_contratacion }}
+          {% if form.fecha_contratacion.errors %}<div class="text-danger small">{{ form.fecha_contratacion.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <div class="form-check mt-4">
+            {{ form.defendido }}
+            <label class="form-check-label" for="{{ form.defendido.id_for_label }}">Defendido el trabajo de titulación</label>
+          </div>
+          {% if form.defendido.errors %}<div class="text-danger small">{{ form.defendido.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <div class="form-check mt-4">
+            {{ form.pago_realizado }}
+            <label class="form-check-label" for="{{ form.pago_realizado.id_for_label }}">Pago realizado al tutor</label>
+          </div>
+          {% if form.pago_realizado.errors %}<div class="text-danger small">{{ form.pago_realizado.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="{{ form.numero_factura.id_for_label }}">N° Factura</label>
+          {{ form.numero_factura }}
+          {% if form.numero_factura.errors %}<div class="text-danger small">{{ form.numero_factura.errors }}</div>{% endif %}
+          <div class="form-text">Requerido si "Pago realizado" está en Sí.</div>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label" for="{{ form.observaciones.id_for_label }}">Observaciones</label>
+          {{ form.observaciones }}
+          {% if form.observaciones.errors %}<div class="text-danger small">{{ form.observaciones.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-12 d-flex gap-2 mt-2">
+          <button class="btn btn-primary" type="submit">
+            <i class="fa fa-save"></i> Guardar
+          </button>
+          <a class="btn btn-light" href="{% url 'tutores_contratos_programa' programa.id %}">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+{% endblock %}

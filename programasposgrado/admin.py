@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import Maestrias, PeriodosAcademicos, PerfildeIngreso, Modalidad, ProgramaPosgrado, CampoAmplio, Modulos, EspecialidadesMedicas, ModulosEM, ProgramaPosgradoEM
+from .models import Maestrias, PeriodosAcademicos, PerfildeIngreso, Modalidad, ProgramaPosgrado, CampoAmplio, Modulos, EspecialidadesMedicas, ModulosEM, ProgramaPosgradoEM, ModalidadDeTitulacion
 
 class MaestriasAdmin(admin.ModelAdmin):
     readonly_fields = ('created',)
@@ -15,6 +15,10 @@ class PeriodosAcademicosAdmin(admin.ModelAdmin):
 class ModalidadAdmin(admin.ModelAdmin):
     readonly_fields = ('created',)
     list_display = ('modalidad', 'descripcion', 'created')
+
+class ModalidadDeTitulacionAdmin(admin.ModelAdmin):
+    readonly_fields = ('created',)
+    list_display = ('modalidadtitulacion', 'descripcion', 'created')
 
 
 
@@ -127,5 +131,6 @@ admin.site.register(Modulos, ModulosAdmin)
 admin.site.register(EspecialidadesMedicas, EspecialidadesMedicasAdmin)
 admin.site.register(ModulosEM, ModulosEMAdmin)
 admin.site.register(ProgramaPosgradoEM, ProgramaPosgradoEMAdmin)
+admin.site.register(ModalidadDeTitulacion, ModalidadDeTitulacionAdmin)
 
 

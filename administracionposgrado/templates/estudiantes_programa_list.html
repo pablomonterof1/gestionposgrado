@@ -1,0 +1,147 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<main class=" py-5" style="margin: 0 5%;">
+
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="mb-0">Estudiantes — <span class="text-primary">{{ programa }}</span></h2>
+
+  </div>
+
+      <a href="{% url 'informacionprogramaposgrado' programa.id %}" class="btn btn-secondary">
+      <i class="fa fa-arrow-left"></i> Volver
+    </a>
+    <br><br>
+
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} mb-2">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Valores del programa (informativos, iguales para todos) -->
+  {% if valores_programa %}
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body py-3">
+      <div class="row g-3 align-items-center">
+        <div class="col-auto"><strong>Valores del programa ({{ valores_programa.moneda }}):</strong></div>
+        <div class="col-auto">Inscripción: <span class="badge text-bg-secondary">{{ valores_programa.inscripcion }}</span></div>
+        <div class="col-auto">Matrícula: <span class="badge text-bg-secondary">{{ valores_programa.matricula }}</span></div>
+        <div class="col-auto">1ª colegiatura: <span class="badge text-bg-secondary">{{ valores_programa.cole1 }}</span></div>
+        <div class="col-auto">2ª colegiatura: <span class="badge text-bg-secondary">{{ valores_programa.cole2 }}</span></div>
+        <div class="col-auto ms-auto"><strong>Total programa:</strong> <span class="badge text-bg-primary">{{ total_programa }}</span></div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if filas and filas|length %}
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-sm table-striped table-bordered align-middle mb-0">
+          <thead class="table-primary ">
+            <tr class="text-center">
+              <th>Apellidos y nombres</th>
+              <th>N. cédula</th>
+              <th>Correo</th>
+              <th>N. celular</th>
+              <th class="text-center">Inscripción</th>
+              <th class="text-center">Matrícula</th>
+              <th class="text-center">1ª colegiatura</th>
+              <th class="text-center">2ª colegiatura</th>
+              <th class="text-end">TOTAL pagado</th>
+              <th>Modalidad titulación</th>
+              <th>Rúbrica aprobada</th>
+              <th>Tutor asignado (resolución + fecha)</th>
+              <th>Tutor contratado</th>
+              <th>Avance</th>
+              <th>Sustentación oral</th>
+              <th>Aprobación complexivo</th>
+              <th>Estado de título</th>
+              <th style="width:120px;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for f in filas %}
+            {% with u=f.usuario p=f.perfil g=f.gestion vp=f.vp %}
+            <tr id="est-{{ u.id }}">
+              <td class="fw-semibold">{{ u.get_full_name|default:u.username }}</td>
+              <td>{% if p and p.ci %}{{ p.ci }}{% else %}—{% endif %}</td>
+              <td class="text-break">{{ u.email|default:"—" }}</td>
+              <td>{{ p.telefono|default:"—" }}</td>
+
+              <!-- Rubros: mostrar Sí/No -->
+              <td class="text-center">
+                {% if g and g.pago_inscripcion %}
+                  <span class="badge text-bg-success">Sí</span>
+                {% else %}
+                  <span class="badge text-bg-warning text-dark">No</span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                {% if g and g.pago_matricula %}
+                  <span class="badge text-bg-success">Sí</span>
+                {% else %}
+                  <span class="badge text-bg-warning text-dark">No</span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                {% if g and g.pago_primera_colegiatura %}
+                  <span class="badge text-bg-success">Sí</span>
+                {% else %}
+                  <span class="badge text-bg-warning text-dark">No</span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                {% if g and g.pago_segunda_colegiatura %}
+                  <span class="badge text-bg-success">Sí</span>
+                {% else %}
+                  <span class="badge text-bg-warning text-dark">No</span>
+                {% endif %}
+              </td>
+
+              <!-- TOTAL pagado por estudiante -->
+              <td class="text-end fw-bold">
+                {% if f.total_pagado is not None %}$ {{ f.total_pagado }}{% else %}—{% endif %}
+              </td>
+
+              <td>{% if g and g.modalidad %}{{ g.modalidad.modalidadtitulacion }}{% else %}—{% endif %}</td>
+              <td class="text-center">{% if g and g.fecha_rubrica_aprobada %}{{ g.fecha_rubrica_aprobada }}{% else %}—{% endif %}</td>
+
+              <td>
+                {% if g %}
+                  {% if g.tutor_resolucion or g.tutor_resolucion_fecha %}
+                    {{ g.tutor_resolucion|default:"" }}{% if g.tutor_resolucion and g.tutor_resolucion_fecha %} — {% endif %}{{ g.tutor_resolucion_fecha|default:"" }}
+                  {% else %}—{% endif %}
+                {% else %}—{% endif %}
+              </td>
+
+              <td class="text-center">
+                {% if g %}{% if g.tutor_contratado %}<span class="badge text-bg-success">Sí</span>{% else %}<span class="badge text-bg-warning text-dark">No</span>{% endif %}{% else %}—{% endif %}
+              </td>
+
+              <td>{% if g and g.avance_porcentaje is not None %}{{ g.get_avance_porcentaje_display }}{% else %}—{% endif %}</td>
+              <td class="text-center">{% if g and g.fecha_sustentacion_oral %}{{ g.fecha_sustentacion_oral }}{% else %}—{% endif %}</td>
+              <td class="text-center">{% if g and g.fecha_aprob_complexivo %}{{ g.fecha_aprob_complexivo }}{% else %}—{% endif %}</td>
+              <td>{% if g and g.estado_titulo %}{{ g.get_estado_titulo_display }}{% else %}—{% endif %}</td>
+
+              <td class="text-end">
+                <a class="btn btn-xs btn-outline-primary" href="{% url 'estudiante_programa_gestion_upsert' programa.id u.id %}">
+                  <i class="fa fa-pen"></i> Editar
+                </a>
+              </td>
+            </tr>
+            {% endwith %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% else %}
+    <div class="alert alert-info">No hay estudiantes matriculados en este programa.</div>
+  {% endif %}
+</main>
+{% endblock %}
