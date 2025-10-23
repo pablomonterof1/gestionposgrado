@@ -19,61 +19,95 @@
         </small>
       </div>
       {% if modo == 'editar' and vp %}
-      <span class="badge text-bg-secondary">Creado: {{ vp.created|date:"d/m/Y H:i" }}</span>
+        <span class="badge text-bg-secondary">Creado: {{ vp.created|date:"d/m/Y H:i" }}</span>
       {% endif %}
     </div>
 
     {% if messages %}
-    <div class="p-3">
-      {% for message in messages %}
-      <div class="alert alert-{{ message.tags|default:'info' }} mb-2" role="alert">
-        {{ message }}
+      <div class="p-3">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags|default:'info' }} mb-2" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
       </div>
-      {% endfor %}
-    </div>
     {% endif %}
 
     <form method="post" class="p-3">
       {% csrf_token %}
 
       <div class="row g-3">
-        <div class="col-md-6">
+
+        <!-- Plan de pago -->
+        <div class="col-md-4">
+          <label class="form-label">Plan de pago</label>
+          {{ form.plan_pago }}
+          {% if form.plan_pago.errors %}
+            <div class="text-danger small">{{ form.plan_pago.errors }}</div>
+          {% endif %}
+          <div class="form-text">Elige entre 2 colegiaturas o 10 cuotas.</div>
+        </div>
+
+        <!-- Inscripción / Matrícula -->
+        <div class="col-md-4">
           <label class="form-label">Valor inscripción (USD)</label>
           {{ form.valorinscripcion }}
           {% if form.valorinscripcion.errors %}
-          <div class="text-danger small">{{ form.valorinscripcion.errors }}</div>
+            <div class="text-danger small">{{ form.valorinscripcion.errors }}</div>
           {% endif %}
         </div>
 
-        <div class="col-md-6">
+        <div class="col-md-4">
           <label class="form-label">Valor matrícula (USD)</label>
           {{ form.valormatricula }}
           {% if form.valormatricula.errors %}
-          <div class="text-danger small">{{ form.valormatricula.errors }}</div>
+            <div class="text-danger small">{{ form.valormatricula.errors }}</div>
           {% endif %}
         </div>
 
-        <div class="col-md-6">
+        <!-- Plan 2: colegiaturas -->
+        <div class="col-md-6 plan2-only">
           <label class="form-label">Primera colegiatura (USD)</label>
           {{ form.primeracolegiatura }}
           {% if form.primeracolegiatura.errors %}
-          <div class="text-danger small">{{ form.primeracolegiatura.errors }}</div>
+            <div class="text-danger small">{{ form.primeracolegiatura.errors }}</div>
           {% endif %}
         </div>
 
-        <div class="col-md-6">
+        <div class="col-md-6 plan2-only">
           <label class="form-label">Segunda colegiatura (USD)</label>
           {{ form.segundacolegiatura }}
           {% if form.segundacolegiatura.errors %}
-          <div class="text-danger small">{{ form.segundacolegiatura.errors }}</div>
+            <div class="text-danger small">{{ form.segundacolegiatura.errors }}</div>
           {% endif %}
         </div>
 
+        <!-- Plan 10: total y cuota mensual -->
+        <div class="col-md-6 plan10-only">
+          <label class="form-label">Valor total del programa (USD)</label>
+          {{ form.valor_total }}
+          {% if form.valor_total.errors %}
+            <div class="text-danger small">{{ form.valor_total.errors }}</div>
+          {% endif %}
+          <div class="form-text">De aquí se calcula la cuota mensual: (Total − Inscripción − Matrícula) / 10.</div>
+        </div>
+
+        <div class="col-md-6 plan10-only">
+          <label class="form-label">Cuota mensual (x10)</label>
+          {{ form.cuota_mensual }}
+          {% if form.cuota_mensual.errors %}
+            <div class="text-danger small">{{ form.cuota_mensual.errors }}</div>
+          {% endif %}
+          <div class="form-text">Se calcula automáticamente.</div>
+        </div>
+
+        <!-- Moneda -->
         <div class="col-md-4">
           <label class="form-label">Moneda</label>
           {{ form.moneda }}
           <div class="form-text">Fijo en USD por ahora.</div>
         </div>
+
       </div>
 
       <!-- Total del Programa -->
@@ -83,6 +117,7 @@
           <span id="total-programa" class="fs-5">$0.00</span>
         </div>
       </div>
+
       <div class="d-flex justify-content-end gap-2 mt-4">
         <a href="{% url 'informacionprogramaposgrado' programa.id %}" class="btn btn-outline-secondary">
           <i class="fa fa-times"></i> Cancelar
@@ -91,51 +126,86 @@
           <i class="fa fa-save"></i> Guardar
         </button>
       </div>
-      
+
     </form>
   </section>
 </main>
+
 <script>
 (function(){
-  function parseVal(selector){
-    const el = document.querySelector(selector);
+  function q(sel){ return document.querySelector(sel); }
+  function qa(sel){ return Array.from(document.querySelectorAll(sel)); }
+
+  function numFrom(el){
     if(!el) return 0;
-    // admite coma o punto
     const v = (el.value || '').replace(',', '.');
     const n = parseFloat(v);
     return isNaN(n) ? 0 : n;
   }
-  function formatUSD(n){
-    try {
-      return new Intl.NumberFormat('es-EC', {
-        style: 'currency', currency: 'USD', minimumFractionDigits: 2
-      }).format(n);
-    } catch(e){
-      return '$' + n.toFixed(2);
+
+  function fmtUSD(n){
+    try{
+      return new Intl.NumberFormat('es-EC', { style:'currency', currency:'USD', minimumFractionDigits:2 }).format(n);
+    }catch(e){
+      return '$' + (isFinite(n) ? n.toFixed(2) : '0.00');
     }
   }
-  function updateTotal(){
-    const total =
-      parseVal('#{{ form.valorinscripcion.id_for_label }}') +
-      parseVal('#{{ form.valormatricula.id_for_label }}') +
-      parseVal('#{{ form.primeracolegiatura.id_for_label }}') +
-      parseVal('#{{ form.segundacolegiatura.id_for_label }}');
 
-    const out = document.getElementById('total-programa');
-    if (out) out.textContent = formatUSD(total);
+  const selPlan  = q('#{{ form.plan_pago.id_for_label }}');
+
+  const elIns    = q('#{{ form.valorinscripcion.id_for_label }}');
+  const elMat    = q('#{{ form.valormatricula.id_for_label }}');
+
+  const elCole1  = q('#{{ form.primeracolegiatura.id_for_label }}');
+  const elCole2  = q('#{{ form.segundacolegiatura.id_for_label }}');
+
+  const elTotal  = q('#{{ form.valor_total.id_for_label }}');
+  const elCuota  = q('#{{ form.cuota_mensual.id_for_label }}');
+
+  const outTotal = q('#total-programa');
+
+  function togglePlan(){
+    const isPlan2 = selPlan && selPlan.value === '2_COLEGIATURAS';
+    qa('.plan2-only').forEach(x => x.style.display = isPlan2 ? '' : 'none');
+    qa('.plan10-only').forEach(x => x.style.display = isPlan2 ? 'none' : '');
   }
 
-  // Actualiza al cargar y cuando el usuario escribe
-  document.addEventListener('DOMContentLoaded', updateTotal);
+  function recalc(){
+    const plan = selPlan ? selPlan.value : '2_COLEGIATURAS';
+    const ins  = numFrom(elIns);
+    const mat  = numFrom(elMat);
+
+    let total = 0;
+
+    if (plan === '2_COLEGIATURAS'){
+      const c1 = numFrom(elCole1);
+      const c2 = numFrom(elCole2);
+      total = ins + mat + c1 + c2;
+      if (elCuota) elCuota.value = ''; // no aplica
+    } else {
+      const tot = numFrom(elTotal);
+      total = tot;
+      const base = (tot - ins - mat);
+      const cuota = base / 10;
+      if (elCuota) elCuota.value = isFinite(cuota) ? cuota.toFixed(2) : '';
+    }
+
+    if (outTotal) outTotal.textContent = fmtUSD(isFinite(total) ? total : 0);
+  }
+
   document.addEventListener('input', function(e){
-    if ([
-      '{{ form.valorinscripcion.html_name }}',
-      '{{ form.valormatricula.html_name }}',
-      '{{ form.primeracolegiatura.html_name }}',
-      '{{ form.segundacolegiatura.html_name }}'
-    ].includes(e.target.name)) {
-      updateTotal();
-    }
+    if (!e.target) return;
+    recalc();
+  });
+
+  if (selPlan) selPlan.addEventListener('change', function(){
+    togglePlan();
+    recalc();
+  });
+
+  document.addEventListener('DOMContentLoaded', function(){
+    togglePlan();
+    recalc();
   });
 })();
 </script>

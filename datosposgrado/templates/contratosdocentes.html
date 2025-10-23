@@ -21,6 +21,15 @@
     </div>
   </div>
 
+        {% if messages %}
+        <div class="mt-2">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
   <!-- Contenedor tabla -->
   <section class="card border-2 shadow-lg " style="padding: 1%;">
     <div class="card-body p-0">
@@ -45,6 +54,7 @@
               <th scope="col">Tipo de personal académico</th>
               <th scope="col">Adenda</th>
               <th scope="col">Observaciones</th>
+              <th scope="col">URL del Documento</th>
               <th scope="col">Acciones</th>
             </tr>
           </thead>
@@ -71,6 +81,13 @@
               <td class="text-truncate" style="max-width: 140px;" title="{{ contrato.adenda }}">{{ contrato.adenda }}
               </td>
               <td class="text-truncate" style="max-width: 180px;" title="{{ contrato.observaciones }}">{{ contrato.observaciones }}</td>
+              <td class="text-truncate" style="max-width: 220px;">
+                {% if contrato.urldocumento %}
+                  <a href="{{ contrato.urldocumento }}" target="_blank">Ver Documento</a>
+                {% else %}
+                  No disponible
+                {% endif %}
+              </td>
               <td>
                 <div class="d-flex gap-2">
                   <a href="{% url 'contratosdocentes_update' contrato.id periodo_id %}" class="btn btn-warning btn-sm"

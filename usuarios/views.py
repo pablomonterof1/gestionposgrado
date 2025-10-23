@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from django.http import HttpResponse
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.db import IntegrityError, transaction
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, UserSelfForm, PerfilUsuarioSelfForm, PerfilAcademicoSelfForm
 from django.contrib.auth.decorators import login_required
 from .models import PerfilUsuario, MatriculaUsuario, MatriculaDocenteModulo, PerfilAcademicoUsuario
 from django.shortcuts import get_object_or_404, redirect
@@ -104,7 +104,87 @@ def signout(request):
 
 @login_required
 def perfil(request):
-    return render(request, 'perfil.html')
+    """
+    Vista de perfil del usuario autenticado.
+    Crea PerfilUsuario y PerfilAcademico si aún no existen (para evitar errores en el template).
+    """
+    perfil, _ = PerfilUsuario.objects.get_or_create(user=request.user)
+    academico, _ = PerfilAcademicoUsuario.objects.get_or_create(usuario=perfil)
+
+    # Datos “extra” opcionales para mostrar en el perfil (no obligatorio)
+    # - Matrículas como estudiante
+    mats = MatriculaUsuario.objects.filter(usuario=request.user).order_by('-fecha_matricula')
+
+    # - Asignaciones a módulos como docente (si aplica)
+    mods_doc = MatriculaDocenteModulo.objects.filter(docente=request.user).order_by('-fecha_matricula')
+
+    ctx = {
+        'user_obj': request.user,
+        'perfil': perfil,
+        'academico': academico,
+        'matriculas': mats,
+        'modulos_docente': mods_doc,
+    }
+    return render(request, 'perfil.html', ctx)
+
+
+@login_required
+@transaction.atomic
+def perfil_editar(request):
+    """
+    Edición de datos del usuario autenticado (sus datos básicos, perfil y perfil académico).
+    No cambia contraseña (eso va en perfil_password).
+    """
+    perfil, _ = PerfilUsuario.objects.get_or_create(user=request.user)
+    academico, _ = PerfilAcademicoUsuario.objects.get_or_create(usuario=perfil)
+
+    if request.method == 'POST':
+        f_user = UserSelfForm(request.POST, instance=request.user)
+        f_perfil = PerfilUsuarioSelfForm(request.POST, instance=perfil, user_instance=request.user)
+        f_acad = PerfilAcademicoSelfForm(request.POST, instance=academico)
+
+        # Validaciones de unicidad (email/CI) se manejan en los forms
+        if f_user.is_valid() and f_perfil.is_valid() and f_acad.is_valid():
+            f_user.save()
+            f_perfil.instance.rol = perfil.rol  # Mantener rol actual
+            f_perfil.save()
+            f_acad.save()
+            messages.success(request, 'Tus datos fueron actualizados correctamente.')
+            return redirect('perfil')
+        else:
+            messages.error(request, 'Por favor corrige los errores del formulario.')
+    else:
+        f_user = UserSelfForm(instance=request.user)
+        f_perfil = PerfilUsuarioSelfForm(instance=perfil, user_instance=request.user)
+        f_acad = PerfilAcademicoSelfForm(instance=academico)
+
+    return render(request, 'perfil_editar.html', {
+        'f_user': f_user,
+        'f_perfil': f_perfil,
+        'f_acad': f_acad,
+    })
+
+
+@login_required
+@transaction.atomic
+def perfil_password(request):
+    """
+    Cambio de contraseña para el usuario autenticado.
+    """
+    if request.method == 'POST':
+        form = PasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            user = form.save()
+            # Mantener la sesión
+            update_session_auth_hash(request, user)
+            messages.success(request, 'Tu contraseña se actualizó correctamente.')
+            return redirect('perfil')
+        else:
+            messages.error(request, 'Corrige los errores del formulario.')
+    else:
+        form = PasswordChangeForm(user=request.user)
+
+    return render(request, 'perfil_password.html', {'form': form})
 
 
 @login_required

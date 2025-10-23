@@ -4,64 +4,136 @@
 
 <main class="container py-5">
 
-    <section class="card p-4">
-        <div style="justify-content: space-between;">
-
-            <h2 class="mb-4">Perfil de Usuario</h2>
-            {% if user.perfilusuario.rol %}
-            <h4><strong>Rol:</strong> {{ user.perfilusuario.get_rol_display }}</h4>
-            {% elif user.is_superuser %}
-            <h4><strong>Rol:</strong> Administrador</h4>
-            {% else %}
-            <h4><strong>Rol:</strong> Sin rol</h4>
-
-            {% endif %}
-        </div>
-
-        {% if messages %}
-        <div class="mt-2">
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-            </div>
-            {% endfor %}
-        </div>
+  <section class="card border-0 shadow-sm p-4">
+    <div class="d-flex align-items-center justify-content-between">
+      <div>
+        <h2 class="mb-1">Perfil de Usuario</h2>
+        {% if user.perfilusuario.rol %}
+          <h6 class="text-muted mb-0"><strong>Rol:</strong> {{ user.perfilusuario.get_rol_display }}</h6>
+        {% elif user.is_superuser %}
+          <h6 class="text-muted mb-0"><strong>Rol:</strong> Administrador</h6>
+        {% else %}
+          <h6 class="text-muted mb-0"><strong>Rol:</strong> Sin rol</h6>
         {% endif %}
+      </div>
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" href="{% url 'perfil_editar' %}">
+          <i class="fa fa-pen"></i> Editar perfil
+        </a>
+        <a class="btn btn-outline-secondary" href="{% url 'perfil_password' %}">
+          <i class="fa fa-key"></i> Cambiar contraseña
+        </a>
+      </div>
+    </div>
 
-        <div style="text-align: right;">
-            <a class="btn btn-success" href=""> Editar </a>
+    {% if messages %}
+      <div class="mt-3">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags|default:'info' }} mb-2" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="text-center my-4">
+      {% if user.perfilusuario.foto_perfil %}
+        <img src="{{ user.perfilusuario.foto_perfil }}" alt="Avatar" class="rounded-circle" width="150" height="150">
+      {% endif %}
+    </div>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="card h-100 shadow">
+          <div class="card-header bg-dark fw-semibold text-light">
+            <h5>
+                Datos personales
+            </h5>
         </div>
-
-        <div class="text-center mb-4">
-
-
-            {% if user.perfilusuario.foto_perfil %}
-            <img src="{{ user.perfilusuario.foto_perfil }}" alt="Avatar" class="rounded-circle" width="150"
-                height="150">
-            {% endif %}
-
+          <div class="card-body">
+            <p class="mb-1"><strong>Nombres:</strong> {{ user.first_name|default:"—" }}</p>
+            <p class="mb-1"><strong>Apellidos:</strong> {{ user.last_name|default:"—" }}</p>
+            <p class="mb-1"><strong>Correo:</strong> {{ user.email|default:"—" }}</p>
+            <p class="mb-1"><strong>Teléfono:</strong> {{ perfil.telefono|default:"—" }}</p>
+            <p class="mb-1"><strong>CI:</strong> {{ perfil.ci|default:"—" }}</p>
+            <p class="mb-1"><strong>Sexo:</strong>
+              {% if perfil.sexo == 'M' %}Masculino
+              {% elif perfil.sexo == 'F' %}Femenino
+              {% elif perfil.sexo == 'O' %}Otro
+              {% else %}—{% endif %}
+            </p>
+            <p class="mb-1"><strong>Fecha nacimiento:</strong> {{ perfil.fecha_nacimiento|date:"Y-m-d"|default:"—" }}</p>
+            <p class="mb-1"><strong>Nacionalidad:</strong> {{ perfil.nacionalidad|default:"—" }}</p>
+            <p class="mb-1"><strong>Provincia:</strong> {{ perfil.provincia|default:"—" }}</p>
+            <hr>
+            <p class="mb-1"><strong>Usuario:</strong> {{ user.username }}</p>
+            <p class="mb-1"><strong>Último acceso:</strong> {{ user.last_login|date:"d/m/Y H:i"|default:"—" }}</p>
+            <p class="mb-1"><strong>Fecha registro:</strong> {{ user.date_joined|date:"d/m/Y" }}</p>
+          </div>
         </div>
-        <div class="row">
-            <div class="col-md-6">
-                <p><strong>Nombre:</strong> {{ user.first_name }}</p>
-                <p><strong>Apellido:</strong> {{ user.last_name }}</p>
-                <p><strong>Correo Electrónico:</strong> {{ user.email }}</p>
-                <p><strong>Teléfono:</strong> {{ user.perfilusuario.telefono }}</p>
+      </div>
 
-            </div>
-            <div class="col-md-6">
-                <p><strong>Nombre de Usuario:</strong> {{ user.username }}</p>
-                <p><strong>Último Inicio de Sesión:</strong> {{ user.last_login|date:"d/m/Y H:i" }}</p>
-                <p><strong>Fecha de Registro:</strong> {{ user.date_joined|date:"d/m/Y" }}</p>
-            </div>
+      <div class="col-md-6">
+        <div class="card h-100 shadow">
+          <div class="card-header bg-dark fw-semibold text-light ">
+            <h5>
+            Perfil académico
+            </h5>
         </div>
+          <div class="card-body">
+            <p class="mb-1"><strong>Título de grado:</strong> {{ academico.titulo_grado|default:"—" }}</p>
+            <p class="mb-1"><strong>Maestría:</strong> {{ academico.titulo_postgrado_maestria|default:"—" }}</p>
+            <p class="mb-1"><strong>Doctorado:</strong> {{ academico.titulo_postgrado_doctorado|default:"—" }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    
-        <hr>
+    {% if matriculas %}
+      <hr class="my-4">
+      <h5>Matrículas como estudiante</h5>
+      <table class="table table-sm table-bordered align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Programa</th>
+            <th>Rol</th>
+            <th>Fecha matrícula</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in matriculas %}
+            <tr>
+              <td>{{ m.programa }}</td>
+              <td>{{ m.get_rol_en_programa_display }}</td>
+              <td>{{ m.fecha_matricula|date:"Y-m-d H:i" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
 
-    </section>
+    {% if modulos_docente %}
+      <hr class="my-4">
+      <h5>Asignaciones como docente</h5>
+      <table class="table table-sm table-bordered align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Módulo</th>
+            <th>Programa (ID)</th>
+            <th>Fecha asignación</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for md in modulos_docente %}
+            <tr>
+              <td>{{ md.modulo }}</td>
+              <td>{{ md.programa }}</td>
+              <td>{{ md.fecha_matricula|date:"Y-m-d H:i" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  </section>
 </main>
-
-
-
 {% endblock %}

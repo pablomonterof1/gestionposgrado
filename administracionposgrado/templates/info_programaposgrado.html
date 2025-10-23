@@ -173,7 +173,16 @@
   <div class="card-header text-bg-warning d-flex align-items-center justify-content-between">
     <div>
       <h5 class="m-0">Resumen financiero del programa</h5>
-      <small class="opacity-75">Moneda: {{ fin.moneda|default:"USD" }}</small>
+      <small class="opacity-75">
+        Moneda: {{ fin.moneda|default:"USD" }} ·
+        Plan: {% if fin.plan_pago == '10_CUOTAS' %}10 cuotas{% else %}2 colegiaturas{% endif %}
+        {% if fin.plan_pago == '10_CUOTAS' and fin.cuota_mensual %}
+          · Cuota: {{ fin.cuota_mensual }} {{ fin.moneda }}
+        {% endif %}
+        {% if fin.plan_pago == '10_CUOTAS' and fin.valor_total_programa %}
+          · Total programa: {{ fin.valor_total_programa }} {{ fin.moneda }}
+        {% endif %}
+      </small>
     </div>
     <button class="btn btn-sm btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#desgloseFinanciero">
       Ver desglose
@@ -216,7 +225,6 @@
         </div>
       </div>
     </div>
-
     <div id="desgloseFinanciero" class="collapse mt-4">
       <div class="row g-3">
         <div class="col-12 col-lg-6">
@@ -225,34 +233,63 @@
               Ingresos (estudiantes)
             </div>
             <div class="card-body p-0">
-              <table class="table table-sm table-bordered m-0">
-                <tbody>
-                  <tr>
-                    <th class="w-50">Inscripción</th>
-                    <td class="text-end">$ {{ fin.ingresos_inscripcion|default:"0.00" }}</td>
-                  </tr>
-                  <tr>
-                    <th>Matrícula</th>
-                    <td class="text-end">$ {{ fin.ingresos_matricula|default:"0.00" }}</td>
-                  </tr>
-                  <tr>
-                    <th>1ra Colegiatura</th>
-                    <td class="text-end">$ {{ fin.ingresos_colegiatura1|default:"0.00" }}</td>
-                  </tr>
-                  <tr>
-                    <th>2da Colegiatura</th>
-                    <td class="text-end">$ {{ fin.ingresos_colegiatura2|default:"0.00" }}</td>
-                  </tr>
-                  <tr class="table-light">
-                    <th>Total</th>
-                    <td class="text-end fw-bold">$ {{ fin.total_ingresos|default:"0.00" }}</td>
-                  </tr>
-                </tbody>
-              </table>
+              {% if fin.plan_pago == '2_COLEGIATURAS' %}
+                <table class="table table-sm table-bordered m-0">
+                  <tbody>
+                    <tr>
+                      <th class="w-50">Inscripción</th>
+                      <td class="text-end">$ {{ fin.ingresos_inscripcion|default:"0.00" }}</td>
+                    </tr>
+                    <tr>
+                      <th>Matrícula</th>
+                      <td class="text-end">$ {{ fin.ingresos_matricula|default:"0.00" }}</td>
+                    </tr>
+                    <tr>
+                      <th>1ra Colegiatura</th>
+                      <td class="text-end">$ {{ fin.ingresos_colegiatura1|default:"0.00" }}</td>
+                    </tr>
+                    <tr>
+                      <th>2da Colegiatura</th>
+                      <td class="text-end">$ {{ fin.ingresos_colegiatura2|default:"0.00" }}</td>
+                    </tr>
+                    <tr class="table-light">
+                      <th>Total</th>
+                      <td class="text-end fw-bold">$ {{ fin.total_ingresos|default:"0.00" }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              {% else %}
+                <table class="table table-sm table-bordered m-0">
+                  <tbody>
+                    <tr>
+                      <th class="w-50">Inscripción</th>
+                      <td class="text-end">$ {{ fin.ingresos_inscripcion|default:"0.00" }}</td>
+                    </tr>
+                    <tr>
+                      <th>Matrícula</th>
+                      <td class="text-end">$ {{ fin.ingresos_matricula|default:"0.00" }}</td>
+                    </tr>
+                    <tr>
+                      <th>Cuotas (x10)</th>
+                      <td class="text-end">
+                        $ {{ fin.ingresos_cuotas10|default:"0.00" }}
+                        <small class="text-muted ms-2">
+                          {% if fin.total_cuotas_pagadas %}{{ fin.total_cuotas_pagadas }} cuotas pagadas{% else %}0 cuotas pagadas{% endif %}
+                        </small>
+                      </td>
+                    </tr>
+                    <tr class="table-light">
+                      <th>Total</th>
+                      <td class="text-end fw-bold">$ {{ fin.total_ingresos|default:"0.00" }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              {% endif %}
             </div>
           </div>
         </div>
 
+        <!-- Egresos (sin cambios) -->
         <div class="col-12 col-lg-6">
           <div class="card h-100">
             <div class="card-header bg-transparent fw-semibold">
@@ -285,6 +322,8 @@
 
       </div>
     </div>
+
+
   </div>
 </section>
   </section>

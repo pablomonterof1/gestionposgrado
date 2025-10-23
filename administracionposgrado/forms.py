@@ -6,20 +6,27 @@ from datosposgrado.models import ContratoCoordinador, ContratosDocentes
 class ValorProgramaPosgradoForm(forms.ModelForm):
     class Meta:
         model = ValorProgramaPosgrado
-        fields = ['valorinscripcion', 'valormatricula', 'primeracolegiatura', 'segundacolegiatura', 'moneda']
+        fields = [
+            'valorinscripcion', 'valormatricula',
+            'plan_pago',
+            'primeracolegiatura', 'segundacolegiatura',
+            'valor_total', 'cuota_mensual',
+            'moneda'
+        ]
         widgets = {
             'valorinscripcion': forms.NumberInput(attrs={'class':'form-control', 'step':'0.01', 'min':'0'}),
             'valormatricula': forms.NumberInput(attrs={'class':'form-control', 'step':'0.01', 'min':'0'}),
+            'plan_pago': forms.Select(attrs={'class':'form-select'}),
             'primeracolegiatura': forms.NumberInput(attrs={'class':'form-control', 'step':'0.01', 'min':'0'}),
             'segundacolegiatura': forms.NumberInput(attrs={'class':'form-control', 'step':'0.01', 'min':'0'}),
+            'valor_total': forms.NumberInput(attrs={'class':'form-control', 'step':'0.01', 'min':'0'}),
+            'cuota_mensual': forms.NumberInput(attrs={'class':'form-control', 'readonly':'readonly'}),
             'moneda': forms.TextInput(attrs={'class':'form-control', 'readonly':'readonly'}),
         }
 
     def clean(self):
         data = super().clean()
-        for campo in ['valorinscripcion', 'valormatricula', 'primeracolegiatura', 'segundacolegiatura']:
-            if data.get(campo) is not None and data[campo] < 0:
-                self.add_error(campo, 'El valor no puede ser negativo.')
+        # ya validamos no negativos en el modelo; aquí puedes añadir checks UX si quieres
         return data
     
 
@@ -128,6 +135,7 @@ class EstudianteProgramaGestionForm(forms.ModelForm):
         model = EstudianteProgramaGestion
         fields = [
             'pago_inscripcion', 'pago_matricula', 'pago_primera_colegiatura', 'pago_segunda_colegiatura',
+            'cuotas_pagadas',
             'modalidad', 'fecha_rubrica_aprobada',
             'tutor_resolucion', 'tutor_resolucion_fecha', 'tutor_contratado',
             'avance_porcentaje',
@@ -139,6 +147,7 @@ class EstudianteProgramaGestionForm(forms.ModelForm):
             'pago_matricula': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'pago_primera_colegiatura': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'pago_segunda_colegiatura': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'cuotas_pagadas': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'max': '10'}),
             'modalidad': forms.Select(attrs={'class': 'form-select'}),
             'fecha_rubrica_aprobada': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'tutor_resolucion': forms.TextInput(attrs={'class': 'form-control'}),
@@ -154,6 +163,7 @@ class EstudianteProgramaGestionForm(forms.ModelForm):
             'pago_matricula': 'Matrícula pagada',
             'pago_primera_colegiatura': '1ª colegiatura pagada',
             'pago_segunda_colegiatura': '2ª colegiatura pagada',
+            'cuotas_pagadas': 'Cuotas pagadas (0 a 10)',
             'modalidad': 'Modalidad de titulación',
             'fecha_rubrica_aprobada': 'Rúbrica de tema aprobada (fecha)',
             'tutor_resolucion': 'Resolución de tutor',
@@ -164,4 +174,7 @@ class EstudianteProgramaGestionForm(forms.ModelForm):
             'fecha_aprob_complexivo': 'Aprobación exámen complexivo (fecha)',
             'estado_titulo': 'Estado de título',
         }
-
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Nunca requerido: el modelo ya valida rango y la vista lo normaliza a 0 si aplica
+        self.fields['cuotas_pagadas'].required = False

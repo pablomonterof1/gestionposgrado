@@ -4,13 +4,12 @@
 
   <div class="d-flex align-items-center justify-content-between mb-3">
     <h2 class="mb-0">Estudiantes — <span class="text-primary">{{ programa }}</span></h2>
-
   </div>
 
-      <a href="{% url 'informacionprogramaposgrado' programa.id %}" class="btn btn-secondary">
-      <i class="fa fa-arrow-left"></i> Volver
-    </a>
-    <br><br>
+  <a href="{% url 'informacionprogramaposgrado' programa.id %}" class="btn btn-secondary">
+    <i class="fa fa-arrow-left"></i> Volver
+  </a>
+  <br><br>
 
   {% if messages %}
     <div class="mb-3">
@@ -25,12 +24,41 @@
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-body py-3">
       <div class="row g-3 align-items-center">
-        <div class="col-auto"><strong>Valores del programa ({{ valores_programa.moneda }}):</strong></div>
-        <div class="col-auto">Inscripción: <span class="badge text-bg-secondary">{{ valores_programa.inscripcion }}</span></div>
-        <div class="col-auto">Matrícula: <span class="badge text-bg-secondary">{{ valores_programa.matricula }}</span></div>
-        <div class="col-auto">1ª colegiatura: <span class="badge text-bg-secondary">{{ valores_programa.cole1 }}</span></div>
-        <div class="col-auto">2ª colegiatura: <span class="badge text-bg-secondary">{{ valores_programa.cole2 }}</span></div>
-        <div class="col-auto ms-auto"><strong>Total programa:</strong> <span class="badge text-bg-primary">{{ total_programa }}</span></div>
+        <div class="col-auto">
+          <strong>Valores del programa ({{ valores_programa.moneda }}):</strong>
+        </div>
+
+        <div class="col-auto">Inscripción:
+          <span class="badge text-bg-secondary">{{ valores_programa.inscripcion }}</span>
+        </div>
+
+        <div class="col-auto">Matrícula:
+          <span class="badge text-bg-secondary">{{ valores_programa.matricula }}</span>
+        </div>
+
+        {% if plan_pago == '2_COLEGIATURAS' %}
+          <div class="col-auto">1ª colegiatura:
+            <span class="badge text-bg-secondary">{{ valores_programa.cole1 }}</span>
+          </div>
+          <div class="col-auto">2ª colegiatura:
+            <span class="badge text-bg-secondary">{{ valores_programa.cole2 }}</span>
+          </div>
+          <div class="col-auto ms-auto">
+            <strong>Total programa:</strong>
+            <span class="badge text-bg-primary">{{ total_programa }}</span>
+          </div>
+        {% else %}
+          <div class="col-auto">Cuota (x10):
+            <span class="badge text-bg-secondary">{{ valores_programa.cuota_mensual }}</span>
+          </div>
+          <div class="col-auto ms-auto">
+            <strong>Total programa:</strong>
+            <span class="badge text-bg-primary">{{ total_programa }}</span>
+          </div>
+        {% endif %}
+      </div>
+      <div class="mt-2">
+        <small class="text-muted">Plan: {% if plan_pago == '10_CUOTAS' %}10 cuotas{% else %}2 colegiaturas{% endif %}</small>
       </div>
     </div>
   </div>
@@ -47,10 +75,17 @@
               <th>N. cédula</th>
               <th>Correo</th>
               <th>N. celular</th>
+
               <th class="text-center">Inscripción</th>
               <th class="text-center">Matrícula</th>
-              <th class="text-center">1ª colegiatura</th>
-              <th class="text-center">2ª colegiatura</th>
+
+              {% if plan_pago == '2_COLEGIATURAS' %}
+                <th class="text-center">1ª colegiatura</th>
+                <th class="text-center">2ª colegiatura</th>
+              {% else %}
+                <th class="text-center">Cuotas pagadas (0–10)</th>
+              {% endif %}
+
               <th class="text-end">TOTAL pagado</th>
               <th>Modalidad titulación</th>
               <th>Rúbrica aprobada</th>
@@ -65,14 +100,14 @@
           </thead>
           <tbody>
             {% for f in filas %}
-            {% with u=f.usuario p=f.perfil g=f.gestion vp=f.vp %}
+            {% with u=f.usuario p=f.perfil g=f.gestion %}
             <tr id="est-{{ u.id }}">
               <td class="fw-semibold">{{ u.get_full_name|default:u.username }}</td>
               <td>{% if p and p.ci %}{{ p.ci }}{% else %}—{% endif %}</td>
               <td class="text-break">{{ u.email|default:"—" }}</td>
               <td>{{ p.telefono|default:"—" }}</td>
 
-              <!-- Rubros: mostrar Sí/No -->
+              <!-- Inscripción -->
               <td class="text-center">
                 {% if g and g.pago_inscripcion %}
                   <span class="badge text-bg-success">Sí</span>
@@ -80,6 +115,8 @@
                   <span class="badge text-bg-warning text-dark">No</span>
                 {% endif %}
               </td>
+
+              <!-- Matrícula -->
               <td class="text-center">
                 {% if g and g.pago_matricula %}
                   <span class="badge text-bg-success">Sí</span>
@@ -87,20 +124,27 @@
                   <span class="badge text-bg-warning text-dark">No</span>
                 {% endif %}
               </td>
-              <td class="text-center">
-                {% if g and g.pago_primera_colegiatura %}
-                  <span class="badge text-bg-success">Sí</span>
-                {% else %}
-                  <span class="badge text-bg-warning text-dark">No</span>
-                {% endif %}
-              </td>
-              <td class="text-center">
-                {% if g and g.pago_segunda_colegiatura %}
-                  <span class="badge text-bg-success">Sí</span>
-                {% else %}
-                  <span class="badge text-bg-warning text-dark">No</span>
-                {% endif %}
-              </td>
+
+              {% if plan_pago == '2_COLEGIATURAS' %}
+                <td class="text-center">
+                  {% if g and g.pago_primera_colegiatura %}
+                    <span class="badge text-bg-success">Sí</span>
+                  {% else %}
+                    <span class="badge text-bg-warning text-dark">No</span>
+                  {% endif %}
+                </td>
+                <td class="text-center">
+                  {% if g and g.pago_segunda_colegiatura %}
+                    <span class="badge text-bg-success">Sí</span>
+                  {% else %}
+                    <span class="badge text-bg-warning text-dark">No</span>
+                  {% endif %}
+                </td>
+              {% else %}
+                <td class="text-center">
+                  {% if g %}{{ g.cuotas_pagadas|default:"0" }}{% else %}0{% endif %}/10
+                </td>
+              {% endif %}
 
               <!-- TOTAL pagado por estudiante -->
               <td class="text-end fw-bold">

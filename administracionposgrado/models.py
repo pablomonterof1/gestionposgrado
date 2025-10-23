@@ -3,23 +3,92 @@ from programasposgrado.models import ProgramaPosgrado, ModalidadDeTitulacion
 from usuarios.models import User 
 from django.core.exceptions import ValidationError
 from datosposgrado.models import ContratoCoordinador, ContratosDocentes, ContratoTutor
+from django.core.validators import MinValueValidator, MaxValueValidator
 
-# Create your models here.
 class ValorProgramaPosgrado(models.Model):
+    PLAN_10 = '10_CUOTAS'
+    PLAN_2 = '2_COLEGIATURAS'
+    PLAN_PAGO_CHOICES = [
+        (PLAN_10, '10 cuotas'),
+        (PLAN_2, '2 colegiaturas'),
+    ]
+
     programa = models.OneToOneField(ProgramaPosgrado, on_delete=models.PROTECT, related_name='valor_programa')
+
+    # Montos base
     valorinscripcion = models.DecimalField(max_digits=10, decimal_places=2)
     valormatricula = models.DecimalField(max_digits=10, decimal_places=2)
-    primeracolegiatura = models.DecimalField(max_digits=10, decimal_places=2)
-    segundacolegiatura = models.DecimalField(max_digits=10, decimal_places=2)
+
+    # Plan de pago
+    plan_pago = models.CharField(max_length=20, choices=PLAN_PAGO_CHOICES, default=PLAN_10)
+
+    # Si plan = 2 colegiaturas (se usan estos dos)
+    primeracolegiatura = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    segundacolegiatura = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+
+    # Si plan = 10 cuotas (se usa valor_total y se calcula cuota_mensual)
+    valor_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    # opcional: almacenar la cuota calculada para mostrar rápido
+    cuota_mensual = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+
     moneda = models.CharField(max_length=10, default='USD')
     created = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.programa} - {self.valorinscripcion} {self.moneda} - {self.valormatricula} {self.moneda} - {self.primeracolegiatura} {self.moneda} - {self.segundacolegiatura} {self.moneda}"
 
     class Meta:
         ordering = ['-created']
         verbose_name = 'Valor Programa de Posgrado'
+
+    def __str__(self):
+        base = f"{self.programa} - Inscr:{self.valorinscripcion} {self.moneda} - Matri:{self.valormatricula} {self.moneda}"
+        if self.plan_pago == self.PLAN_2:
+            return f"{base} - Cole1:{self.primeracolegiatura or 0} {self.moneda} - Cole2:{self.segundacolegiatura or 0} {self.moneda}"
+        return f"{base} - Total:{self.valor_total or 0} {self.moneda} - Cuota:{self.cuota_mensual or 0} {self.moneda} x10"
+
+    def clean(self):
+        """
+        Reglas:
+        - Siempre deben ser >= 0
+        - PLAN_2: requiere colegiaturas; valor_total/cuota_mensual pueden ir en blanco
+        - PLAN_10: requiere valor_total; colegiaturas pueden ir en blanco
+                   cuota_mensual = (valor_total - inscripcion - matricula) / 10
+        """
+        errors = {}
+
+        def nonneg(name, value):
+            if value is not None and value < 0:
+                errors[name] = 'El valor no puede ser negativo.'
+
+        nonneg('valorinscripcion', self.valorinscripcion)
+        nonneg('valormatricula', self.valormatricula)
+        nonneg('primeracolegiatura', self.primeracolegiatura)
+        nonneg('segundacolegiatura', self.segundacolegiatura)
+        nonneg('valor_total', self.valor_total)
+        nonneg('cuota_mensual', self.cuota_mensual)
+
+        if self.plan_pago == self.PLAN_2:
+            if self.primeracolegiatura is None:
+                errors['primeracolegiatura'] = 'Requerido para el plan de 2 colegiaturas.'
+            if self.segundacolegiatura is None:
+                errors['segundacolegiatura'] = 'Requerido para el plan de 2 colegiaturas.'
+            # opcional: puedes forzar que valor_total/cuota_mensual queden vacíos
+            self.valor_total = self.valor_total or None
+            self.cuota_mensual = self.cuota_mensual or None
+
+        elif self.plan_pago == self.PLAN_10:
+            if self.valor_total is None:
+                errors['valor_total'] = 'Requerido para el plan de 10 cuotas.'
+            else:
+                base = (self.valor_total or 0) - (self.valorinscripcion or 0) - (self.valormatricula or 0)
+                # redondeo a 2 decimales
+                self.cuota_mensual = round(base / 10, 2)
+                if self.cuota_mensual < 0:
+                    errors['valor_total'] = 'El total debe ser mayor o igual a inscripción + matrícula.'
+            # opcional: limpiar colegiaturas si no se usan
+            self.primeracolegiatura = self.primeracolegiatura or None
+            self.segundacolegiatura = self.segundacolegiatura or None
+
+        if errors:
+            raise ValidationError(errors)
 
 
 
@@ -208,6 +277,14 @@ class EstudianteProgramaGestion(models.Model):
     pago_matricula = models.BooleanField(default=False)
     pago_primera_colegiatura = models.BooleanField(default=False)
     pago_segunda_colegiatura = models.BooleanField(default=False)
+    # NUEVO: solo para plan de 10 cuotas (para plan 2 se ignora)
+    cuotas_pagadas = models.PositiveSmallIntegerField(
+        default=0,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(10)],
+        help_text="Número de cuotas pagadas cuando el plan del programa es 10 cuotas."
+    )
 
     # Proceso titulación
     modalidad = models.ForeignKey(ModalidadDeTitulacion, on_delete=models.SET_NULL, blank=True, null=True)

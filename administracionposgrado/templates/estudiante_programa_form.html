@@ -18,30 +18,54 @@
 
   <div class="card border-0 shadow-sm">
     <div class="card-body">
-      <h6 class="text-primary">Pagos</h6>
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="text-primary m-0">Pagos</h6>
+        {% if vp %}
+          <small class="text-muted">Plan: {% if plan_pago == '10_CUOTAS' %}10 cuotas{% else %}2 colegiaturas{% endif %}</small>
+        {% endif %}
+      </div>
+
       <form method="post" class="row g-3">
         {% csrf_token %}
 
+        <!-- Inscripción / Matrícula (siempre) -->
         <div class="col-md-3">
           <div class="form-check">
-            {{ form.pago_inscripcion }} <label class="form-check-label" for="{{ form.pago_inscripcion.id_for_label }}">Inscripción</label>
+            {{ form.pago_inscripcion }}
+            <label class="form-check-label" for="{{ form.pago_inscripcion.id_for_label }}">Inscripción</label>
           </div>
         </div>
         <div class="col-md-3">
           <div class="form-check">
-            {{ form.pago_matricula }} <label class="form-check-label" for="{{ form.pago_matricula.id_for_label }}">Matrícula</label>
+            {{ form.pago_matricula }}
+            <label class="form-check-label" for="{{ form.pago_matricula.id_for_label }}">Matrícula</label>
           </div>
         </div>
-        <div class="col-md-3">
-          <div class="form-check">
-            {{ form.pago_primera_colegiatura }} <label class="form-check-label" for="{{ form.pago_primera_colegiatura.id_for_label }}">1ª colegiatura</label>
+
+        <!-- Plan 2: colegiaturas -->
+        {% if plan_pago == '2_COLEGIATURAS' %}
+          <div class="col-md-3">
+            <div class="form-check">
+              {{ form.pago_primera_colegiatura }}
+              <label class="form-check-label" for="{{ form.pago_primera_colegiatura.id_for_label }}">1ª colegiatura</label>
+            </div>
           </div>
-        </div>
-        <div class="col-md-3">
-          <div class="form-check">
-            {{ form.pago_segunda_colegiatura }} <label class="form-check-label" for="{{ form.pago_segunda_colegiatura.id_for_label }}">2ª colegiatura</label>
+          <div class="col-md-3">
+            <div class="form-check">
+              {{ form.pago_segunda_colegiatura }}
+              <label class="form-check-label" for="{{ form.pago_segunda_colegiatura.id_for_label }}">2ª colegiatura</label>
+            </div>
           </div>
-        </div>
+        {% else %}
+          <!-- Plan 10: cuotas_pagadas -->
+          <div class="col-md-3">
+            <label class="form-label">Cuotas pagadas (0–10)</label>
+            {{ form.cuotas_pagadas }}
+            <div class="form-text">
+              {% if vp %}Cuota mensual: {{ vp.cuota_mensual }} {{ vp.moneda }}{% endif %}
+            </div>
+          </div>
+        {% endif %}
 
         <hr class="my-2">
 

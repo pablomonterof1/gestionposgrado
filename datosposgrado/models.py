@@ -16,7 +16,8 @@ class ContratosDocentes(models.Model):
         (1, 'Servicios profesionales'), 
     ], default=1)
     adenda = models.CharField(max_length=100, blank=True, null=True)
-    obsevaciones = models.TextField(blank=True, null=True)    
+    observaciones = models.TextField(blank=True, null=True)    
+    urldocumento = models.URLField(max_length=500, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -40,7 +41,8 @@ class ContratoTutor(models.Model):
         (1, 'Servicios profesionales'), 
     ], default=1)
     adenda = models.CharField(max_length=100, blank=True, null=True)
-    obsevaciones = models.TextField(blank=True, null=True)    
+    observaciones = models.TextField(blank=True, null=True)    
+    urldocumento = models.URLField(max_length=500, blank=True, null=True) 
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -62,7 +64,8 @@ class ContratoCoordinador(models.Model):
     noactasseleccion = models.CharField(max_length=100)
     oficioentregadoporth = models.CharField(max_length=100)
     modalidadcontractuar = models.CharField(max_length=100)
-    obsevaciones = models.TextField(blank=True, null=True)    
+    observaciones = models.TextField(blank=True, null=True)    
+    urldocumento = models.URLField(max_length=500, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

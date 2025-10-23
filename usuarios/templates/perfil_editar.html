@@ -1,0 +1,101 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<main class="container py-5">
+  <section class="card border-0 shadow-sm p-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h3 class="mb-0">Editar mi perfil</h3>
+      <a href="{% url 'perfil' %}" class="btn btn-outline-secondary">
+        <i class="fa fa-arrow-left"></i> Volver
+      </a>
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} mb-2">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <h5 class="text-primary mt-1">Datos de acceso</h5>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Usuario</label>
+          {{ f_user.username }}
+          {% for e in f_user.username.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Nombre</label>
+          {{ f_user.first_name }}
+          {% for e in f_user.first_name.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Apellido</label>
+          {{ f_user.last_name }}
+          {% for e in f_user.last_name.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Correo</label>
+          {{ f_user.email }}
+          {% for e in f_user.email.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+      </div>
+
+      <h5 class="text-primary mt-4">Datos personales</h5>
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">CI</label>
+          {{ f_perfil.ci }}
+          {% for e in f_perfil.ci.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Teléfono</label>
+          {{ f_perfil.telefono }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Provincia</label>
+          {{ f_perfil.provincia }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Nacionalidad</label>
+          {{ f_perfil.nacionalidad }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Sexo</label>
+          {{ f_perfil.sexo }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Fecha de nacimiento</label>
+          {{ f_perfil.fecha_nacimiento }}
+        </div>
+      </div>
+
+      <h5 class="text-primary mt-4">Perfil académico</h5>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Título de grado</label>
+          {{ f_acad.titulo_grado }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Maestría</label>
+          {{ f_acad.titulo_postgrado_maestria }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Doctorado</label>
+          {{ f_acad.titulo_postgrado_doctorado }}
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end mt-4">
+        <a href="{% url 'perfil' %}" class="btn btn-outline-secondary me-2">
+          <i class="fa fa-times"></i> Cancelar
+        </a>
+        <button class="btn btn-primary" type="submit">
+          <i class="fa fa-save"></i> Guardar cambios
+        </button>
+      </div>
+    </form>
+  </section>
+</main>
+{% endblock %}

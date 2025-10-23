@@ -4,7 +4,7 @@ from .models import ContratosDocentes, ContratoTutor , ContratoCoordinador
 class ContratosDocentesForm(forms.ModelForm):
     class Meta:
         model = ContratosDocentes
-        fields = ['docente', 'programadeposgrado', 'modulo', 'horasacademicas', 'valorxhora', 'certificacionpresupuestaria', 'fechacertificacionpresupuestaria', 'plazo', 'numerocontrato', 'numeromemorandotthh' ,'tipopersonalacademico', 'adenda', 'obsevaciones']
+        fields = ['docente', 'programadeposgrado', 'modulo', 'horasacademicas', 'valorxhora', 'certificacionpresupuestaria', 'fechacertificacionpresupuestaria', 'plazo', 'numerocontrato', 'numeromemorandotthh' ,'tipopersonalacademico', 'adenda', 'observaciones', 'urldocumento']
 
         widgets = {
             'docente': forms.Select(attrs={'class': 'form-control'}),
@@ -21,7 +21,8 @@ class ContratosDocentesForm(forms.ModelForm):
                 (1, 'Servicios profesionales'),
             ]),
             'adenda': forms.TextInput(attrs={'class': 'form-control'}),
-            'obsevaciones': forms.Textarea(attrs={'class': 'form-control'}),
+            'observaciones': forms.Textarea(attrs={'class': 'form-control'}),
+            'urldocumento': forms.URLInput(attrs={'class': 'form-control'}),
         }   
         labels = {
             'docente': 'Docente',
@@ -36,13 +37,14 @@ class ContratosDocentesForm(forms.ModelForm):
             'numeromemorandotthh': 'Número de Memorando TTHH',
             'tipopersonalacademico': 'Tipo de Personal Académico',
             'adenda': 'Adenda',
-            'obsevaciones': 'Observaciones',
+            'observaciones': 'Observaciones',
+            'urldocumento': 'URL del Documento',
         }
 
 class ContratoTutorForm(forms.ModelForm):
     class Meta:
         model = ContratoTutor
-        fields = ['tutor', 'programadeposgrado', 'maestrante', 'plazo', 'certificacionpresupuestaria', 'fechacertificacionpresupuestaria', 'valorcontrato', 'numerocontrato', 'numeromemorandotthh', 'tipopersonalacademico', 'adenda', 'obsevaciones']
+        fields = ['tutor', 'programadeposgrado', 'maestrante', 'plazo', 'certificacionpresupuestaria', 'fechacertificacionpresupuestaria', 'valorcontrato', 'numerocontrato', 'numeromemorandotthh', 'tipopersonalacademico', 'adenda', 'observaciones', 'urldocumento']
 
         widgets = {
             'tutor': forms.Select(attrs={'class': 'form-control'}),
@@ -58,7 +60,8 @@ class ContratoTutorForm(forms.ModelForm):
                 (1, 'Servicios profesionales'),
             ]),
             'adenda': forms.TextInput(attrs={'class': 'form-control'}),
-            'obsevaciones': forms.Textarea(attrs={'class': 'form-control'}),
+            'observaciones': forms.Textarea(attrs={'class': 'form-control'}),
+            'urldocumento': forms.URLInput(attrs={'class': 'form-control'}),
         }   
         labels = {
             'tutor': 'Tutor',
@@ -72,13 +75,14 @@ class ContratoTutorForm(forms.ModelForm):
             'numeromemorandotthh': 'Número de Memorando TTHH',
             'tipopersonalacademico': 'Tipo de Personal Académico',
             'adenda': 'Adenda',
-            'obsevaciones': 'Observaciones',
+            'observaciones': 'Observaciones',
+            'urldocumento': 'URL del Documento',
         }
 
 class ContratoCoordinadorForm(forms.ModelForm):
     class Meta:
         model = ContratoCoordinador
-        fields = ['coordinador', 'programadeposgrado', 'certificacionpresupuestaria', 'fechacertificacionpresupuestaria', 'plazo', 'honorario', 'numerocontrato', 'cargo','noactasseleccion','oficioentregadoporth','modalidadcontractuar','obsevaciones']
+        fields = ['coordinador', 'programadeposgrado', 'certificacionpresupuestaria', 'fechacertificacionpresupuestaria', 'plazo', 'honorario', 'numerocontrato', 'cargo','noactasseleccion','oficioentregadoporth','modalidadcontractuar','observaciones', 'urldocumento']
 
         widgets = {
             'coordinador': forms.Select(attrs={'class': 'form-control'}),
@@ -92,7 +96,8 @@ class ContratoCoordinadorForm(forms.ModelForm):
             'noactasseleccion': forms.TextInput(attrs={'class': 'form-control'}),
             'oficioentregadoporth': forms.TextInput(attrs={'class': 'form-control'}),
             'modalidadcontractuar': forms.TextInput(attrs={'class': 'form-control'}),
-            'obsevaciones': forms.Textarea(attrs={'class': 'form-control'}),
+            'observaciones': forms.Textarea(attrs={'class': 'form-control'}),
+            'urldocumento': forms.URLInput(attrs={'class': 'form-control'}),
         }   
         labels = {
             'coordinador': 'Coordinador',
@@ -106,5 +111,6 @@ class ContratoCoordinadorForm(forms.ModelForm):
             'noactasseleccion': 'Número de Acta de Selección',
             'oficioentregadoporth': 'Oficio Entregado por TTHH',
             'modalidadcontractuar': 'Modalidad Contractuar',
-            'obsevaciones': 'Observaciones',
+            'observaciones': 'Observaciones',
+            'urldocumento': 'URL del Documento',
         }

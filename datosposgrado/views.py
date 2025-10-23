@@ -158,7 +158,7 @@ def contratosdocentes_create(request, periodo_id):
             numeromemorandotthh = form.cleaned_data['numeromemorandotthh']
             tipopersonalacademico = form.cleaned_data['tipopersonalacademico']
             adenda = form.cleaned_data['adenda']
-            obsevaciones = form.cleaned_data['obsevaciones']
+            observaciones = form.cleaned_data['observaciones']
 
 
             # Asegúrate de obtener los objetos reales si los campos son claves foráneas
@@ -180,7 +180,7 @@ def contratosdocentes_create(request, periodo_id):
                 numeromemorandotthh=numeromemorandotthh,
                 tipopersonalacademico=tipopersonalacademico,
                 adenda=adenda,
-                obsevaciones=obsevaciones
+                observaciones=observaciones
             )
             return redirect('contratosdocentes', periodo_id=periodo_id)
         else:
@@ -231,7 +231,7 @@ def contratotutor_create(request, periodo_id):
             numeromemorandotthh = form.cleaned_data['numeromemorandotthh']
             tipopersonalacademico = form.cleaned_data['tipopersonalacademico']
             adenda = form.cleaned_data['adenda']
-            obsevaciones = form.cleaned_data['obsevaciones']
+            observaciones = form.cleaned_data['observaciones']
 
             # Asegúrate de obtener los objetos reales si los campos son claves foráneas
             tutor = PerfilUsuario.objects.get(id=tutor_id)
@@ -252,7 +252,7 @@ def contratotutor_create(request, periodo_id):
                 numeromemorandotthh=numeromemorandotthh,
                 tipopersonalacademico=tipopersonalacademico,
                 adenda=adenda,
-                obsevaciones=obsevaciones
+                observaciones=observaciones
             )
             return redirect('contratotutor', periodo_id=periodo_id)
         else:
@@ -306,7 +306,7 @@ def contratocoordinador_create(request, periodo_id):
             noactasseleccion = form.cleaned_data['noactasseleccion']
             oficioentregadoporth = form.cleaned_data['oficioentregadoporth']
             modalidadcontractuar = form.cleaned_data['modalidadcontractuar']
-            obsevaciones = form.cleaned_data['obsevaciones']
+            observaciones = form.cleaned_data['observaciones']
 
             # Asegúrate de obtener los objetos reales si los campos son claves foráneas
             coordinador = PerfilUsuario.objects.get(id=coordinador_id)
@@ -325,7 +325,7 @@ def contratocoordinador_create(request, periodo_id):
                 noactasseleccion=noactasseleccion,
                 oficioentregadoporth=oficioentregadoporth,
                 modalidadcontractuar=modalidadcontractuar,
-                obsevaciones=obsevaciones
+                observaciones=observaciones
             )
             return redirect('contratocoordinador', periodo_id=periodo_id)
         else:
@@ -397,7 +397,7 @@ def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
             contratodocente.numeromemorandotthh = form.cleaned_data['numeromemorandotthh']
             contratodocente.tipopersonalacademico = form.cleaned_data['tipopersonalacademico']
             contratodocente.adenda = form.cleaned_data['adenda']
-            contratodocente.obsevaciones = form.cleaned_data['obsevaciones']
+            contratodocente.observaciones = form.cleaned_data['observaciones']
             contratodocente.save()
             
             messages.success(request, "Contrato actualizado con éxito.")
@@ -459,7 +459,7 @@ def contratotutor_update(request, contratotutor_id, periodo_id):
             contratotutor.numeromemorandotthh = form.cleaned_data['numeromemorandotthh']
             contratotutor.tipopersonalacademico = form.cleaned_data['tipopersonalacademico']
             contratotutor.adenda = form.cleaned_data['adenda']
-            contratotutor.obsevaciones = form.cleaned_data['obsevaciones']
+            contratotutor.observaciones = form.cleaned_data['observaciones']
             contratotutor.save()
             
             messages.success(request, "Contrato actualizado con éxito.")
@@ -516,7 +516,7 @@ def contratocoordinador_update(request, contratocoordinador_id, periodo_id):
             contratocoordinador.noactasseleccion = form.cleaned_data['noactasseleccion']
             contratocoordinador.oficioentregadoporth = form.cleaned_data['oficioentregadoporth']
             contratocoordinador.modalidadcontractuar = form.cleaned_data['modalidadcontractuar']
-            contratocoordinador.obsevaciones = form.cleaned_data['obsevaciones']
+            contratocoordinador.observaciones = form.cleaned_data['observaciones']
             contratocoordinador.save()
             
             messages.success(request, "Contrato actualizado con éxito.")

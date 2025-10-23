@@ -18,6 +18,7 @@ from xhtml2pdf import pisa
 import os
 from django.template.loader import get_template
 from django.http import HttpResponse
+from django.utils import timezone
 
 # Create your views here.
 def informacionprogramaposgrado(request, programa_id):
@@ -754,7 +755,6 @@ def contratotutor_gestion_update(request, programa_id, contrato_id):
 def estudiantes_programa_list(request, programa_id):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
 
-    # Matriculados en ESTE programa
     ct = ContentType.objects.get_for_model(ProgramaPosgrado)
     matriculas = (
         MatriculaUsuario.objects
@@ -776,20 +776,35 @@ def estudiantes_programa_list(request, programa_id):
     vp = ValorProgramaPosgrado.objects.filter(programa=programa).first()
     valores_programa = None
     total_programa = None
+    plan_pago = None
+    cuota_mensual = None
+
     if vp:
-        valores_programa = {
-            'inscripcion': vp.valorinscripcion or Decimal('0.00'),
-            'matricula': vp.valormatricula or Decimal('0.00'),
-            'cole1': vp.primeracolegiatura or Decimal('0.00'),
-            'cole2': vp.segundacolegiatura or Decimal('0.00'),
-            'moneda': vp.moneda,
-        }
-        total_programa = sum([
-            valores_programa['inscripcion'],
-            valores_programa['matricula'],
-            valores_programa['cole1'],
-            valores_programa['cole2'],
-        ], Decimal('0.00'))
+        plan_pago = vp.plan_pago  # '2_COLEGIATURAS' o '10_CUOTAS'
+        if plan_pago == ValorProgramaPosgrado.PLAN_2:
+            valores_programa = {
+                'inscripcion': vp.valorinscripcion or Decimal('0.00'),
+                'matricula': vp.valormatricula or Decimal('0.00'),
+                'cole1': vp.primeracolegiatura or Decimal('0.00'),
+                'cole2': vp.segundacolegiatura or Decimal('0.00'),
+                'moneda': vp.moneda,
+            }
+            total_programa = sum([
+                valores_programa['inscripcion'],
+                valores_programa['matricula'],
+                valores_programa['cole1'],
+                valores_programa['cole2'],
+            ], Decimal('0.00'))
+        else:
+            cuota_mensual = vp.cuota_mensual or Decimal('0.00')
+            valores_programa = {
+                'inscripcion': vp.valorinscripcion or Decimal('0.00'),
+                'matricula': vp.valormatricula or Decimal('0.00'),
+                'cuota_mensual': cuota_mensual,
+                'valor_total': vp.valor_total or Decimal('0.00'),
+                'moneda': vp.moneda,
+            }
+            total_programa = valores_programa['valor_total']
 
     filas = []
     for m in matriculas:
@@ -797,17 +812,23 @@ def estudiantes_programa_list(request, programa_id):
         p = perfiles.get(m.usuario_id)
         g = gestiones.get(m.usuario_id)
 
-        # Total pagado por estudiante (solo rubros marcados como pagados)
         total_pagado_est = Decimal('0.00')
         if vp and g:
+            # Inscripción / Matrícula (independiente del plan)
             if g.pago_inscripcion:
                 total_pagado_est += valores_programa['inscripcion']
             if g.pago_matricula:
                 total_pagado_est += valores_programa['matricula']
-            if g.pago_primera_colegiatura:
-                total_pagado_est += valores_programa['cole1']
-            if g.pago_segunda_colegiatura:
-                total_pagado_est += valores_programa['cole2']
+
+            if plan_pago == ValorProgramaPosgrado.PLAN_2:
+                if g.pago_primera_colegiatura:
+                    total_pagado_est += valores_programa['cole1']
+                if g.pago_segunda_colegiatura:
+                    total_pagado_est += valores_programa['cole2']
+            else:
+                # 10 cuotas: sumar n * cuota_mensual
+                n = g.cuotas_pagadas or 0
+                total_pagado_est += (cuota_mensual or Decimal('0.00')) * Decimal(n)
 
         filas.append({
             'usuario': u,
@@ -822,6 +843,7 @@ def estudiantes_programa_list(request, programa_id):
         'filas': filas,
         'valores_programa': valores_programa,
         'total_programa': total_programa,
+        'plan_pago': plan_pago,              # <-- para condicionar columnas en el HTML
     })
 
 
@@ -835,20 +857,37 @@ def estudiante_programa_gestion_upsert(request, programa_id, user_id):
         usuario=user, programa=programa
     )
 
+    vp = ValorProgramaPosgrado.objects.filter(programa=programa).first()
+    plan_pago = vp.plan_pago if vp else None
+
     if request.method == 'POST':
         form = EstudianteProgramaGestionForm(request.POST, instance=obj)
         if form.is_valid():
             g = form.save(commit=False)
             g.usuario = user
             g.programa = programa
+            # Si el plan es 2 colegiaturas, fuerza 0 (None -> 0)
+            if plan_pago == getattr(vp, 'PLAN_2', '2_COLEGIATURAS'):
+                g.cuotas_pagadas = 0
+            # En plan 10, si viene vacío, trata como 0
+            if g.cuotas_pagadas is None:
+                g.cuotas_pagadas = 0
             g.full_clean()
             g.save()
             messages.success(request, 'Datos del estudiante guardados correctamente.')
-            # Volver al listado y anclar a la fila
             url = reverse('estudiantes_programa_list', args=[programa.id])
             return redirect(f"{url}#est-{user.id}")
         else:
+            #messages.error(request, 'Corrige los errores del formulario.')
+                # Mostrar errores con detalle
             messages.error(request, 'Corrige los errores del formulario.')
+            for field, errs in form.errors.items():
+                for err in errs:
+                    if field == '__all__':
+                        messages.error(request, err)
+                    else:
+                        label = form.fields.get(field).label if field in form.fields else field
+                        messages.error(request, f"{label}: {err}")
     else:
         form = EstudianteProgramaGestionForm(instance=obj)
 
@@ -859,6 +898,8 @@ def estudiante_programa_gestion_upsert(request, programa_id, user_id):
         'perfil': perfil,
         'form': form,
         'creando': created,
+        'plan_pago': plan_pago,        # <-- para condicionar el formulario
+        'vp': vp,                      # opcional por si quieres mostrar cuota en el form
     })
 
 
@@ -866,47 +907,56 @@ def _calc_programa_finanzas(programa: ProgramaPosgrado):
     """
     Retorna un dict con:
       total_ingresos, total_egresos, saldo,
-      desgloses: ingresos_{inscripcion,matricula,cole1,cole2}, 
-                 egresos_{coordinadores,docentes,tutores},
-      moneda
+      desgloses:
+        - plan 2: ingresos_{inscripcion,matricula,colegiatura1,colegiatura2}
+        - plan 10: ingresos_{inscripcion,matricula,cuotas10} y total_cuotas_pagadas
+      además: moneda, plan_pago, cuota_mensual (si aplica), valor_total_programa
     """
     cero = Decimal('0.00')
 
-    # ---------- INGRESOS (estudiantes) ----------
+    # ---------- Valores del programa ----------
     vp = ValorProgramaPosgrado.objects.filter(programa=programa).first()
     moneda = vp.moneda if vp else 'USD'
+    plan_pago = getattr(vp, 'plan_pago', getattr(ValorProgramaPosgrado, 'PLAN_2', '2_COLEGIATURAS'))
+    cuota_mensual = getattr(vp, 'cuota_mensual', None) or cero
 
-    ingresos_insc = ingresos_mat = ingresos_cole1 = ingresos_cole2 = cero
+    ingresos_insc = ingresos_mat = ingresos_cole1 = ingresos_cole2 = ingresos_cuotas10 = cero
+    total_cuotas_pagadas = 0
 
+    # ---------- INGRESOS (estudiantes) ----------
     if vp:
         gestiones = EstudianteProgramaGestion.objects.filter(programa=programa).only(
             'pago_inscripcion', 'pago_matricula',
-            'pago_primera_colegiatura', 'pago_segunda_colegiatura'
+            'pago_primera_colegiatura', 'pago_segunda_colegiatura',
+            'cuotas_pagadas'
         )
 
-        # Contar cuántos marcaron pagado por rubro
         pagaron_insc = gestiones.filter(pago_inscripcion=True).count()
         pagaron_mat  = gestiones.filter(pago_matricula=True).count()
-        pagaron_c1   = gestiones.filter(pago_primera_colegiatura=True).count()
-        pagaron_c2   = gestiones.filter(pago_segunda_colegiatura=True).count()
 
-        ingresos_insc  = (vp.valorinscripcion or cero)   * Decimal(pagaron_insc)
-        ingresos_mat   = (vp.valormatricula or cero)     * Decimal(pagaron_mat)
-        ingresos_cole1 = (vp.primeracolegiatura or cero) * Decimal(pagaron_c1)
-        ingresos_cole2 = (vp.segundacolegiatura or cero) * Decimal(pagaron_c2)
+        ingresos_insc  = (vp.valorinscripcion or cero) * Decimal(pagaron_insc)
+        ingresos_mat   = (vp.valormatricula or cero) * Decimal(pagaron_mat)
 
-    total_ingresos = ingresos_insc + ingresos_mat + ingresos_cole1 + ingresos_cole2
+        if plan_pago == ValorProgramaPosgrado.PLAN_2:
+            pagaron_c1   = gestiones.filter(pago_primera_colegiatura=True).count()
+            pagaron_c2   = gestiones.filter(pago_segunda_colegiatura=True).count()
+            ingresos_cole1 = (vp.primeracolegiatura or cero) * Decimal(pagaron_c1)
+            ingresos_cole2 = (vp.segundacolegiatura or cero) * Decimal(pagaron_c2)
+        else:
+            # 10 cuotas: sumar n * cuota_mensual
+            total_cuotas_pagadas = sum((g.cuotas_pagadas or 0) for g in gestiones)
+            ingresos_cuotas10 = cuota_mensual * Decimal(total_cuotas_pagadas)
+
+    total_ingresos = ingresos_insc + ingresos_mat + ingresos_cole1 + ingresos_cole2 + ingresos_cuotas10
 
     # ---------- EGRESOS ----------
-    # Coordinadores: suma de pagos registrados
     eg_coordinadores = (
         CoordinadorPagos.objects
         .filter(programa=programa)
         .aggregate(s=Sum('valor_total'))['s'] or cero
     )
 
-    # Docentes: suma de contratos donde la gestión marcó pago_realizado
-    #   valor_total = horasacademicas * valorxhora
+    # Docentes pagados (por gestión)
     docentes_pagados_ids = list(
         ContratoDocenteGestion.objects
         .filter(contrato__programadeposgrado=programa.id, pago_realizado=True)
@@ -919,7 +969,7 @@ def _calc_programa_finanzas(programa: ProgramaPosgrado):
             for c in ContratosDocentes.objects.filter(id__in=docentes_pagados_ids)
         )
 
-    # Tutores: suma de valorcontrato donde gestión marcó pago_realizado
+    # Tutores pagados (por gestión)
     tutores_pagados_ids = list(
         ContratoTutorGestion.objects
         .filter(contrato__programadeposgrado=programa.id, pago_realizado=True)
@@ -938,15 +988,25 @@ def _calc_programa_finanzas(programa: ProgramaPosgrado):
 
     return {
         'moneda': moneda,
+        'plan_pago': plan_pago,
+        'cuota_mensual': cuota_mensual if plan_pago == ValorProgramaPosgrado.PLAN_10 else None,
+        'valor_total_programa': (vp.valor_total if getattr(vp, 'valor_total', None) else None),
+
         'total_ingresos': total_ingresos,
         'total_egresos': total_egresos,
         'saldo': saldo,
 
+        # Desglose plan 2
         'ingresos_inscripcion': ingresos_insc,
         'ingresos_matricula': ingresos_mat,
         'ingresos_colegiatura1': ingresos_cole1,
         'ingresos_colegiatura2': ingresos_cole2,
 
+        # Desglose plan 10
+        'ingresos_cuotas10': ingresos_cuotas10,
+        'total_cuotas_pagadas': total_cuotas_pagadas,
+
+        # Egresos
         'egresos_coordinadores': eg_coordinadores,
         'egresos_docentes': eg_docentes,
         'egresos_tutores': eg_tutores,
@@ -1109,6 +1169,8 @@ def programa_reporte_pdf(request, programa_id):
         'doc_detalle': doc_detalle,
         'tut_detalle': tut_detalle,
         'est_detalle': est_detalle,
+        'generado_por': request.user,
+        'generado_en': timezone.now(),
     })
 
     response = HttpResponse(content_type='application/pdf')

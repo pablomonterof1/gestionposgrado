@@ -5,13 +5,12 @@
 <meta charset="utf-8">
 <title>Reporte del Programa</title>
 <style>
-   /*@page { size: A4; margin: 18mm 15mm; }
-   /* Página normal */
+  /*@page { size: A4; margin: 18mm 15mm; }
+  /* Página normal */
   @page vertical {
     size: A4 portrait;
     margin: 18mm 15mm;
   }
-
 
   /* Página horizontal SOLO para el listado de estudiantes */
   @page horizontal {
@@ -36,9 +35,17 @@
   table.alumnos th { background: #0e1424; }
   .center { text-align: center; }
   .right  { text-align: right;  }
-  .nowrap { white-space: nowrap; }            /* para números, CI, etc. */
-  .wrap   { word-wrap: break-word; }          /* rompe palabras largas */
-  .break  { word-break: break-word; }   
+  .nowrap { white-space: nowrap; }
+  .wrap   { word-wrap: break-word; }
+  .break  { word-break: break-word; }
+  .footer-ultima-pagina {
+    padding-top: 50px;
+    position: fixed;
+    bottom: 5mm;
+    right: 15mm;
+    font-size: 1.3em;
+    color: #000000;
+  }
 </style>
 </head>
 <body>
@@ -49,12 +56,18 @@
       <h1>Reporte general del programa</h1>
       <div class="muted">
         Programa: <strong>{{ programa }}</strong><br>
-        Moneda: {{ fin.moneda|default_if_none:"USD" }}
+        Moneda: {{ fin.moneda|default_if_none:"USD" }}<br>
+        Plan: {% if fin.plan_pago == '10_CUOTAS' %}10 cuotas{% else %}2 colegiaturas{% endif %}
+        {% if fin.plan_pago == '10_CUOTAS' and fin.cuota_mensual %}
+          — Cuota: {{ fin.cuota_mensual|floatformat:2 }} {{ fin.moneda }}
+        {% endif %}
+        {% if fin.plan_pago == '10_CUOTAS' and fin.valor_total_programa %}
+          — Total programa: {{ fin.valor_total_programa|floatformat:2 }} {{ fin.moneda }}
+        {% endif %}
       </div>
     </td>
     <td class="right">
-      <!-- opcional: coloca tu logo en static/img/logo.png -->
-      <img src="https://ailectus.com/static/posgrado.jpg" alt="Logo" width="120"> 
+      <img src="https://ailectus.com/static/posgrado.jpg" alt="Logo" width="120">
     </td>
   </tr>
 </table>
@@ -81,8 +94,14 @@
   <strong>Valores del programa:</strong>
   Inscripción $ {{ vp.valorinscripcion|floatformat:2 }},
   Matrícula $ {{ vp.valormatricula|floatformat:2 }},
-  1ra Colegiatura $ {{ vp.primeracolegiatura|floatformat:2 }},
-  2da Colegiatura $ {{ vp.segundacolegiatura|floatformat:2 }} ({{ vp.moneda }})
+  {% if fin.plan_pago == '2_COLEGIATURAS' %}
+    1ra Colegiatura $ {{ vp.primeracolegiatura|floatformat:2 }},
+    2da Colegiatura $ {{ vp.segundacolegiatura|floatformat:2 }}
+  {% else %}
+    Total programa $ {{ vp.valor_total|default_if_none:"0"|floatformat:2 }},
+    Cuota (x10) $ {{ fin.cuota_mensual|default_if_none:"0"|floatformat:2 }}
+  {% endif %}
+  ({{ vp.moneda }})
 </div>
 {% endif %}
 
@@ -94,8 +113,22 @@
         <tbody>
           <tr><th>Inscripción</th><td class="right">$ {{ fin.ingresos_inscripcion|default_if_none:"0"|floatformat:2 }}</td></tr>
           <tr><th>Matrícula</th><td class="right">$ {{ fin.ingresos_matricula|default_if_none:"0"|floatformat:2 }}</td></tr>
-          <tr><th>1ra Colegiatura</th><td class="right">$ {{ fin.ingresos_colegiatura1|default_if_none:"0"|floatformat:2 }}</td></tr>
-          <tr><th>2da Colegiatura</th><td class="right">$ {{ fin.ingresos_colegiatura2|default_if_none:"0"|floatformat:2 }}</td></tr>
+
+          {% if fin.plan_pago == '2_COLEGIATURAS' %}
+            <tr><th>1ra Colegiatura</th><td class="right">$ {{ fin.ingresos_colegiatura1|default_if_none:"0"|floatformat:2 }}</td></tr>
+            <tr><th>2da Colegiatura</th><td class="right">$ {{ fin.ingresos_colegiatura2|default_if_none:"0"|floatformat:2 }}</td></tr>
+          {% else %}
+            <tr>
+              <th>Cuotas (x10)</th>
+              <td class="right">
+                $ {{ fin.ingresos_cuotas10|default_if_none:"0"|floatformat:2 }}
+                {% if fin.total_cuotas_pagadas %}
+                  <span class="muted"> — {{ fin.total_cuotas_pagadas }} cuotas pagadas</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endif %}
+
           <tr class="total"><th>Total</th><td class="right">$ {{ fin.total_ingresos|default_if_none:"0"|floatformat:2 }}</td></tr>
         </tbody>
       </table>
@@ -155,14 +188,14 @@
 <table>
   <thead>
     <tr>
-      <th>Docente</th>
-      <th>Módulo</th>
-      <th>Horas</th>
-      <th>Valor/hora</th>
-      <th class="right">Valor total</th>
-      <th>Fecha contratación</th>
-      <th>Pagado</th>
-      <th>N° factura</th>
+      <th style="width: 40mm">Docente</th>
+      <th style="width: 40mm">Módulo</th>
+      <th style="width: 30mm">Horas</th>
+      <th style="width: 30mm">Valor/hora</th>
+      <th class="right" style="width: 30mm">Valor total</th>
+      <th style="width: 40mm">Fecha contratación</th>
+      <th style="width: 30mm">Pagado</th>
+      <th style="width: 40mm">N° factura</th>
     </tr>
   </thead>
   <tbody>
@@ -173,9 +206,9 @@
       <td>{{ r.contrato.horasacademicas }}</td>
       <td>$ {{ r.contrato.valorxhora|floatformat:2 }}</td>
       <td class="right">$ {{ r.valor_total|floatformat:2 }}</td>
-      <td>{% if r.gestion %}{{ r.gestion.fecha_contratacion|default:"" }}{% endif %}</td>
+      <td>{% if r.gestion %}{{ r.gestion.fecha_contratacion|default:"" }}{% else %}—{% endif %}</td>
       <td>{% if r.gestion and r.gestion.pago_realizado %}Sí{% else %}No{% endif %}</td>
-      <td>{% if r.gestion %}{{ r.gestion.numero_factura|default:"" }}{% endif %}</td>
+      <td>{% if r.gestion %}{{ r.gestion.numero_factura|default:"" }}{% else %}—{% endif %}</td>
     </tr>
     {% empty %}
     <tr><td colspan="8" class="center">No hay contratos de docentes.</td></tr>
@@ -188,14 +221,14 @@
 <table>
   <thead>
     <tr>
-      <th>Tutor</th>
-      <th>Estudiante</th>
-      <th>Plazo</th>
-      <th class="right">Valor contrato</th>
-      <th>Fecha contratación</th>
-      <th>Defendido</th>
-      <th>Pagado</th>
-      <th>N° factura</th>
+      <th style="width: 50mm">Tutor</th>
+      <th style="width: 50mm">Estudiante</th>
+      <th style="width: 40mm">Plazo</th>
+      <th style="width: 20mm" class="right">Valor contrato</th>
+      <th style="width: 40mm">Fecha contratación</th>
+      <th style="width: 20mm">Defendido</th>
+      <th style="width: 20mm">Pagado</th>
+      <th style="width: 40mm">N° factura</th>
     </tr>
   </thead>
   <tbody>
@@ -205,10 +238,10 @@
       <td>{% if r.estudiante %}{{ r.estudiante.get_full_name|default:r.estudiante.username }}{% else %}ID {{ r.contrato.maestrante }}{% endif %}</td>
       <td>{{ r.contrato.plazo }}</td>
       <td class="right">$ {{ r.contrato.valorcontrato|floatformat:2 }}</td>
-      <td>{% if r.gestion %}{{ r.gestion.fecha_contratacion|default:"" }}{% endif %}</td>
+      <td>{% if r.gestion %}{{ r.gestion.fecha_contratacion }}{% else %}-{% endif %}</td>
       <td>{% if r.gestion and r.gestion.defendido %}Sí{% else %}No{% endif %}</td>
       <td>{% if r.gestion and r.gestion.pago_realizado %}Sí{% else %}No{% endif %}</td>
-      <td>{% if r.gestion %}{{ r.gestion.numero_factura|default:"" }}{% endif %}</td>
+      <td>{% if r.gestion %}{{ r.gestion.numero_factura }}{% else %}-{% endif %}</td>
     </tr>
     {% empty %}
     <tr><td colspan="8" class="center">No hay contratos de tutores.</td></tr>
@@ -216,25 +249,30 @@
   </tbody>
 </table>
 </div>
+
 <div class="page-break"></div>
 <div style="page: horizontal;">
 <h2>Estudiantes del programa</h2>
 <table class="alumnos">
-
-
   <thead>
     <tr>
       <th style="width: 38mm">Estudiante</th>
       <th style="width: 20mm">CI</th>
       <th style="width: 8mm" class="center">Ins.</th>
       <th style="width: 8mm" class="center">Matri.</th>
-      <th style="width: 8mm" class="center">1ra</th>
-      <th style="width: 8mm" class="center">2da</th>
-      <th style="width: 15mm"class="right">Total pagado</th>
+
+      {% if fin.plan_pago == '2_COLEGIATURAS' %}
+        <th style="width: 8mm" class="center">1ra</th>
+        <th style="width: 8mm" class="center">2da</th>
+      {% else %}
+        <th style="width: 16mm" class="center">Cuotas</th>
+      {% endif %}
+
+      <th style="width: 15mm" class="right">Total pagado</th>
       <th style="width: 25mm">Modalidad</th>
       <th style="width: 15mm">Rúbrica (fecha)</th>
       <th style="width: 20mm">Tutor (resol.<br/>fecha)</th>
-      <th style="width: 20mm"class="center">Contr.<br/>tutor</th>
+      <th style="width: 20mm" class="center">Contr.<br/>tutor</th>
       <th style="width: 20mm" class="center">Avance</th>
       <th style="width: 20mm">Sustentación</th>
       <th style="width: 20mm">Complexivo</th>
@@ -250,8 +288,13 @@
 
       <td class="center">{% if r.gestion and r.gestion.pago_inscripcion %}✔{% else %}—{% endif %}</td>
       <td class="center">{% if r.gestion and r.gestion.pago_matricula %}✔{% else %}—{% endif %}</td>
-      <td class="center">{% if r.gestion and r.gestion.pago_primera_colegiatura %}✔{% else %}—{% endif %}</td>
-      <td class="center">{% if r.gestion and r.gestion.pago_segunda_colegiatura %}✔{% else %}—{% endif %}</td>
+
+      {% if fin.plan_pago == '2_COLEGIATURAS' %}
+        <td class="center">{% if r.gestion and r.gestion.pago_primera_colegiatura %}✔{% else %}—{% endif %}</td>
+        <td class="center">{% if r.gestion and r.gestion.pago_segunda_colegiatura %}✔{% else %}—{% endif %}</td>
+      {% else %}
+        <td class="center">{% if r.gestion %}{{ r.gestion.cuotas_pagadas|default:"0" }}{% else %}0{% endif %}/10</td>
+      {% endif %}
 
       <td class="right nowrap">$ {{ r.total_pagado|default_if_none:"0"|floatformat:2 }}</td>
 
@@ -277,6 +320,22 @@
     {% endfor %}
   </tbody>
 </table>
+
+<div class="footer-ultima-pagina" style="text-align: center;">
+  <p style="margin-bottom: 1px;">Elaborado por:</p>
+  <br>
+  ----------------------------------------------
+  <br>
+  {% if generado_por and generado_por.get_full_name %}
+    <b>{{ generado_por.get_full_name }}</b>
+  {% elif generado_por %}
+    {{ generado_por.username }}
+  {% else %}
+    —
+  {% endif %}
+  <br>
+  {{ generado_en|date:"Y-m-d H:i" }}
+</div>
 </div>
 </body>
 </html>

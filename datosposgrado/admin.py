@@ -5,7 +5,7 @@ from .models import ContratosDocentes
 
 class ContratosDocentesAdmin(admin.ModelAdmin):
     readonly_fields = ('created',)
-    list_display = ('docente', 'programadeposgrado', 'modulo', 'horasacademicas', 'valorxhora', 'certificacionpresupuestaria', 'fechacertificacionpresupuestaria', 'plazo', 'numerocontrato', 'numeromemorandotthh' , 'tipopersonalacademico', 'adenda', 'obsevaciones', 'created')
+    list_display = ('docente', 'programadeposgrado', 'modulo', 'horasacademicas', 'valorxhora', 'certificacionpresupuestaria', 'fechacertificacionpresupuestaria', 'plazo', 'numerocontrato', 'numeromemorandotthh' , 'tipopersonalacademico', 'adenda', 'observaciones', 'created')
     search_fields = ('docente__username', 'programadeposgrado__nombre')
     list_per_page = 10
     ordering = ('-created',)
