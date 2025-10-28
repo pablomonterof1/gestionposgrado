@@ -4,10 +4,10 @@ from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 import random
 from usuarios.models import MatriculaUsuario
-from .models import ReactivosMultipleChoice, ReactivosModuloRAE, EvaluacionPrograma, EvaluacionEstudiante, ReactivoEvaluacion, ReactivoPorEvaluacion
+from .models import ReactivosMultipleChoice, ReactivosModuloRAE, EvaluacionPrograma, EvaluacionEstudiante, ReactivoEvaluacion, ReactivoPorEvaluacion, ComponenteRAE, SubcomponenteRAE, SubcomponenteModuloRAE
 from programasposgrado.models import Maestrias, PeriodosAcademicos, Modalidad, ProgramaPosgrado, Modulos
 from django.contrib.auth.decorators import login_required
-from .forms import ReactivosMultipleChoiceForm
+from .forms import ReactivosMultipleChoiceForm, ComponenteRAEForm, SubcomponenteRAEForm, SubcomponenteFormSet, SubcomponenteAsignarModulosForm
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import user_passes_test
 from main.views import es_estudiante, es_docente, es_coordinador, es_editor
@@ -22,6 +22,8 @@ from datetime import timedelta
 import xlsxwriter
 import io
 from django.utils.html import strip_tags
+from decimal import Decimal
+from usuarios.models import PerfilUsuario
 
 # Create your views here.
 
@@ -655,25 +657,39 @@ def resultadosrae_programa(request, programa_id, evaluacion_id):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
     evaluacion = get_object_or_404(EvaluacionPrograma, programa=programa, id=evaluacion_id)
 
+    # Estudiantes matriculados al programa
     content_type = ContentType.objects.get_for_model(ProgramaPosgrado)
-    matriculas = MatriculaUsuario.objects.filter(
-        content_type=content_type,
-        object_id=programa.id,
-        rol_en_programa='estudiante'
-    ).select_related('usuario')
+    matriculas = (
+        MatriculaUsuario.objects
+        .filter(content_type=content_type, object_id=programa.id, rol_en_programa='estudiante')
+        .select_related('usuario')
+        .order_by('usuario__last_name', 'usuario__first_name')
+    )
+
+    # Todas las evaluaciones existentes de esos estudiantes para esta evaluación
+    evals = (
+        EvaluacionEstudiante.objects
+        .filter(evaluacion=evaluacion, estudiante__in=[m.usuario for m in matriculas])
+        .select_related('estudiante')
+    )
+    eval_por_user = {e.estudiante_id: e for e in evals}
 
     resultados = []
-    for mat in matriculas:
-        evaluacion_est = EvaluacionEstudiante.objects.filter(evaluacion=evaluacion, estudiante=mat.usuario).first()
-        if evaluacion_est:
-            resultados.append({
-                'estudiante': mat.usuario,
-                'respondido': evaluacion_est.respondido if evaluacion_est else False,
-                'calificacion': evaluacion_est.calificacion if evaluacion_est else None,
-                'detalle_url': reverse('detalle_resultado_estudiante', args=[evaluacion.id, mat.usuario.id]) if evaluacion_est.respondido else None,
-                'borrar_url': reverse('detalle_resultado_estudiante_borrar', args=[evaluacion.id, mat.usuario.id]) if evaluacion_est.respondido else None,
-            })
-   
+    for m in matriculas:
+        u = m.usuario
+        ev = eval_por_user.get(u.id)
+
+        respondido = ev.respondido if ev else False
+        calificacion = ev.calificacion if ev else None
+
+        resultados.append({
+            'id': u.id,  # para tu form id="form-borrar-{{ res.id }}"
+            'estudiante': u,
+            'respondido': respondido,
+            'calificacion': calificacion,
+            'detalle_url': reverse('detalle_resultado_estudiante', args=[evaluacion.id, u.id]) if respondido else None,
+            'borrar_url': reverse('detalle_resultado_estudiante_borrar', args=[evaluacion.id, u.id]) if respondido else None,
+        })
 
     return render(request, 'resultadosrae_programa.html', {
         'programa': programa,
@@ -777,86 +793,376 @@ def exportar_resultados_excel(request, programa_id, evaluacion_id):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
     evaluacion = get_object_or_404(EvaluacionPrograma, id=evaluacion_id, programa=programa)
 
-    # Traer los estudiantes matriculados en el programa
+    # === Estudiantes matriculados en el programa ===
     content_type = ContentType.objects.get_for_model(ProgramaPosgrado)
-    matriculas = MatriculaUsuario.objects.filter(
-        content_type=content_type,
-        object_id=programa.id,
-        rol_en_programa='estudiante'
-    ).select_related("usuario")
+    matriculas = (
+        MatriculaUsuario.objects
+        .filter(content_type=content_type, object_id=programa.id, rol_en_programa='estudiante')
+        .select_related("usuario")
+    )
 
-    # Todas las evaluaciones de esos estudiantes en esta evaluación
+    # === Evaluaciones de esos estudiantes en esta evaluación ===
     evaluaciones_estudiantes = (
         EvaluacionEstudiante.objects
         .filter(evaluacion=evaluacion, estudiante__in=[m.usuario for m in matriculas])
         .select_related("estudiante")
     )
+    eval_est_por_usuario = {e.estudiante_id: e for e in evaluaciones_estudiantes}
 
-    # Cargar los reactivos de la evaluación
-    reactivos = (
+    # Perfiles para Sexo (evita N+1 queries)
+    perfiles = {p.user_id: p for p in PerfilUsuario.objects.filter(user__in=[m.usuario for m in matriculas])}
+
+    # === Reactivos de la evaluación (base) ===
+    reactivos_qs = (
         ReactivoPorEvaluacion.objects
         .filter(evaluacion=evaluacion)
-        .select_related("reactivo")
+        .select_related("reactivo", "reactivo__modulo")
         .order_by("reactivo__id")
     )
-    reactivos_list = [r.reactivo for r in reactivos]
+    reactivos_list = [r.reactivo for r in reactivos_qs]
 
-    # Para acceso rápido: {evaluacion_estudiante_id: [ReactivoEvaluacion...]}
+    # === Respuestas de todos (acceso O(1)) ===
     respuestas = (
         ReactivoEvaluacion.objects
         .filter(evaluacion_estudiante__in=evaluaciones_estudiantes)
         .select_related("evaluacion_estudiante", "reactivo")
     )
-
     respuestas_dict = {}
     for r in respuestas:
         respuestas_dict.setdefault(r.evaluacion_estudiante_id, {})[r.reactivo_id] = r
 
-    # === CREAR ARCHIVO EN MEMORIA ===
+    # === Mapeo Módulo -> (Componente, Subcomponente) del PROGRAMA ===
+    asignaciones = (
+        SubcomponenteModuloRAE.objects
+        .filter(subcomponente__componente__programa=programa)
+        .select_related('subcomponente', 'subcomponente__componente', 'modulo')
+    )
+    asig_por_modulo = {}
+    for a in asignaciones:
+        asig_por_modulo[a.modulo_id] = {
+            'comp_nombre': a.subcomponente.componente.nombre,
+            'comp_orden': a.subcomponente.componente.orden,
+            'sub_nombre': a.subcomponente.nombre,
+            'sub_orden': a.subcomponente.orden,
+        }
+
+    # === Orden final de columnas: Componente.orden, Subcomponente.orden, Modulo.codificacion/nombre, Reactivo.id ===
+    def sort_key(reactivo):
+        modulo = getattr(reactivo, 'modulo', None)
+        modulo_id = getattr(modulo, 'id', None)
+        cod = getattr(modulo, 'codificacion', '') or ''
+        mnombre = getattr(modulo, 'nombre', '') or ''
+        info = asig_por_modulo.get(modulo_id)
+        if info:
+            comp_o = info['comp_orden']
+            comp_n = info['comp_nombre']
+            sub_o  = info['sub_orden']
+            sub_n  = info['sub_nombre']
+        else:
+            # Reactivos sin asignación se van al final agrupados
+            comp_o = 9999
+            comp_n = 'Sin asignación'
+            sub_o  = 9999
+            sub_n  = 'Sin asignación'
+        modulo_orden = (cod or mnombre)
+        return (comp_o, comp_n, sub_o, sub_n, modulo_orden, reactivo.id)
+
+    reactivos_list = sorted(reactivos_list, key=sort_key)
+
+    # === Cabeceras paralelas ya con el orden correcto ===
+    comp_names, sub_names, mod_names = [], [], []
+    for rx in reactivos_list:
+        modulo_obj = getattr(rx, 'modulo', None)
+        codigo = getattr(modulo_obj, 'codificacion', '') if modulo_obj else ''
+        nombre = getattr(modulo_obj, 'nombre', '') if modulo_obj else ''
+        modulo_nombre = f"{codigo} — {nombre}" if codigo else (nombre or '—')
+
+        modulo_id = getattr(modulo_obj, 'id', None)
+        info = asig_por_modulo.get(modulo_id)
+        if info:
+            comp_names.append(info['comp_nombre'])
+            sub_names.append(info['sub_nombre'])
+        else:
+            comp_names.append('Sin asignación')
+            sub_names.append('Sin asignación')
+        mod_names.append(modulo_nombre)
+
+    # === Calcular tramos contiguos (para merges) ===
+    from collections import OrderedDict, defaultdict
+    tramo_comp = OrderedDict()            # comp_name -> (start_col, end_col)
+    tramo_sub_en_comp = defaultdict(list) # comp_name -> list of (sub_name, start_col, end_col)
+
+    def calcular_tramos(nombres):
+        tramos = []
+        actual, start = None, 0
+        for i, name in enumerate(nombres):
+            if actual is None:
+                actual, start = name, i
+            elif name != actual:
+                tramos.append((actual, start, i - 1))
+                actual, start = name, i
+        if actual is not None:
+            tramos.append((actual, start, len(nombres) - 1))
+        return tramos
+
+    # Columnas fijas
+    row_comp, row_sub, row_mod, row_head, row_start_data = 0, 1, 2, 3, 4
+    base_col = 4  # 0:Estudiante, 1:Usuario, 2:Sexo, 3:Calificación -> reactivos desde 4
+
+    tramos_comp = calcular_tramos(comp_names)
+    for comp_name, s, e in tramos_comp:
+        tramo_comp[comp_name] = (base_col + s, base_col + e)
+        sub_tramos = calcular_tramos(sub_names[s:e+1])
+        for (sub_name, ss, ee) in sub_tramos:
+            tramo_sub_en_comp[comp_name].append((sub_name, base_col + s + ss, base_col + s + ee))
+
+    # === Crear Excel ===
     output = io.BytesIO()
     workbook = xlsxwriter.Workbook(output, {"in_memory": True})
     ws = workbook.add_worksheet("Resultados")
 
-    # === ENCABEZADOS ===
-    headers = ["Estudiante", "Usuario", "Calificación"]
-    for reactivo in reactivos_list:
-        enunciado_limpio = strip_tags(reactivo.enunciado)
-        headers.append(f"{enunciado_limpio[:50]}")  
-    bold = workbook.add_format({"bold": True})
-    ws.write_row(0, 0, headers, bold)
+    # Formatos
+    header    = workbook.add_format({"bold": True, "align": "center", "valign": "vcenter", "border": 1})
+    subheader = workbook.add_format({"align": "center", "valign": "vcenter", "border": 1})
+    cell      = workbook.add_format({})
+    num2      = workbook.add_format({"num_format": "0.00"})
+    num3      = workbook.add_format({"num_format": "0.000"})
+    total_fmt = workbook.add_format({"bold": True, "top": 1})
 
-    # === FILAS DE DATOS ===
-    row = 1
-    for m in matriculas:
-        evaluacion_est = next((e for e in evaluaciones_estudiantes if e.estudiante_id == m.usuario.id), None)
+    # Encabezados fijos
+    ws.write(row_head, 0, "Estudiante", header)
+    ws.write(row_head, 1, "Usuario", header)
+    ws.write(row_head, 2, "Sexo", header)
+    ws.write(row_head, 3, "Calificación", header)
 
-        calificacion = evaluacion_est.calificacion if evaluacion_est else None
-        row_data = [
-            f"{m.usuario.first_name} {m.usuario.last_name}",
-            m.usuario.username,
-            float(calificacion) if calificacion is not None else ""
-        ]
+    # Componente (merge), Subcomponente (merge), Módulo (por columna) y Enunciado (por columna)
+    if reactivos_list:
+        for comp_name, (c0, c1) in tramo_comp.items():
+            ws.merge_range(row_comp, c0, row_comp, c1, comp_name, header)
+            for (sub_name, s0, s1) in tramo_sub_en_comp[comp_name]:
+                ws.merge_range(row_sub, s0, row_sub, s1, sub_name, subheader)
 
-        # Respuestas por cada reactivo
-        for reactivo in reactivos_list:
-            respuesta = ""
-            if evaluacion_est and evaluacion_est.id in respuestas_dict:
-                resp = respuestas_dict[evaluacion_est.id].get(reactivo.id)
-                if resp:
-                    respuesta = f"{resp.respuesta_estudiante or ''} ({'✔' if resp.correcta else '✘'})"
-            row_data.append(respuesta)
+        for i, modulo_nombre in enumerate(mod_names):
+            ws.write(row_mod, base_col + i, modulo_nombre, subheader)
 
-        ws.write_row(row, 0, row_data)
-        row += 1
+        for i, rx in enumerate(reactivos_list):
+            ws.write(row_head, base_col + i, strip_tags(rx.enunciado)[:50], header)
+
+    # === Datos ===
+    valor_preg = Decimal(evaluacion.valorpregunta)
+    for row, m in enumerate(matriculas, start=row_start_data):
+        est = m.usuario
+        # Sexo
+        perfil = perfiles.get(est.id)
+        sexo_val = ''
+        if perfil and perfil.sexo:
+            sexo_val = {'M': 'Masculino', 'F': 'Femenino', 'O': 'Otro'}.get(perfil.sexo, perfil.sexo)
+
+        ws.write(row, 0, f"{est.first_name} {est.last_name}", cell)
+        ws.write(row, 1, est.username, cell)
+        ws.write(row, 2, sexo_val, cell)
+
+        evaluacion_est = eval_est_por_usuario.get(est.id)
+        calificacion = float(evaluacion_est.calificacion) if (evaluacion_est and evaluacion_est.calificacion is not None) else ""
+        ws.write(row, 3, calificacion, num2 if calificacion != "" else cell)
+
+        # Puntaje por reactivo (valorpregunta si correcta, 0 si incorrecta, "" si sin respuesta)
+        for i, rx in enumerate(reactivos_list):
+            col = base_col + i
+            puntaje = ""
+            if evaluacion_est:
+                resp = respuestas_dict.get(evaluacion_est.id, {}).get(rx.id)
+                if resp is not None and resp.respuesta_estudiante:
+                    puntaje = float(valor_preg) if resp.correcta else 0.0
+
+            if puntaje == "":
+                ws.write(row, col, "", cell)
+            else:
+                # Si valorpregunta tiene 3 decimales, usamos num3; si no, num2
+                try:
+                    use_num3 = evaluacion.valorpregunta.as_tuple().exponent < -2
+                except Exception:
+                    use_num3 = False
+                ws.write(row, col, puntaje, num3 if use_num3 else num2)
+
+    # === Fila de promedio por reactivo ===
+    last_row = row_start_data + len(matriculas)
+    if reactivos_list and last_row > row_start_data:
+        ws.write(last_row, 0, "Promedio por reactivo", total_fmt)
+        ws.write(last_row, 1, "", total_fmt)
+        ws.write(last_row, 2, "", total_fmt)
+        ws.write(last_row, 3, "", total_fmt)
+        for i in range(len(reactivos_list)):
+            col = base_col + i
+            col_letter = xlsxwriter.utility.xl_col_to_name(col)
+            # Promedia solo números; AVERAGE ignora celdas vacías
+            formula = f"=AVERAGE({col_letter}{row_start_data+1}:{col_letter}{last_row})"
+            ws.write_formula(last_row, col, formula, total_fmt)
+
+    # Anchos de columnas
+    ws.set_column(0, 0, 28)   # Estudiante
+    ws.set_column(1, 1, 16)   # Usuario
+    ws.set_column(2, 2, 10)   # Sexo
+    ws.set_column(3, 3, 14)   # Calificación
+    if reactivos_list:
+        ws.set_column(base_col, base_col + len(reactivos_list) - 1, 12)
 
     workbook.close()
     output.seek(0)
 
-    # === RESPUESTA HTTP ===
     filename = f"resultados_{programa.id}_{evaluacion.tipo}.xlsx"
     response = HttpResponse(
         output.read(),
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    response["Content-Disposition"] = f'attachment; filename=\"{filename}\"'
     return response
+
+
+# === 1) Pantalla de estructura del programa ===
+@login_required
+def estructura_rae_programa(request, programa_id):
+    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+
+    # Para encabezados (siguiendo tu estilo)
+    maestria = programa.maestria
+    maestrianombre = Maestrias.objects.get(id=maestria)
+    periodoacademico = programa.periodoacademico
+    periodoacademiconombre = PeriodosAcademicos.objects.get(id=periodoacademico)
+    modalidad = programa.modalidad
+    modalidadnombre = Modalidad.objects.get(id=modalidad)
+
+    componentes = (
+        ComponenteRAE.objects.filter(programa=programa)
+        .prefetch_related('subcomponentes__modulos_asignados__modulo')
+        .order_by('orden', 'id')
+    )
+
+    # Módulos de la maestría (útil para mostrar si hay sin asignar)
+    modulos_maestria = Modulos.objects.filter(maestria=maestria).order_by('codificacion', 'nombre')
+
+    # Módulos ya utilizados en alguna asignación
+    usados_ids = SubcomponenteModuloRAE.objects.filter(
+        subcomponente__componente__programa=programa
+    ).values_list('modulo_id', flat=True)
+
+    modulos_sin_asignar = modulos_maestria.exclude(id__in=usados_ids)
+
+    return render(request, 'estructura_rae_programa.html', {
+        'programa': programa,
+        'maestrianombre': maestrianombre,
+        'periodoacademiconombre': periodoacademiconombre,
+        'modalidadnombre': modalidadnombre,
+        'componentes': componentes,
+        'modulos_sin_asignar': modulos_sin_asignar,
+    })
+
+
+# === 2) Crear componente + subcomponentes (inline) ===
+@login_required
+def componente_rae_create(request, programa_id):
+    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    if request.method == 'POST':
+        form = ComponenteRAEForm(request.POST)
+        if form.is_valid():
+            componente = form.save(commit=False)
+            componente.programa = programa
+            componente.save()
+            formset = SubcomponenteFormSet(request.POST, instance=componente)
+            if formset.is_valid():
+                formset.save()
+                messages.success(request, 'Componente creado correctamente.')
+                return redirect('estructura_rae_programa', programa_id=programa.id)
+            else:
+                # Si el inline tiene errores, no perder el componente
+                componente.delete()
+        else:
+            formset = SubcomponenteFormSet(request.POST)
+    else:
+        form = ComponenteRAEForm()
+        formset = SubcomponenteFormSet()
+
+    return render(request, 'componente_form.html', {
+        'programa': programa,
+        'form': form,
+        'formset': formset,
+        'accion': 'Crear'
+    })
+
+
+# === 3) Editar componente + subcomponentes ===
+@login_required
+def componente_rae_update(request, componente_id):
+    componente = get_object_or_404(ComponenteRAE, id=componente_id)
+    programa = componente.programa
+
+    if request.method == 'POST':
+        form = ComponenteRAEForm(request.POST, instance=componente)
+        formset = SubcomponenteFormSet(request.POST, instance=componente)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            messages.success(request, 'Componente actualizado correctamente.')
+            return redirect('estructura_rae_programa', programa_id=programa.id)
+    else:
+        form = ComponenteRAEForm(instance=componente)
+        formset = SubcomponenteFormSet(instance=componente)
+
+    return render(request, 'componente_form.html', {
+        'programa': programa,
+        'form': form,
+        'formset': formset,
+        'accion': 'Editar'
+    })
+
+
+# === 4) Eliminar componente (cascada a subcomponentes y asignaciones) ===
+@login_required
+def componente_rae_delete(request, componente_id):
+    componente = get_object_or_404(ComponenteRAE, id=componente_id)
+    programa = componente.programa
+    if request.method == 'POST':
+        componente.delete()
+        messages.success(request, 'Componente eliminado.')
+        return redirect('estructura_rae_programa', programa_id=programa.id)
+    return render(request, 'confirm_delete.html', {
+        'obj': componente,
+        'back_url': reverse('estructura_rae_programa', args=[programa.id])
+    })
+
+
+# === 5) Asignar módulos a un subcomponente ===
+@login_required
+def subcomponente_asignar_modulos(request, subcomponente_id):
+    sub = get_object_or_404(SubcomponenteRAE, id=subcomponente_id)
+    programa = sub.componente.programa
+
+    if request.method == 'POST':
+        form = SubcomponenteAsignarModulosForm(request.POST, subcomponente=sub)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Asignaciones de módulos guardadas correctamente.')
+            return redirect('estructura_rae_programa', programa_id=programa.id)
+    else:
+        form = SubcomponenteAsignarModulosForm(subcomponente=sub)
+
+    return render(request, 'subcomponente_asignar_modulos.html', {
+        'programa': programa,
+        'subcomponente': sub,
+        'form': form
+    })
+
+
+# === 6) Eliminar subcomponente (si lo necesitas explícito) ===
+@login_required
+def subcomponente_rae_delete(request, subcomponente_id):
+    sub = get_object_or_404(SubcomponenteRAE, id=subcomponente_id)
+    programa = sub.componente.programa
+    if request.method == 'POST':
+        sub.delete()
+        messages.success(request, 'Subcomponente eliminado.')
+        return redirect('estructura_rae_programa', programa_id=programa.id)
+    return render(request, 'confirm_delete.html', {
+        'obj': sub,
+        'back_url': reverse('estructura_rae_programa', args=[programa.id])
+    })

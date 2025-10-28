@@ -1,0 +1,14 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<main class="container py-4">
+  <section class="card p-3">
+    <h5>Confirmar eliminación</h5>
+    <p>¿Deseas eliminar <b>{{ obj }}</b>?</p>
+    <form method="post">
+      {% csrf_token %}
+      <a href="{{ back_url }}" class="btn btn-secondary">Cancelar</a>
+      <button class="btn btn-danger" type="submit">Eliminar</button>
+    </form>
+  </section>
+</main>
+{% endblock %}

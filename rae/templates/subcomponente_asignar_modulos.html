@@ -1,0 +1,18 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<main class="container py-4">
+  <section class="card p-3">
+    <h4>Asignar módulos — {{ subcomponente.componente.nombre }} / {{ subcomponente.nombre }}</h4>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">Módulos (Ctrl/Cmd + click para selección múltiple)</label>
+        {{ form.modulos }}
+      </div>
+      <a href="{% url 'estructura_rae_programa' programa.id %}" class="btn btn-secondary">Volver</a>
+      <button class="btn btn-success" type="submit">Guardar asignaciones</button>
+    </form>
+  </section>
+</main>
+{% endblock %}

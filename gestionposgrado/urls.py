@@ -183,7 +183,12 @@ urlpatterns = [
     path('evaluacion/<int:evaluacion_id>/eliminar/', rae_views.evaluacionrae_eliminar, name='evaluacionrae_eliminar'),
     path('reactivos_por_evaluacion/<int:evaluacion_id>/', rae_views.reactivos_por_evaluacion,name='reactivos_por_evaluacion' ),
     path('exportar_resultados_excel/<int:programa_id>/<int:evaluacion_id>/', rae_views.exportar_resultados_excel, name='exportar_resultados_excel'),
-
+    path('programa/<int:programa_id>/estructura-rae/', rae_views.estructura_rae_programa, name='estructura_rae_programa'),
+    path('programa/<int:programa_id>/componente/crear/', rae_views.componente_rae_create, name='componente_rae_create'),
+    path('componente/<int:componente_id>/editar/', rae_views.componente_rae_update, name='componente_rae_update'),
+    path('componente/<int:componente_id>/eliminar/', rae_views.componente_rae_delete, name='componente_rae_delete'),
+    path('subcomponente/<int:subcomponente_id>/modulos/', rae_views.subcomponente_asignar_modulos, name='subcomponente_asignar_modulos'),
+    path('subcomponente/<int:subcomponente_id>/eliminar/', rae_views.subcomponente_rae_delete, name='subcomponente_rae_delete'),
 
 
     #DATOSPOSGRADO

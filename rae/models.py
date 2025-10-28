@@ -97,3 +97,88 @@ class ReactivoEvaluacion(models.Model):
     reactivo = models.ForeignKey(ReactivosMultipleChoice, on_delete=models.CASCADE)
     respuesta_estudiante = models.CharField(max_length=1, blank=True, null=True)
     correcta = models.BooleanField(default=False)
+
+
+class ComponenteRAE(models.Model):
+    programa = models.ForeignKey(
+        ProgramaPosgrado, on_delete=models.CASCADE,
+        related_name='componentes_rae'
+    )
+    nombre = models.CharField(max_length=255)
+    orden = models.PositiveIntegerField(default=1)
+    peso = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    preguntas_sugeridas = models.PositiveIntegerField(blank=True, null=True)
+    observaciones = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['programa', 'orden', 'id']
+        unique_together = [('programa', 'nombre')]
+        verbose_name = 'Componente RAE'
+        verbose_name_plural = 'Componentes RAE'
+
+    def __str__(self):
+        return f'{self.programa} — {self.nombre}'
+
+
+class SubcomponenteRAE(models.Model):
+    componente = models.ForeignKey(
+        ComponenteRAE, on_delete=models.CASCADE,
+        related_name='subcomponentes'
+    )
+    nombre = models.CharField(max_length=255)
+    orden = models.PositiveIntegerField(default=1)
+    observaciones = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['componente', 'orden', 'id']
+        unique_together = [('componente', 'nombre')]
+        verbose_name = 'Subcomponente RAE'
+        verbose_name_plural = 'Subcomponentes RAE'
+
+    def __str__(self):
+        return f'{self.componente.nombre} — {self.nombre}'
+
+
+class SubcomponenteModuloRAE(models.Model):
+    """
+    Asigna MÓDULOS (de la maestría del programa) a un SUBCOMPONENTE.
+    Un módulo debe pertenecer a un único subcomponente dentro del mismo programa.
+    Si un componente “no tiene subcomponentes”, crea uno único (p. ej. “Único”),
+    así mantenemos una sola ruta jerárquica: Componente > Subcomponente > Módulo.
+    """
+    subcomponente = models.ForeignKey(
+        SubcomponenteRAE, on_delete=models.CASCADE,
+        related_name='modulos_asignados'
+    )
+    modulo = models.ForeignKey(
+        Modulos, on_delete=models.CASCADE,
+        related_name='asignaciones_rae'
+    )
+
+    class Meta:
+        unique_together = [('subcomponente', 'modulo')]
+        verbose_name = 'Asignación de módulo a subcomponente'
+        verbose_name_plural = 'Asignaciones de módulos a subcomponentes'
+
+    def __str__(self):
+        return f'{self.subcomponente} — {self.modulo.nombre}'
+
+    def clean(self):
+        """
+        Garantiza coherencia: el módulo debe pertenecer a la misma maestría del programa
+        del componente padre.
+        """
+        from django.core.exceptions import ValidationError
+        comp = self.subcomponente.componente
+        # comp.programa.maestria es un ID; modulo.maestria puede ser ID o FK según tu modelo.
+        if str(self.modulo.maestria) != str(comp.programa.maestria):
+            raise ValidationError(
+                'El módulo no pertenece a la maestría del programa de este componente.'
+            )
+        # Evitar que el mismo módulo quede asignado a dos subcomponentes del mismo programa.
+        ya = SubcomponenteModuloRAE.objects.filter(
+            modulo=self.modulo,
+            subcomponente__componente__programa=comp.programa
+        ).exclude(pk=self.pk).exists()
+        if ya:
+            raise ValidationError('Este módulo ya está asignado a otro subcomponente del mismo programa.')

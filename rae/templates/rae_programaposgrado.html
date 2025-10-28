@@ -14,7 +14,7 @@
 
     
         <div class="mb-3">
-            <a class="btn btn-sm btn-danger" href="{% url 'reactivosprograma' programaposgrado.id %}">Regresar</a>
+            <a class="btn btn-sm btn-secondary" href="{% url 'reactivosprograma' programaposgrado.id %}"> <i class="fa fa-arrow-left"></i> Volver</a>
         </div>
 
         {% if messages %}
@@ -34,6 +34,12 @@
                         <li class="nav-item">
                             <a class="nav-link fs-5" aria-current="page" href="{% url 'evaluacionrae_programaposgrado' programaposgrado.id %}" style="color: white !important;">
                                 Evaluación RAE
+                            </a>
+                        </li>
+                        <div class="nav-divider"></div>
+                        <li class="nav-item">
+                            <a class="nav-link fs-5" href="{% url 'estructura_rae_programa' programaposgrado.id %}" style="color: white !important;">
+                                Componentes/Subcomponentes RAE
                             </a>
                         </li>
                         <div class="nav-divider"></div>
