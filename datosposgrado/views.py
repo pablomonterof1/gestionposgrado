@@ -300,6 +300,8 @@ def contratocoordinador_create(request, periodo_id):
             certificacionpresupuestaria = form.cleaned_data['certificacionpresupuestaria']
             fechacertificacionpresupuestaria = form.cleaned_data['fechacertificacionpresupuestaria']
             plazo = form.cleaned_data['plazo']
+            fechainicio = form.cleaned_data['fechainicio']
+            fechafin = form.cleaned_data['fechafin']
             honorario = form.cleaned_data['honorario']
             numerocontrato = form.cleaned_data['numerocontrato']
             cargo = form.cleaned_data['cargo']
@@ -319,6 +321,8 @@ def contratocoordinador_create(request, periodo_id):
                 certificacionpresupuestaria=certificacionpresupuestaria,
                 fechacertificacionpresupuestaria=fechacertificacionpresupuestaria,
                 plazo=plazo,
+                fechainicio=fechainicio,
+                fechafin=fechafin,
                 honorario=honorario,
                 numerocontrato=numerocontrato,
                 cargo=cargo,
@@ -482,7 +486,7 @@ def contratotutor_update(request, contratotutor_id, periodo_id):
         except Maestrias.DoesNotExist:
             p.maestria = None
             p.periodoacademico = None
-            periodoacademico = PeriodosAcademicos.objects.get(id=periodo_id)
+    periodoacademico = PeriodosAcademicos.objects.get(id=periodo_id)
 
     return render(request, 'contratotutor_update.html', {
         'periodo_id': periodo_id,
@@ -507,9 +511,11 @@ def contratocoordinador_update(request, contratocoordinador_id, periodo_id):
             form.save(commit=False)
             contratocoordinador.coordinador = coordinador.user.id
             contratocoordinador.programadeposgrado = programadeposgrado.id
-            contratocoordinador.certificacionpresupuestaria = form.cleaned_data['certificacionpresupuestaria']
+            contratocoordinador.certificacionpresupuestaria = form.cleaned_data['certificacionpresupuestaria'] or contratocoordinador.certificacionpresupuestaria
             contratocoordinador.fechacertificacionpresupuestaria = form.cleaned_data['fechacertificacionpresupuestaria']
             contratocoordinador.plazo = form.cleaned_data['plazo']
+            contratocoordinador.fechainicio = form.cleaned_data['fechainicio'] or contratocoordinador.fechainicio
+            contratocoordinador.fechafin = form.cleaned_data['fechafin'] or contratocoordinador.fechafin
             contratocoordinador.honorario = form.cleaned_data['honorario']
             contratocoordinador.numerocontrato = form.cleaned_data['numerocontrato']
             contratocoordinador.cargo = form.cleaned_data['cargo']

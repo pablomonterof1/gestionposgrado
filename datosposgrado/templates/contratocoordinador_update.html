@@ -6,6 +6,7 @@
     <section class="card" style="padding: 2%;">
 
         <h3 class="mb-4">Actualizar contrato del Coordinador </b></h3>
+        <p><b>Periodo:</b> {{ periodoacademico }}</p>
 
         <br>
 
@@ -51,8 +52,17 @@
                 {{ form.fechacertificacionpresupuestaria }}
             </div>
             <div class="mb-3">
-                <label for="plazo" class="form-label"> <b>Plazo</b> </label>
+                <label for="plazo" class="form-label"> <b>Plazo (Opcional)</b> </label>
                 {{ form.plazo }}
+            </div>
+            <div class="mb-3">
+                <label for="fechainicio" class="form-label"> <b>Fecha de inicio (Contrato)</b> </label>
+                {{ form.fechainicio }}
+            </div>
+
+            <div class="mb-3">
+                <label for="fechafin" class="form-label"> <b>Fecha de fin (Contrato)</b> </label>
+                {{ form.fechafin }}
             </div>
 
             <div class="mb-3">

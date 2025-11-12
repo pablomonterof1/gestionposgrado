@@ -148,6 +148,8 @@
 </table>
 
 <div class="page-break"></div>
+
+<!---------------------------------------------------- Coordinadores -------------------------------------------------------->
 <h2>Pagos a Coordinadores</h2>
 {% if coord_detalle %}
   {% for sec in coord_detalle %}
@@ -155,6 +157,28 @@
       {% if sec.usuario %}{{ sec.usuario.get_full_name|default:sec.usuario.username }}{% else %}Coordinador {{ sec.contrato.coordinador }}{% endif %}
       — Contrato {{ sec.contrato.numerocontrato }}
     </h3>
+    <p>
+      {% if sec.usuario %} <b>Correo</b> {{sec.usuario.email}}  - <b>Teléfono</b> {{sec.usuario.perfilusuario.telefono}}{% endif %}
+    </p>
+    <div class="mb muted">
+      <b>Certificación presupuestaria:</b> {{ sec.contrato.certificacionpresupuestaria }} ({{ sec.contrato.fechacertificacionpresupuestaria }})<br>
+      <b>Monto:</b> $ {{ sec.contrato.honorario|floatformat:2 }} &nbsp;&nbsp;&nbsp;&nbsp;
+      {% if sec.contrato.plazo %}
+      <b>Plazo:</b> {{ sec.contrato.plazo }}<br>
+      {% endif %}
+      <b>Fecha de inicio (contrato):</b>
+      {% if sec.fecha_inicio_contrato %}
+        {{ sec.fecha_inicio_contrato }}
+      {% else %}
+        <span class="text-muted">No registrada</span>
+      {% endif %} &nbsp;&nbsp;
+      <b>Fecha de fin (contrato):</b>
+      {% if sec.fecha_fin_contrato %}
+        {{ sec.fecha_fin_contrato }}
+      {% else %}
+        <span class="text-muted">No registrada</span>
+      {% endif %}<br>
+    </div>
     <table>
       <thead>
         <tr>
@@ -184,6 +208,7 @@
 {% endif %}
 
 <div class="page-break"></div>
+<!---------------------------------------------------- Docentes -------------------------------------------------------->
 <h2>Contratos Docentes</h2>
 <table>
   <thead>
@@ -217,6 +242,7 @@
 </table>
 
 <div class="page-break"></div>
+<!---------------------------------------------------- Tutores -------------------------------------------------------->
 <h2>Contratos Tutores</h2>
 <table>
   <thead>
@@ -252,6 +278,7 @@
 
 <div class="page-break"></div>
 <div style="page: horizontal;">
+<!---------------------------------------------------- Estudiantes -------------------------------------------------------->
 <h2>Estudiantes del programa</h2>
 <table class="alumnos">
   <thead>

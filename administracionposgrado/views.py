@@ -143,6 +143,8 @@ def contratos_coordinadores_programa(request, programa_id):
             'contrato': c,
             'usuario': u,  # puede ser None si no existe el User con ese ID
             'periodos': periodos_por_coord.get(c.coordinador, []),
+            'fecha_inicio_contrato': getattr(c, 'fechainicio', None),
+            'fecha_fin_contrato': getattr(c, 'fechafin', None),
         })
 
     return render(request, 'contratos_coordinadores_programa.html', {
@@ -1070,6 +1072,8 @@ def programa_reporte_pdf(request, programa_id):
             'usuario': usuario,
             'pagos': lista,
             'total': total_contrato,
+            'fecha_inicio_contrato': getattr(c, 'fechainicio', None),
+            'fecha_fin_contrato': getattr(c, 'fechafin', None),
         })
 
     # 4) Docentes (contratos + gestión)

@@ -13,10 +13,10 @@ class ContratosDocentes(models.Model):
     numerocontrato = models.CharField(max_length=100)
     numeromemorandotthh = models.CharField(max_length=100)
     tipopersonalacademico = models.IntegerField(choices=[
-        (1, 'Servicios profesionales'), 
+        (1, 'Servicios profesionales'),
     ], default=1)
     adenda = models.CharField(max_length=100, blank=True, null=True)
-    observaciones = models.TextField(blank=True, null=True)    
+    observaciones = models.TextField(blank=True, null=True)
     urldocumento = models.URLField(max_length=500, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
 
@@ -25,7 +25,9 @@ class ContratosDocentes(models.Model):
 
     class Meta:
         ordering = ['-created']
-        verbose_name = 'Contratos Docentes'
+        verbose_name = 'Contrato Docente'
+        verbose_name_plural = 'Contratos Docentes'
+
 
 class ContratoTutor(models.Model):
     tutor = models.IntegerField()
@@ -38,11 +40,11 @@ class ContratoTutor(models.Model):
     numerocontrato = models.CharField(max_length=100)
     numeromemorandotthh = models.CharField(max_length=100)
     tipopersonalacademico = models.IntegerField(choices=[
-        (1, 'Servicios profesionales'), 
+        (1, 'Servicios profesionales'),
     ], default=1)
     adenda = models.CharField(max_length=100, blank=True, null=True)
-    observaciones = models.TextField(blank=True, null=True)    
-    urldocumento = models.URLField(max_length=500, blank=True, null=True) 
+    observaciones = models.TextField(blank=True, null=True)
+    urldocumento = models.URLField(max_length=500, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -50,21 +52,27 @@ class ContratoTutor(models.Model):
 
     class Meta:
         ordering = ['-created']
-        verbose_name = 'Contrato Tutor'
+        verbose_name = 'Contrato de Tutor'
+        verbose_name_plural = 'Contratos de Tutor'
+
 
 class ContratoCoordinador(models.Model):
     coordinador = models.IntegerField()
     programadeposgrado = models.IntegerField()
     certificacionpresupuestaria = models.CharField(max_length=100)
     fechacertificacionpresupuestaria = models.DateField()
-    plazo = models.CharField(max_length=100)
+    plazo = models.CharField(max_length=100, null=True, blank=True)
+
+    fechainicio = models.DateField(null=True, blank=True)
+    fechafin = models.DateField(null=True, blank=True)
+    
     honorario = models.DecimalField(max_digits=10, decimal_places=2)
     numerocontrato = models.CharField(max_length=100)
     cargo = models.CharField(max_length=100)
     noactasseleccion = models.CharField(max_length=100)
     oficioentregadoporth = models.CharField(max_length=100)
     modalidadcontractuar = models.CharField(max_length=100)
-    observaciones = models.TextField(blank=True, null=True)    
+    observaciones = models.TextField(blank=True, null=True)
     urldocumento = models.URLField(max_length=500, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
 
@@ -73,5 +81,5 @@ class ContratoCoordinador(models.Model):
 
     class Meta:
         ordering = ['-created']
-        verbose_name = 'Contrato Coordinador'
-        verbose_name = 'Contratos Docentes'
+        verbose_name = 'Contrato de Coordinador'
+        verbose_name_plural = 'Contratos de Coordinador'

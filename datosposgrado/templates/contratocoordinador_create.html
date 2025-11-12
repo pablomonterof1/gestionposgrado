@@ -5,7 +5,10 @@
 <main class="container py-5 ">
     <section class="card" style="padding: 2%;">
 
-        <h3 class="mb-4">Crear contrado - <b>{{periodoacademico.nombre}}</b></h3>
+    
+        <h3 class="mb-4">Crear contrato - Coordinador </h3>
+        <div class="text-muted" style="font-size: 1.3em;">
+        Periodo: <strong>{{ periodoacademico.nombre }}</strong>
 
 
 
@@ -65,8 +68,19 @@
             </div>
 
             <div class="mb-3">
-                <label for="plazo" class="form-label"> <b>Plazo</b> </label>
+                <label for="plazo" class="form-label"> <b>Plazo (Opcional)</b> </label>
                 {{ form.plazo }}
+                <small class="text-muted d-block">Puede seguir usando texto si es un caso especial.</small>
+            </div>
+
+            <div class="mb-3">
+                <label for="fechainicio" class="form-label"> <b>Fecha de inicio (Contrato)</b> </label>
+                {{ form.fechainicio }}
+            </div>
+
+            <div class="mb-3">
+                <label for="fechafin" class="form-label"> <b>Fecha de fin (Contrato)</b> </label>
+                {{ form.fechafin }}
             </div>
 
             <div class="mb-3">
@@ -110,6 +124,7 @@
             </div>
 
             <button type="submit" class="btn btn-primary">Crear</button>
+            <a class="btn btn-danger" href="{% url 'contratocoordinador' periodo_id %}">Cancelar</a>
         </form>
 
     </section>

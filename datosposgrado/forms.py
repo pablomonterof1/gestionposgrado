@@ -13,7 +13,10 @@ class ContratosDocentesForm(forms.ModelForm):
             'horasacademicas': forms.NumberInput(attrs={'class': 'form-control'}),
             'valorxhora': forms.NumberInput(attrs={'class': 'form-control'}),
             'certificacionpresupuestaria': forms.TextInput(attrs={'class': 'form-control'}),
-            'fechacertificacionpresupuestaria': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'fechacertificacionpresupuestaria': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={'class': 'form-control', 'type': 'date'}
+            ),
             'plazo': forms.TextInput(attrs={'class': 'form-control'}),
             'numerocontrato': forms.TextInput(attrs={'class': 'form-control'}),
             'numeromemorandotthh': forms.TextInput(attrs={'class': 'form-control'}),
@@ -40,6 +43,9 @@ class ContratosDocentesForm(forms.ModelForm):
             'observaciones': 'Observaciones',
             'urldocumento': 'URL del Documento',
         }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['fechacertificacionpresupuestaria'].input_formats = ['%Y-%m-%d']
 
 class ContratoTutorForm(forms.ModelForm):
     class Meta:
@@ -52,7 +58,10 @@ class ContratoTutorForm(forms.ModelForm):
             'maestrante': forms.Select(attrs={'class': 'form-control'}),
             'plazo': forms.TextInput(attrs={'class': 'form-control'}),
             'certificacionpresupuestaria': forms.TextInput(attrs={'class': 'form-control'}),
-            'fechacertificacionpresupuestaria': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'fechacertificacionpresupuestaria': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={'class': 'form-control', 'type': 'date'}
+            ),
             'valorcontrato': forms.NumberInput(attrs={'class': 'form-control'}),
             'numerocontrato': forms.TextInput(attrs={'class': 'form-control'}),
             'numeromemorandotthh': forms.TextInput(attrs={'class': 'form-control'}),
@@ -66,7 +75,7 @@ class ContratoTutorForm(forms.ModelForm):
         labels = {
             'tutor': 'Tutor',
             'programadeposgrado': 'Programa de Posgrado',
-            'mestrante': 'Mestrante',
+            'maestrante': 'Maestrante',
             'plazo': 'Plazo',
             'certificacionpresupuestaria': 'Certificación Presupuestaria',
             'fechacertificacionpresupuestaria': 'Fecha de Certificación Presupuestaria',
@@ -78,18 +87,32 @@ class ContratoTutorForm(forms.ModelForm):
             'observaciones': 'Observaciones',
             'urldocumento': 'URL del Documento',
         }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['fechacertificacionpresupuestaria'].input_formats = ['%Y-%m-%d']
 
 class ContratoCoordinadorForm(forms.ModelForm):
     class Meta:
         model = ContratoCoordinador
-        fields = ['coordinador', 'programadeposgrado', 'certificacionpresupuestaria', 'fechacertificacionpresupuestaria', 'plazo', 'honorario', 'numerocontrato', 'cargo','noactasseleccion','oficioentregadoporth','modalidadcontractuar','observaciones', 'urldocumento']
+        fields = ['coordinador', 'programadeposgrado', 'certificacionpresupuestaria', 'fechacertificacionpresupuestaria', 'plazo', 'fechainicio', 'fechafin', 'honorario', 'numerocontrato', 'cargo','noactasseleccion','oficioentregadoporth','modalidadcontractuar','observaciones', 'urldocumento']
 
         widgets = {
             'coordinador': forms.Select(attrs={'class': 'form-control'}),
             'programadeposgrado': forms.Select(attrs={'class': 'form-control'}),
             'certificacionpresupuestaria': forms.TextInput(attrs={'class': 'form-control'}),
-            'fechacertificacionpresupuestaria': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'fechacertificacionpresupuestaria': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={'class': 'form-control', 'type': 'date'}
+            ),
             'plazo': forms.TextInput(attrs={'class': 'form-control'}),
+            'fechainicio': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={'class': 'form-control', 'type': 'date'}
+            ),   # nuevo
+            'fechafin': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={'class': 'form-control', 'type': 'date'}
+            ),     # nuevo
             'honorario': forms.NumberInput(attrs={'class': 'form-control'}),
             'numerocontrato': forms.TextInput(attrs={'class': 'form-control'}),
             'cargo': forms.TextInput(attrs={'class': 'form-control'}),
@@ -105,6 +128,8 @@ class ContratoCoordinadorForm(forms.ModelForm):
             'certificacionpresupuestaria': 'Certificación Presupuestaria',
             'fechacertificacionpresupuestaria': 'Fecha de Certificación Presupuestaria',
             'plazo': 'Plazo',
+            'fechainicio': 'Fecha de inicio',      # nuevo
+            'fechafin': 'Fecha de fin',            # nuevo
             'honorario': 'Honorario',
             'numerocontrato': 'Número de Contrato',
             'cargo': 'Cargo',
@@ -114,3 +139,8 @@ class ContratoCoordinadorForm(forms.ModelForm):
             'observaciones': 'Observaciones',
             'urldocumento': 'URL del Documento',
         }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['fechacertificacionpresupuestaria'].input_formats = ['%Y-%m-%d']
+        self.fields['fechainicio'].input_formats = ['%Y-%m-%d']  # nuevo
+        self.fields['fechafin'].input_formats = ['%Y-%m-%d']    # nuevo

@@ -47,6 +47,8 @@
               <th scope="col">No. Certificación presupuestaria</th>
               <th scope="col">Fecha - Certificación presupuestaria</th>
               <th scope="col">Plazo</th>
+              <th scope="col">Fecha inicio</th>
+              <th scope="col">Fecha fin</th>
               <th scope="col">Honorario</th>
               <th scope="col">No. Contrato</th>
               <th scope="col">Cargo</th>
@@ -73,7 +75,27 @@
                 {{ contrato.certificacionpresupuestaria }}
               </td>
               <td class="text-center text-nowrap">{{ contrato.fechacertificacionpresupuestaria }}</td>
-              <td class="text-center">{{ contrato.plazo }}</td>
+              <td class="text-center">
+                {% if contrato.plazo %}
+                  {{ contrato.plazo }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td class="text-center text-nowrap">
+                {% if contrato.fechainicio %}
+                  {{ contrato.fechainicio }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td class="text-center text-nowrap">
+                {% if contrato.fechafin %}
+                  {{ contrato.fechafin }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
               <td class="text-end text-nowrap">${{ contrato.honorario }}</td>
               <td class="text-nowrap">{{ contrato.numerocontrato }}</td>
               <td class="text-nowrap">{{ contrato.cargo }}</td>
