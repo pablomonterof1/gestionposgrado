@@ -299,7 +299,7 @@ def reactivos_programaposgrado(request, programa_id):
     for r in reactivos_list:
         try:
             r.usuario_obj = User.objects.get(id=r.usuario)
-            r.modulo_obj = Modulos.objects.get(id=r.modulo)
+            r.modulo_obj = Modulos.objects.get(id=r.modulo.id)
         except User.DoesNotExist:
             r.usuario_obj = None
 
