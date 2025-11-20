@@ -5,7 +5,7 @@ def permisos_usuario(request):
         'tiene_permiso_estudiante': False,
         'tiene_permiso_docente': False,
         'tiene_permiso_coordinador': False,
-        'tiene_permiso_edision': False,   # (mantengo tu nombre original)
+        'tiene_permiso_edicion': False,
         'tiene_permiso_tutor': False,
         'tiene_permiso_tecnico': False,
         'tiene_permiso_analista': False,
@@ -28,7 +28,7 @@ def permisos_usuario(request):
             elif rol == 3:
                 permisos['tiene_permiso_coordinador'] = True
             elif rol == 4:
-                permisos['tiene_permiso_edision'] = True
+                permisos['tiene_permiso_edicion'] = True
             elif rol == 5:
                 permisos['tiene_permiso_tutor'] = True
             elif rol == 6:

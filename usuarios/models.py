@@ -23,7 +23,7 @@ class PerfilUsuario(models.Model):
         (4, 'Editor'),
         (5, 'Tutor'),
         (6, 'Técnico'),
-        (7, 'Analista'),      
+        (7, 'Analista - DB Posgrado'),      
 
     ], blank=True, null=True)
     telefono = models.CharField(max_length=15, blank=True, null=True)

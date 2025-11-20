@@ -65,7 +65,9 @@
             {% for contrato in contratos_por_periordo %}
             <tr>
               <td class="text-nowrap">{{ contrato.coordinador_obj.perfilusuario.ci }}</td>
-              <td class="fw-semibold">{{ contrato.coordinador_obj.get_full_name }}</td>
+              <td class="fw-semibold">  
+                <a href="{% url 'usuario_editar_dp' contrato.coordinador_obj.perfilusuario.user.id %}?next={{ request.path }}">{{ contrato.coordinador_obj.get_full_name }}</a>
+              </td>
               <td>{{ contrato.maestria_obj.nombre }}</td>
               <td>{{ contrato.campoamplio_obj.nombre }}</td>
               <td class="text-nowrap">{{ contrato.programadeposgrado_obj.get_cohorte_display }}</td>

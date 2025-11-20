@@ -6,7 +6,7 @@
 
     <section class="card" style="padding: 1%;">
 
-        {% if tiene_permiso_edision %}
+        {% if tiene_permiso_edicion %}
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark menuprogposgrado" style="border-radius: 5px;">
             <div class="container-fluid">
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -17,28 +17,30 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ">
                         <div class="nav-divider"></div>
+                        {% if tiene_permiso_edicion or tiene_permiso_coordinador  %}
                         <li class="nav-item">
                             <a class="nav-link fs-5" aria-current="page" href="{% url 'periodosacademicosmain' %}"
                                 style="color: white !important;">
                                 Programas de maestría
                             </a>
                         </li>
-                        <div class="nav-divider"></div>
+                        {% endif %}
+                        <!-- <div class="nav-divider"></div> -->
                         <!-- <li class="nav-item">
                             <a class="nav-link fs-5" aria-current="page" href="{% url 'especialidadesmedicaspos' %}"
                                 style="color: white !important;">
                                 Especialidades médicas
                             </a>
                         </li> -->
-
-                        <!-- <div class="nav-divider"></div> -->
+                        {% if tiene_permiso_edicion or tiene_permiso_analista %}
+                        <div class="nav-divider"></div>
                         <li class="nav-item">
                             <a class="nav-link fs-5" aria-current="page" href="{% url 'periodosacademicosdp' %}"
                                 style="color: white !important;">
                                 Base de datos Pogrado
                             </a>
                         </li>
-
+                        {% endif %}
                         <!-- <div class="nav-divider"></div>
                         <li class="nav-item">
                             <a class="nav-link fs-5" aria-current="page" href="{% url 'periodosacademicosp' %}"

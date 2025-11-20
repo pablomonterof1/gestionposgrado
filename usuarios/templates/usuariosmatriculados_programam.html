@@ -39,6 +39,7 @@
                         <th scope="col">Correo electrónico</th>
                         <th scope="col">CI</th>
                         <th scope="col">Fecha de matrícula</th>
+                        <th scope="col">Último acceso</th>
                         <th scope="col">Eliminar matrícula</th>
                     </tr>
                 </thead>
@@ -50,11 +51,12 @@
                         <td>{{ estudiante.usuario.email }}</td>
                         <td>{{ estudiante.usuario.perfilusuario.ci }}</td>
                         <td>{{ estudiante.fecha_matricula|date:"Y-m-d" }}</td>
-                        <td>
+                        <td>{{ estudiante.usuario.last_login|date:"Y-m-d H:i" }}</td>
+                        <td style="text-align: center;">
                             <form method="POST"
                                 action="{% url 'borarusuariosmatriculadosprogramam' programa.id estudiante.usuario.id %}">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-danger">Dar de baja</button>
+                                <button type="submit" class="btn btn-danger btn-sm" title="Dar de baja"><i class="fa-solid fa-trash"></i></button>
                             </form>
                         </td>
                     </tr>

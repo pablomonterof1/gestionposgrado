@@ -2,12 +2,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .forms import MaestriaForm, ModuloForm, EspecialidadesMedicasForm, ModuloEMForm
 from .models import Maestrias, PeriodosAcademicos, PerfildeIngreso, Modalidad, ProgramaPosgrado, CampoAmplio, Modulos, EspecialidadesMedicas, ModulosEM, ProgramaPosgradoEM, ModalidadDeTitulacion
-
+from main.decorators import role_required
 
 # Create your views here.
 
 ################################## MAESTRIAS############################################
 @login_required
+@role_required([4])
 def maestrias(request):
     maestrias_list = Maestrias.objects.all().order_by('-created')
     return render(request, 'maestrias.html', {
@@ -16,6 +17,7 @@ def maestrias(request):
 
 
 @login_required
+@role_required([4])
 def maestrias_create(request):
     if request.method == 'POST':
         form = MaestriaForm(request.POST)
@@ -35,6 +37,7 @@ def maestrias_create(request):
 
 
 @login_required
+@role_required([4])
 def maestrias_detail(request, maestria_id):
     maestria = get_object_or_404(Maestrias, id=maestria_id)
     if request.method == 'POST':
@@ -51,6 +54,7 @@ def maestrias_detail(request, maestria_id):
 
 
 @login_required
+@role_required([4])
 def maestrias_delete(request, maestria_id):
     maestria = get_object_or_404(Maestrias, id=maestria_id)
     maestrias_list = Maestrias.objects.all().order_by('-created')
@@ -66,6 +70,7 @@ def maestrias_delete(request, maestria_id):
 ################################## periodoacademicoS############################################
 
 @login_required
+@role_required([4])
 def periodosacademicos(request):
     periodosacademicos_list = PeriodosAcademicos.objects.all().order_by('fecha_inicio')
     return render(request, 'periodosacademicos.html', {
@@ -76,6 +81,7 @@ def periodosacademicos(request):
 
 
 @login_required
+@role_required([4])
 def modalidad(request):
     modalidad_list = Modalidad.objects.all().order_by('-created')
     return render(request, 'modalidad.html', {
@@ -86,6 +92,7 @@ def modalidad(request):
 
 
 @login_required
+@role_required([4])
 def modalidadtitulacion(request):
     modalidadtitulacion_list = ModalidadDeTitulacion.objects.all().order_by('-created')
     return render(request, 'modalidadtitulacion.html', {
@@ -97,6 +104,7 @@ def modalidadtitulacion(request):
 
 
 @login_required
+@role_required([4])
 def perfildeingreso(request):
     perfildeingreso_list = PerfildeIngreso.objects.all().order_by('-created')
     return render(request, 'perfildeingreso.html', {
@@ -107,6 +115,7 @@ def perfildeingreso(request):
 ################################## CAMPOAMPLIO############################################
 
 @login_required
+@role_required([4])
 def campoamplio(request):
     campoamplio_list = CampoAmplio.objects.all().order_by('-created')
     return render(request, 'campoamplio.html', {
@@ -117,6 +126,7 @@ def campoamplio(request):
 ################################## MODULOS############################################
 
 @login_required
+@role_required([4])
 def modulos(request, maestria_id):
     maestria = get_object_or_404(Maestrias, id=maestria_id)
     modulos_list = Modulos.objects.filter(maestria=maestria).order_by('nombre')
@@ -127,6 +137,7 @@ def modulos(request, maestria_id):
 
 
 @login_required
+@role_required([4])
 def modulos_create(request, maestria_id):
     maestria = get_object_or_404(Maestrias, id=maestria_id)
     if request.method == 'POST':
@@ -150,6 +161,7 @@ def modulos_create(request, maestria_id):
 
 
 @login_required
+@role_required([4])
 def modulos_update(request, modulo_id):
     modulo = get_object_or_404(Modulos, id=modulo_id)
     maestria = Maestrias.objects.get(id=modulo.maestria.id)
@@ -168,6 +180,7 @@ def modulos_update(request, modulo_id):
 
 
 @login_required
+@role_required([4])
 def modulos_delete(request, modulo_id):
     modulo = get_object_or_404(Modulos, id=modulo_id)
     maestria = Maestrias.objects.get(id=modulo.maestria.id)
@@ -186,6 +199,7 @@ def modulos_delete(request, modulo_id):
 
 
 @login_required
+@role_required([4])
 def programasdeposgrado(request):
     programadeposgrado_list = ProgramaPosgrado.objects.all().order_by('campoamplio')
     for programadeposgrado in programadeposgrado_list:
@@ -204,6 +218,7 @@ def programasdeposgrado(request):
 
 
 @login_required
+@role_required([4])
 def programadeposgrado_select(request):
     campoamplio_list = CampoAmplio.objects.all().order_by('-nombre')
     maestrias_list = Maestrias.objects.all().order_by('-created')
@@ -218,6 +233,7 @@ def programadeposgrado_select(request):
 
 
 @login_required
+@role_required([4])
 def programadeposgrado_create(request):
     if request.method == 'POST':
         campoamplio_id = request.POST.get('campoamplio_id')
@@ -259,6 +275,7 @@ def programadeposgrado_create(request):
 
 
 @login_required
+@role_required([4])
 def programadeposgrado_update(request, programadeposgrado_id):
     programadeposgrado = get_object_or_404(
         ProgramaPosgrado, id=programadeposgrado_id)
@@ -311,6 +328,7 @@ def programadeposgrado_update(request, programadeposgrado_id):
 
 
 @login_required
+@role_required([4])
 def programadeposgrado_delete(request, programadeposgrado_id):
     programadeposgradodelete = get_object_or_404(
         ProgramaPosgrado, id=programadeposgrado_id)
@@ -337,6 +355,7 @@ def programadeposgrado_delete(request, programadeposgrado_id):
 
 
 @login_required
+@role_required([4])
 def especialidadesmedicas(request):
     especialidadesmedicas_list = EspecialidadesMedicas.objects.all().order_by('-created')
     return render(request, 'especialidadesmedicas.html', {
@@ -345,6 +364,7 @@ def especialidadesmedicas(request):
 
 
 @login_required
+@role_required([4])
 def especialidadesmedicas_create(request):
     if request.method == 'POST':
         form = EspecialidadesMedicasForm(request.POST)
@@ -364,6 +384,7 @@ def especialidadesmedicas_create(request):
 
 
 @login_required
+@role_required([4])
 def especialidadesmedicas_detail(request, especialidadesmedicas_id):
     especialidadesmedicas = get_object_or_404(
         EspecialidadesMedicas, id=especialidadesmedicas_id)
@@ -382,6 +403,7 @@ def especialidadesmedicas_detail(request, especialidadesmedicas_id):
 
 
 @login_required
+@role_required([4])
 def especialidadesmedicas_delete(request, especialidadesmedicas_id):
     especialidadesmedicas = get_object_or_404(
         EspecialidadesMedicas, id=especialidadesmedicas_id)
@@ -398,6 +420,7 @@ def especialidadesmedicas_delete(request, especialidadesmedicas_id):
 ################################## MODULOSEM############################################
 
 @login_required
+@role_required([4])
 def modulosem(request, especialidadesmedicas_id):
     especialidad = get_object_or_404(
         EspecialidadesMedicas, id=especialidadesmedicas_id)
@@ -410,6 +433,7 @@ def modulosem(request, especialidadesmedicas_id):
 
 
 @login_required
+@role_required([4])
 def modulosem_create(request, especialidadesmedicas_id):
     especialidad = get_object_or_404(
         EspecialidadesMedicas, id=especialidadesmedicas_id)
@@ -434,6 +458,7 @@ def modulosem_create(request, especialidadesmedicas_id):
 
 
 @login_required
+@role_required([4])
 def modulosem_update(request, moduloem_id):
     moduloem = get_object_or_404(ModulosEM, id=moduloem_id)
     especialidad = EspecialidadesMedicas.objects.get(
@@ -453,6 +478,7 @@ def modulosem_update(request, moduloem_id):
 
 
 @login_required
+@role_required([4])
 def modulosem_delete(request, moduloem_id):
     moduloem = get_object_or_404(ModulosEM, id=moduloem_id)
     especialidad = EspecialidadesMedicas.objects.get(
@@ -473,6 +499,7 @@ def modulosem_delete(request, moduloem_id):
 
 
 @login_required
+@role_required([4])
 def programasdeespecialidadesmedicas(request):
     programasdeespecialidadesmedicas_list = ProgramaPosgradoEM.objects.all(
     ).order_by('campoamplio')
@@ -492,6 +519,7 @@ def programasdeespecialidadesmedicas(request):
 
 
 @login_required
+@role_required([4])
 def programasdeespecialidadesmedicas_select(request):
     campoamplio_list = CampoAmplio.objects.all().order_by('-nombre')
     especialidad_list = EspecialidadesMedicas.objects.all().order_by('-created')
@@ -506,6 +534,7 @@ def programasdeespecialidadesmedicas_select(request):
 
 
 @login_required
+@role_required([4])
 def programasdeespecialidadesmedicas_create(request):
     if request.method == 'POST':
         campoamplio_id = request.POST.get('campoamplio_id')
@@ -544,6 +573,7 @@ def programasdeespecialidadesmedicas_create(request):
 
 
 @login_required
+@role_required([4])
 def programasdeespecialidadesmedicas_update(request, programadeespecialidadesmedicas_id):
     programadeespecialidadesmedicas = get_object_or_404(ProgramaPosgradoEM, id=programadeespecialidadesmedicas_id)
     programadeespecialidadesmedicas.campoamplio = CampoAmplio.objects.get(
@@ -597,6 +627,7 @@ def programasdeespecialidadesmedicas_update(request, programadeespecialidadesmed
 
 
 @login_required
+@role_required([4])
 def programasdeespecialidadesmedicas_delete(request, programadeespecialidadesmedicas_id):
     programadepecialidadesmedicasdelete = get_object_or_404(
         ProgramaPosgradoEM, id=programadeespecialidadesmedicas_id)

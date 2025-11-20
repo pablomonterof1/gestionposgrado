@@ -45,6 +45,7 @@ urlpatterns = [
     path('signup/', user_views.signup, name='signup'),
     path('perfil/', user_views.perfil, name='perfil'),
     path('perfil/editar/', user_views.perfil_editar, name='perfil_editar'),
+    path('usuariodp/<int:user_id>/editar/', user_views.usuario_editar_dp, name='usuario_editar_dp'),
     path('perfil/password/', user_views.perfil_password, name='perfil_password'),
     path('logout/', user_views.signout, name='logout'),
     path('signin/', user_views.signin, name='signin'),

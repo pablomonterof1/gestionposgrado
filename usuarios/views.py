@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.db import IntegrityError, transaction
-from .forms import CustomUserCreationForm, UserSelfForm, PerfilUsuarioSelfForm, PerfilAcademicoSelfForm
+from .forms import CustomUserCreationForm, UserSelfForm, PerfilUsuarioSelfForm, PerfilAcademicoSelfForm, UserSelfFormDP
 from django.contrib.auth.decorators import login_required
 from .models import PerfilUsuario, MatriculaUsuario, MatriculaDocenteModulo, PerfilAcademicoUsuario
 from django.shortcuts import get_object_or_404, redirect
@@ -17,8 +17,23 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.urls import reverse
 from django.utils.decorators import method_decorator
+from django.utils.http import url_has_allowed_host_and_scheme
 
 # Create your views here.
+
+
+def _get_safe_next(request, default_name='home'):
+    """
+    Devuelve una URL 'next' segura o el reverse de default_name.
+    """
+    raw_next = request.POST.get('next') or request.GET.get('next')
+    if raw_next and url_has_allowed_host_and_scheme(
+        url=raw_next,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return raw_next
+    return reverse(default_name)
 
 
 def signup(request):
@@ -167,6 +182,61 @@ def perfil_editar(request):
 
 @login_required
 @transaction.atomic
+def usuario_editar_dp(request, user_id):
+    """
+    Edición de datos del usuario autenticado (sus datos básicos, perfil y perfil académico).
+    No cambia contraseña (eso va en perfil_password).
+    """
+    usuario = get_object_or_404(User, id=user_id)
+    perfil, _ = PerfilUsuario.objects.get_or_create(user=usuario)
+    academico, _ = PerfilAcademicoUsuario.objects.get_or_create(usuario=perfil)
+
+    next_url = _get_safe_next(request)
+
+    if request.method == 'POST':
+        g_user = UserSelfFormDP(request.POST, instance=usuario)
+        g_perfil = PerfilUsuarioSelfForm(request.POST, instance=perfil, user_instance=usuario)
+        g_acad = PerfilAcademicoSelfForm(request.POST, instance=academico)
+        # Validaciones de unicidad (email/CI) se manejan en los forms
+        if g_user.is_valid() and g_perfil.is_valid() and g_acad.is_valid():
+            g_user.save()
+            g_perfil.instance.rol = perfil.rol 
+            g_perfil.save()
+            g_acad.save()
+            messages.success(request, 'Los datos fueron actualizados correctamente.')
+            return redirect(next_url)
+        else:
+            messages.error(request, 'Por favor corrige los errores del formulario.')
+            # ---- Mostrar TODOS los errores de los 3 formularios ----
+            for form in [g_user, g_perfil, g_acad]:
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        if field == '__all__':
+                            # errores generales del form
+                            messages.error(request, f"Error: {error}")
+                        else:
+                            label = form.fields[field].label if field in form.fields else field
+                            messages.error(request, f"{label}: {error}")
+                # errores no asociados a un campo (non_field_errors)
+                for error in form.non_field_errors():
+                    messages.error(request, f"Error general: {error}")
+            # --------------------------------------------------------
+    else:
+        g_user = UserSelfForm(instance=usuario)
+        g_perfil = PerfilUsuarioSelfForm(instance=perfil, user_instance=usuario)
+        g_acad = PerfilAcademicoSelfForm(instance=academico)
+
+    return render(request, 'usuario_editar_dp.html', {
+        'g_user': g_user,
+        'g_perfil': g_perfil,
+        'g_acad': g_acad,
+        'next_url': next_url,
+    })
+
+
+
+@login_required
+@transaction.atomic
 def perfil_password(request):
     """
     Cambio de contraseña para el usuario autenticado.
@@ -288,59 +358,74 @@ def coordinadorpmmsp_create(request, modulo_id, programa_id):
 @login_required
 def docentedp_create(request, periodo_id):
     if request.method == 'POST':
-        nombre = request.POST.get('nombre', '').strip()
-        apellido = request.POST.get('apellido', '').strip()
-        cedula = request.POST.get('cedula', '').strip()
-        titulo = request.POST.get('titulo_grado', '').strip()
-        titulo_maestria = request.POST.get('titulo_postgrado_maestria', '').strip()
-        titulo_doctorado = request.POST.get('titulo_postgrado_doctorado', '').strip()
-        correo = request.POST.get('correo', '').strip()
 
-        # Validación básica de campos vacíos
-        if not nombre or not apellido or not cedula or not correo:
-            messages.error(request, 'Todos los campos son obligatorios.')
-            return redirect('docentedp_create', periodo_id=periodo_id)
+        # Validar si el correo o CI ya existen
+        if User.objects.filter(email=request.POST['email']).exists():
+            messages.error(request, "El correo electrónico ya está registrado.")
+            return render(request, 'docentedp_create.html', {
+                'form': CustomUserCreationForm(),
+                'periodo_id': periodo_id,
+            })
+        if PerfilUsuario.objects.filter(ci=request.POST['ci']).exists():
+            messages.error(request, "La cédula ya está registrada.")
+            return render(request, 'docentedp_create.html', {
+                'form': CustomUserCreationForm(),
+                'periodo_id': periodo_id,
+            })
 
-        # Validación de formato de correo
         try:
-            validate_email(correo)
-        except ValidationError:
-            messages.error(request, 'El correo electrónico no es válido.')
-            return redirect('docentedp_create', periodo_id=periodo_id)
+            ci = request.POST['ci'].strip()
 
-        # Verificar duplicados
-        if User.objects.filter(username=cedula).exists():
-            messages.error(request, 'Ya existe un usuario con esa cédula.')
-            return redirect('docentedp_create', periodo_id=periodo_id)
+            # Si no se proporciona username, usa la cédula
+            username = request.POST.get('username', ci).strip() or ci
 
-        if User.objects.filter(email=correo).exists():
-            messages.error(request, 'Ya existe un usuario con ese correo electrónico.')
-            return redirect('docentedp_create', periodo_id=periodo_id)
+            # Si no se proporcionan contraseñas, usa la cédula
+            password = request.POST.get('password1', ci).strip() or ci
 
-        # Crear el usuario
-        user = User.objects.create_user(
-            username=cedula,
-            password=cedula,
-            first_name=nombre,
-            last_name=apellido,
-            email=correo
-        )
-        user.save()
-        perfilusuario=PerfilUsuario.objects.create(user=user, rol=2, ci=cedula)
-        perfilusuario.save()
+            # Crear usuario principal
+            user = User.objects.create_user(
+                username=username,
+                password=password,
+                first_name=request.POST.get('first_name', '').strip(),
+                last_name=request.POST.get('last_name', '').strip(),
+                email=request.POST.get('email', '').strip(),
+            )
+            user.save()
 
-        perfil_academico = PerfilAcademicoUsuario.objects.create(
-            usuario=perfilusuario,
-            titulo_grado=titulo,
-            titulo_postgrado_maestria=titulo_maestria,
-            titulo_postgrado_doctorado=titulo_doctorado,
-        )
-        perfil_academico.save()
-        messages.success(request, 'Docente creado exitosamente.')
-        return redirect('contratosdocentes', periodo_id=periodo_id)
+            # Crear perfil general
+            perfil = PerfilUsuario.objects.create(
+                user=user,
+                ci=ci,
+                rol=2,
+                telefono=request.POST.get('telefono', '').strip() or None,
+                fecha_nacimiento=request.POST.get('fecha_nacimiento') or None,
+                nacionalidad=request.POST.get('nacionalidad', '').strip() or None,
+                sexo=request.POST.get('sexo') or None,
+                provincia=request.POST.get('provincia', '').strip() or None,
+            )
 
-    return render(request, 'docentedp_create.html',
-                {'periodo_id': periodo_id})
+            # Crear perfil académico
+            PerfilAcademicoUsuario.objects.create(
+                usuario=perfil,
+                titulo_grado=request.POST.get('titulo_grado', '').strip(),
+                titulo_postgrado_maestria=request.POST.get('titulo_postgrado_maestria', '').strip(),
+                titulo_postgrado_doctorado=request.POST.get('titulo_postgrado_doctorado', '').strip(),
+            )
+
+            messages.success(request, f"✅ Usuario {user.get_full_name()} creado correctamente.")
+            return redirect('contratosdocentes_create', periodo_id=periodo_id)
+
+        except IntegrityError:
+            messages.error(request, "El nombre de usuario ya existe o los datos son inválidos.")
+            return render(request, 'docentedp_create.html', {
+                'form': CustomUserCreationForm(),
+                'periodo_id': periodo_id,
+            })
+    # GET
+    return render(request, 'docentedp_create.html', {
+        'form': CustomUserCreationForm(),
+        'periodo_id': periodo_id,
+        })
 
 
 @login_required
@@ -519,93 +604,147 @@ def estudiantepm_create(request, programa_id):
 @login_required
 def tutordp_create(request, periodo_id):
     if request.method == 'POST':
-        nombre = request.POST.get('nombre', '').strip()
-        apellido = request.POST.get('apellido', '').strip()
-        cedula = request.POST.get('cedula', '').strip()
-        correo = request.POST.get('correo', '').strip()
 
-        # Validación básica de campos vacíos
-        if not nombre or not apellido or not cedula or not correo:
-            messages.error(request, 'Todos los campos son obligatorios.')
-            return redirect('tutordp_create', periodo_id=periodo_id)
+        # Validar si el correo o CI ya existen
+        if User.objects.filter(email=request.POST['email']).exists():
+            messages.error(request, "El correo electrónico ya está registrado.")
+            return render(request, 'tutordp_create.html', {
+                'form': CustomUserCreationForm(),
+                'periodo_id': periodo_id,
+            })
+        if PerfilUsuario.objects.filter(ci=request.POST['ci']).exists():
+            messages.error(request, "La cédula ya está registrada.")
+            return render(request, 'tutordp_create.html', {
+                'form': CustomUserCreationForm(),
+                'periodo_id': periodo_id,
+            })
 
-        # Validación de formato de correo
         try:
-            validate_email(correo)
-        except ValidationError:
-            messages.error(request, 'El correo electrónico no es válido.')
-            return redirect('tutordp_create', periodo_id=periodo_id)
+            ci = request.POST['ci'].strip()
 
-        # Verificar duplicados
-        if User.objects.filter(username=cedula).exists():
-            messages.error(request, 'Ya existe un usuario con esa cédula.')
-            return redirect('tutordp_create', periodo_id=periodo_id)
+            # Si no se proporciona username, usa la cédula
+            username = request.POST.get('username', ci).strip() or ci
 
-        if User.objects.filter(email=correo).exists():
-            messages.error(
-                request, 'Ya existe un usuario con ese correo electrónico.')
-            return redirect('tutordp_create', periodo_id=periodo_id)
+            # Si no se proporcionan contraseñas, usa la cédula
+            password = request.POST.get('password1', ci).strip() or ci
 
-        # Crear el usuario
-        user = User.objects.create_user(
-            username=cedula,
-            password=cedula,
-            first_name=nombre,
-            last_name=apellido,
-            email=correo
-        )
-        PerfilUsuario.objects.create(user=user, rol=5, ci=cedula)
-        messages.success(request, 'Tutor creado exitosamente.')
-        return redirect('contratotutor', periodo_id=periodo_id)
+            # Crear usuario principal
+            user = User.objects.create_user(
+                username=username,
+                password=password,
+                first_name=request.POST.get('first_name', '').strip(),
+                last_name=request.POST.get('last_name', '').strip(),
+                email=request.POST.get('email', '').strip(),
+            )
+            user.save()
 
-    return render(request, 'tutordp_create.html',
-                  {'periodo_id': periodo_id})
+            # Crear perfil general
+            perfil = PerfilUsuario.objects.create(
+                user=user,
+                ci=ci,
+                rol=5,
+                telefono=request.POST.get('telefono', '').strip() or None,
+                fecha_nacimiento=request.POST.get('fecha_nacimiento') or None,
+                nacionalidad=request.POST.get('nacionalidad', '').strip() or None,
+                sexo=request.POST.get('sexo') or None,
+                provincia=request.POST.get('provincia', '').strip() or None,
+            )
+
+            # Crear perfil académico
+            PerfilAcademicoUsuario.objects.create(
+                usuario=perfil,
+                titulo_grado=request.POST.get('titulo_grado', '').strip(),
+                titulo_postgrado_maestria=request.POST.get('titulo_postgrado_maestria', '').strip(),
+                titulo_postgrado_doctorado=request.POST.get('titulo_postgrado_doctorado', '').strip(),
+            )
+
+            messages.success(request, f"✅ Usuario {user.get_full_name()} creado correctamente.")
+            return redirect('contratotutor_create', periodo_id=periodo_id)
+
+        except IntegrityError:
+            messages.error(request, "El nombre de usuario ya existe o los datos son inválidos.")
+            return render(request, 'tutordp_create.html', {
+                'form': CustomUserCreationForm(),
+                'periodo_id': periodo_id,
+            })
+    # GET
+    return render(request, 'tutordp_create.html', {
+        'form': CustomUserCreationForm(),
+        'periodo_id': periodo_id,
+        })
+
 
 @login_required
 def coordinadordp_create(request, periodo_id):
     if request.method == 'POST':
-        nombre = request.POST.get('nombre', '').strip()
-        apellido = request.POST.get('apellido', '').strip()
-        cedula = request.POST.get('cedula', '').strip()
-        correo = request.POST.get('correo', '').strip()
 
-        # Validación básica de campos vacíos
-        if not nombre or not apellido or not cedula or not correo:
-            messages.error(request, 'Todos los campos son obligatorios.')
-            return redirect('coordinadordp_create', periodo_id=periodo_id)
+        # Validar si el correo o CI ya existen
+        if User.objects.filter(email=request.POST['email']).exists():
+            messages.error(request, "El correo electrónico ya está registrado.")
+            return render(request, 'coordinadordp_create.html', {
+                'form': CustomUserCreationForm(),
+                'periodo_id': periodo_id,
+            })
+        if PerfilUsuario.objects.filter(ci=request.POST['ci']).exists():
+            messages.error(request, "La cédula ya está registrada.")
+            return render(request, 'coordinadordp_create.html', {
+                'form': CustomUserCreationForm(),
+                'periodo_id': periodo_id,
+            })
 
-        # Validación de formato de correo
         try:
-            validate_email(correo)
-        except ValidationError:
-            messages.error(request, 'El correo electrónico no es válido.')
-            return redirect('coordinadordp_create', periodo_id=periodo_id)
+            ci = request.POST['ci'].strip()
 
-        # Verificar duplicados
-        if User.objects.filter(username=cedula).exists():
-            messages.error(request, 'Ya existe un usuario con esa cédula.')
-            return redirect('coordinadordp_create', periodo_id=periodo_id)
+            # Si no se proporciona username, usa la cédula
+            username = request.POST.get('username', ci).strip() or ci
 
-        if User.objects.filter(email=correo).exists():
-            messages.error(
-                request, 'Ya existe un usuario con ese correo electrónico.')
-            return redirect('coordinadordp_create', periodo_id=periodo_id)
+            # Si no se proporcionan contraseñas, usa la cédula
+            password = request.POST.get('password1', ci).strip() or ci
 
-        # Crear el usuario
-        user = User.objects.create_user(
-            username=cedula,
-            password=cedula,
-            first_name=nombre,
-            last_name=apellido,
-            email=correo
-        )
-        PerfilUsuario.objects.create(user=user, rol=3, ci=cedula)
-        messages.success(request, 'Coordinador creado exitosamente.')
-        return redirect('contratocoordinador', periodo_id=periodo_id)
+            # Crear usuario principal
+            user = User.objects.create_user(
+                username=username,
+                password=password,
+                first_name=request.POST.get('first_name', '').strip(),
+                last_name=request.POST.get('last_name', '').strip(),
+                email=request.POST.get('email', '').strip(),
+            )
+            user.save()
 
-    return render(request, 'coordinadordp_create.html',
-                {'periodo_id': periodo_id})
+            # Crear perfil general
+            perfil = PerfilUsuario.objects.create(
+                user=user,
+                ci=ci,
+                rol=3,
+                telefono=request.POST.get('telefono', '').strip() or None,
+                fecha_nacimiento=request.POST.get('fecha_nacimiento') or None,
+                nacionalidad=request.POST.get('nacionalidad', '').strip() or None,
+                sexo=request.POST.get('sexo') or None,
+                provincia=request.POST.get('provincia', '').strip() or None,
+            )
 
+            # Crear perfil académico
+            PerfilAcademicoUsuario.objects.create(
+                usuario=perfil,
+                titulo_grado=request.POST.get('titulo_grado', '').strip(),
+                titulo_postgrado_maestria=request.POST.get('titulo_postgrado_maestria', '').strip(),
+                titulo_postgrado_doctorado=request.POST.get('titulo_postgrado_doctorado', '').strip(),
+            )
+
+            messages.success(request, f"✅ Usuario {user.get_full_name()} creado correctamente.")
+            return redirect('contratocoordinador_create', periodo_id=periodo_id)
+
+        except IntegrityError:
+            messages.error(request, "El nombre de usuario ya existe o los datos son inválidos.")
+            return render(request, 'coordinadordp_create.html', {
+                'form': CustomUserCreationForm(),
+                'periodo_id': periodo_id,
+            })
+    # GET
+    return render(request, 'coordinadordp_create.html', {
+        'form': CustomUserCreationForm(),
+        'periodo_id': periodo_id,
+        })
 
 
 @login_required

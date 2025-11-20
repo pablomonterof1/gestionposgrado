@@ -38,7 +38,23 @@ class UserSelfForm(forms.ModelForm):
                 raise forms.ValidationError('El correo ya está registrado por otro usuario.')
         return email
 
+class UserSelfFormDP(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+        }
 
+    def clean_email(self):
+        email = (self.cleaned_data.get('email') or '').strip()
+        if email:
+            qs = User.objects.exclude(pk=self.instance.pk).filter(email=email)
+            if qs.exists():
+                raise forms.ValidationError('El correo ya está registrado por otro usuario.')
+        return email
 
 class PerfilUsuarioSelfForm(forms.ModelForm):
     # Fuerza formato correcto para <input type="date">

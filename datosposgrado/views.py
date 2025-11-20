@@ -20,7 +20,7 @@ def periodosacademicosdp(request):
         'periodosacademicos_list': periodosacademicos_list,
     })
 
-
+@role_required([4, 7])
 def datosposgrado(request, periodo_id):
     periodoacademico = PeriodosAcademicos.objects.get(id=periodo_id)
     return render(request, 'datosposgrado.html', {
@@ -28,7 +28,7 @@ def datosposgrado(request, periodo_id):
         'periodoacademico': periodoacademico,
     })
 
-
+@role_required([4, 7])
 def contratosdocentes(request, periodo_id):
     contratos_por_periordo = []
     programasdeposgrado_list = ProgramaPosgrado.objects.filter(
@@ -67,6 +67,7 @@ def contratosdocentes(request, periodo_id):
 
     })
 
+@role_required([4, 7])
 def contratotutor(request, periodo_id):
     contratos_por_periordo = []
     programasdeposgrado_list = ProgramaPosgrado.objects.filter(
@@ -105,6 +106,7 @@ def contratotutor(request, periodo_id):
 
     })
 
+@role_required([4, 7])
 def contratocoordinador(request, periodo_id):
     contratos_por_periordo = []
     programasdeposgrado_list = ProgramaPosgrado.objects.filter(
@@ -141,7 +143,7 @@ def contratocoordinador(request, periodo_id):
 
     })
 
-
+@role_required([4, 7])
 def contratosdocentes_create(request, periodo_id):
     if request.method == 'POST':
         form = ContratosDocentesForm(request.POST)
@@ -216,6 +218,7 @@ def contratosdocentes_create(request, periodo_id):
         'form': form,
     })
 
+@role_required([4, 7])
 def contratotutor_create(request, periodo_id):
     if request.method == 'POST':
         form = ContratoTutorForm(request.POST)
@@ -291,6 +294,7 @@ def contratotutor_create(request, periodo_id):
         'form': form,
     })
 
+@role_required([4, 7])
 def contratocoordinador_create(request, periodo_id):
     if request.method == 'POST':
         form = ContratoCoordinadorForm(request.POST)
@@ -363,6 +367,7 @@ def contratocoordinador_create(request, periodo_id):
         'form': form,
     })
 
+@role_required([4, 7])
 def obtener_modulos_por_maestria(request, programa_id):
     try:
         programa = ProgramaPosgrado.objects.get(id=programa_id)
@@ -374,7 +379,7 @@ def obtener_modulos_por_maestria(request, programa_id):
     except ProgramaPosgrado.DoesNotExist:
         return JsonResponse({'error': 'Programa no encontrado'}, status=404)
     
-
+@role_required([4, 7])
 def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
     contratodocente = ContratosDocentes.objects.get(
         id=contratosdocentes_id)
@@ -441,7 +446,7 @@ def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
         'maestrias_list': maestrias_list,
     })
     
-
+@role_required([4, 7])
 def contratotutor_update(request, contratotutor_id, periodo_id):
     contratotutor = ContratoTutor.objects.get(id=contratotutor_id)
     if request.method == 'POST':
@@ -499,6 +504,7 @@ def contratotutor_update(request, contratotutor_id, periodo_id):
         'periodoacademico': periodoacademico,
     })
 
+@role_required([4, 7])
 def contratocoordinador_update(request, contratocoordinador_id, periodo_id):
     contratocoordinador = ContratoCoordinador.objects.get(id=contratocoordinador_id)
     if request.method == 'POST':
@@ -555,7 +561,7 @@ def contratocoordinador_update(request, contratocoordinador_id, periodo_id):
         'periodoacademico': periodoacademico,
     })
 
-
+@role_required([4, 7])
 def contratosdocentes_delete(request, contratosdocentes_id, periodo_id):
     try:
         contratosdocentes = ContratosDocentes.objects.get(
@@ -568,6 +574,7 @@ def contratosdocentes_delete(request, contratosdocentes_id, periodo_id):
 
     return redirect('contratosdocentes', periodo_id)
 
+@role_required([4, 7])
 def contratotutor_delete(request, contratotutor_id, periodo_id):
     try:
         contratotutor = ContratoTutor.objects.get(
@@ -580,6 +587,7 @@ def contratotutor_delete(request, contratotutor_id, periodo_id):
 
     return redirect('contratotutor', periodo_id)
 
+@role_required([4, 7])
 def contratocoordinador_delete(request, contratocoordinador_id, periodo_id):
     try:
         contratocoordinador = ContratoCoordinador.objects.get(

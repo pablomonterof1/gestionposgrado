@@ -19,8 +19,10 @@ import os
 from django.template.loader import get_template
 from django.http import HttpResponse
 from django.utils import timezone
+from main.decorators import role_required
 
 # Create your views here.
+@role_required([3, 4, 7])
 def informacionprogramaposgrado(request, programa_id):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
     fin = _calc_programa_finanzas(programa)
@@ -33,7 +35,7 @@ def informacionprogramaposgrado(request, programa_id):
 
 
 @login_required
-# @role_required([3])  
+@role_required([3, 4, 7])  
 def valorprogramaposgrado_detail(request, programa_id):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
     vp = ValorProgramaPosgrado.objects.filter(programa=programa).first()
@@ -45,7 +47,7 @@ def valorprogramaposgrado_detail(request, programa_id):
     return redirect('valorprogramaposgrado_update', programa_id=programa.id)
 
 @login_required
-# @role_required([3])
+@role_required([3, 4]) 
 def valorprogramaposgrado_create(request, programa_id):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
 
@@ -76,7 +78,7 @@ def valorprogramaposgrado_create(request, programa_id):
     })
 
 @login_required
-# @role_required([3])
+@role_required([3, 4]) 
 def valorprogramaposgrado_update(request, programa_id):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
     vp = ValorProgramaPosgrado.objects.filter(programa=programa).first()
@@ -106,6 +108,7 @@ def valorprogramaposgrado_update(request, programa_id):
 
 
 @login_required
+@role_required([3, 4]) 
 def contratos_coordinadores_programa(request, programa_id):
     """
     Lista los contratos de coordinadores (de datosposgrado) para el programa dado y
@@ -154,6 +157,7 @@ def contratos_coordinadores_programa(request, programa_id):
 
 
 @login_required
+@role_required([3, 4]) 
 @transaction.atomic
 def coordinadorperiodo_create(request, programa_id, coordinador_id):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
@@ -192,6 +196,7 @@ def coordinadorperiodo_create(request, programa_id, coordinador_id):
 
 
 @login_required
+@role_required([3, 4]) 
 @transaction.atomic
 def coordinadorperiodo_update(request, programa_id, coordinador_id, pk):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
@@ -239,6 +244,7 @@ def coordinadorperiodo_update(request, programa_id, coordinador_id, pk):
 
 
 @login_required
+@role_required([3, 4]) 
 @transaction.atomic
 def coordinadorperiodo_delete(request, programa_id, coordinador_id, pk):
     """
@@ -262,6 +268,7 @@ def coordinadorperiodo_delete(request, programa_id, coordinador_id, pk):
 
 
 @login_required
+@role_required([3, 4]) 
 def pagos_coordinadores_programa(request, programa_id):
     """
     Lista pagos agrupados por CONTRATO dentro del programa.
@@ -312,6 +319,7 @@ def pagos_coordinadores_programa(request, programa_id):
 
 
 @login_required
+@role_required([3, 4]) 
 @transaction.atomic
 def coordinadorpago_create_by_contrato(request, programa_id, contrato_id):
     """
@@ -382,6 +390,7 @@ def coordinadorpago_create_by_contrato(request, programa_id, contrato_id):
 
 
 @login_required
+@role_required([3, 4]) 
 @transaction.atomic
 def coordinadorpago_update(request, programa_id, pago_id):
     """
@@ -440,6 +449,7 @@ def coordinadorpago_update(request, programa_id, pago_id):
 
 
 @login_required
+@role_required([3, 4]) 
 @transaction.atomic
 def coordinadorpago_delete(request, programa_id, pago_id):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
@@ -462,6 +472,7 @@ def coordinadorpago_delete(request, programa_id, pago_id):
 
 
 @login_required
+@role_required([3, 4]) 
 def docentes_contratos_programa(request, programa_id):
     """
     Lista contratos de docentes para el programa (desde datosposgrado.ContratosDocentes),
@@ -539,6 +550,7 @@ def docentes_contratos_programa(request, programa_id):
 
 
 @login_required
+@role_required([3, 4]) 
 def contratodocente_gestion_create(request, programa_id, contrato_id):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
     contrato = get_object_or_404(ContratosDocentes, pk=contrato_id)
@@ -579,6 +591,7 @@ def contratodocente_gestion_create(request, programa_id, contrato_id):
 
 
 @login_required
+@role_required([3, 4]) 
 def contratodocente_gestion_update(request, programa_id, contrato_id):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
     contrato = get_object_or_404(ContratosDocentes, pk=contrato_id)
@@ -612,6 +625,7 @@ def contratodocente_gestion_update(request, programa_id, contrato_id):
 
 
 @login_required
+@role_required([3, 4]) 
 def tutores_contratos_programa(request, programa_id):
     """
     Lista contratos de tutores del programa, permite ver/crear/editar datos adicionales.
@@ -674,6 +688,7 @@ def tutores_contratos_programa(request, programa_id):
 
 
 @login_required
+@role_required([3, 4]) 
 def contratotutor_gestion_create(request, programa_id, contrato_id):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
     contrato = get_object_or_404(ContratoTutor, pk=contrato_id)
@@ -718,6 +733,7 @@ def contratotutor_gestion_create(request, programa_id, contrato_id):
 
 
 @login_required
+@role_required([3, 4]) 
 def contratotutor_gestion_update(request, programa_id, contrato_id):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
     contrato = get_object_or_404(ContratoTutor, pk=contrato_id)
@@ -754,6 +770,7 @@ def contratotutor_gestion_update(request, programa_id, contrato_id):
     })
 
 @login_required
+@role_required([3, 4]) 
 def estudiantes_programa_list(request, programa_id):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
 
@@ -850,6 +867,7 @@ def estudiantes_programa_list(request, programa_id):
 
 
 @login_required
+@role_required([3, 4]) 
 @transaction.atomic
 def estudiante_programa_gestion_upsert(request, programa_id, user_id):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
@@ -904,7 +922,7 @@ def estudiante_programa_gestion_upsert(request, programa_id, user_id):
         'vp': vp,                      # opcional por si quieres mostrar cuota en el form
     })
 
-
+@role_required([3, 4]) 
 def _calc_programa_finanzas(programa: ProgramaPosgrado):
     """
     Retorna un dict con:
@@ -1031,6 +1049,7 @@ def _link_callback(uri, rel):
 
 
 @login_required
+@role_required([3, 4]) 
 def programa_reporte_pdf(request, programa_id):
     """
     PDF general con: resumen financiero, valores del programa,
