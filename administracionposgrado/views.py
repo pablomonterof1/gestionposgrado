@@ -922,7 +922,6 @@ def estudiante_programa_gestion_upsert(request, programa_id, user_id):
         'vp': vp,                      # opcional por si quieres mostrar cuota en el form
     })
 
-@role_required([3, 4]) 
 def _calc_programa_finanzas(programa: ProgramaPosgrado):
     """
     Retorna un dict con:
