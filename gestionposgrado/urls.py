@@ -190,6 +190,9 @@ urlpatterns = [
     path('componente/<int:componente_id>/eliminar/', rae_views.componente_rae_delete, name='componente_rae_delete'),
     path('subcomponente/<int:subcomponente_id>/modulos/', rae_views.subcomponente_asignar_modulos, name='subcomponente_asignar_modulos'),
     path('subcomponente/<int:subcomponente_id>/eliminar/', rae_views.subcomponente_rae_delete, name='subcomponente_rae_delete'),
+    path('rae/<int:programa_id>/importar-reactivos-por-modulo/', rae_views.importar_reactivos_rae_por_modulo, name='importar_reactivos_rae_por_modulo'),
+    path('reactivos/<int:programa_id>/<int:modulo_id>/quitar-compartido/<int:reactivo_id>/', rae_views.quitar_compartido_reactivo, name='quitar_compartido_reactivo'),
+    path('reactivos/<int:programa_id>/<int:modulo_id>/quitar-compartidos/', rae_views.quitar_compartidos_modulo, name='quitar_compartidos_modulo'),
 
 
     #DATOSPOSGRADO

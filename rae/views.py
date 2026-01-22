@@ -4,10 +4,10 @@ from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 import random
 from usuarios.models import MatriculaUsuario
-from .models import ReactivosMultipleChoice, ReactivosModuloRAE, EvaluacionPrograma, EvaluacionEstudiante, ReactivoEvaluacion, ReactivoPorEvaluacion, ComponenteRAE, SubcomponenteRAE, SubcomponenteModuloRAE
+from .models import ReactivosMultipleChoice, ReactivosModuloRAE, EvaluacionPrograma, EvaluacionEstudiante, ReactivoEvaluacion, ReactivoPorEvaluacion, ComponenteRAE, SubcomponenteRAE, SubcomponenteModuloRAE, ReactivoCompartidoPrograma
 from programasposgrado.models import Maestrias, PeriodosAcademicos, Modalidad, ProgramaPosgrado, Modulos
 from django.contrib.auth.decorators import login_required
-from .forms import ReactivosMultipleChoiceForm, ComponenteRAEForm, SubcomponenteRAEForm, SubcomponenteFormSet, SubcomponenteAsignarModulosForm
+from .forms import ReactivosMultipleChoiceForm, ComponenteRAEForm, SubcomponenteRAEForm, SubcomponenteFormSet, SubcomponenteAsignarModulosForm, ImportarReactivosPorModuloForm
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import user_passes_test
 from main.views import es_estudiante, es_docente, es_coordinador, es_editor
@@ -24,6 +24,7 @@ import io
 from django.utils.html import strip_tags
 from decimal import Decimal
 from usuarios.models import PerfilUsuario
+from django.db.models import Q
 
 # Create your views here.
 
@@ -55,11 +56,16 @@ def reactivosprograma(request, programa_id):
 
 @login_required
 def reactivosmodulo(request, programa_id, modulo_id):
-    reactivos_list = ReactivosMultipleChoice.objects.filter(
-        modulo=modulo_id, programadeposgrado=programa_id).order_by('created')
-    modulo = Modulos.objects.get(id=modulo_id)
-    modulonombre = modulo.nombre
+    # reactivos_list = ReactivosMultipleChoice.objects.filter(
+    #     modulo=modulo_id, programadeposgrado=programa_id).order_by('created')
     programaposgrado = ProgramaPosgrado.objects.get(id=programa_id)
+    reactivos_list = qs_reactivos_disponibles_programa(programaposgrado).filter(
+        modulo=modulo_id
+    ).order_by('created')
+    modulo = Modulos.objects.get(id=modulo_id)
+    compartidos_ids = set(ReactivoCompartidoPrograma.objects.filter(programa=programaposgrado,reactivo__modulo=modulo).values_list('reactivo_id', flat=True))
+    usados_ids = set(ReactivoPorEvaluacion.objects.filter(evaluacion__programa=programaposgrado,reactivo_id__in=compartidos_ids).values_list('reactivo_id', flat=True))
+    modulonombre = modulo.nombre
     maestria = programaposgrado.maestria
     maestrianombre = Maestrias.objects.get(id=maestria)
     periodoacademico = programaposgrado.periodoacademico
@@ -81,6 +87,8 @@ def reactivosmodulo(request, programa_id, modulo_id):
         'programaposgrado': programaposgrado,
         'modulonombre': modulonombre,
         'modulo': modulo,
+        'compartidos_ids': compartidos_ids,
+        'usados_ids': usados_ids,
 
     })
 
@@ -327,8 +335,8 @@ def rae_programaposgrado(request, programa_id):
         maestria=maestria).order_by('codificacion')
     totalreactivosrae = 0
     for modulo in modulos_list:
-        modulo.reactivos = ReactivosMultipleChoice.objects.filter(
-            programadeposgrado=programa_id, modulo=modulo.id, estado=2)
+        modulo.reactivos = qs_reactivos_disponibles_programa(programaposgrado).filter(
+            modulo=modulo.id, estado=2)
         modulo.numeroreactivosmodulorae = ReactivosModuloRAE.objects.filter(
             programadeposgrado=programa_id, modulo=modulo).first()
         if modulo.numeroreactivosmodulorae:
@@ -385,6 +393,162 @@ def evaluacionrae_programaposgrado(request, programa_id):
         'evaluaciones': evaluaciones
     })
 
+def qs_reactivos_disponibles_programa(programa):
+    return ReactivosMultipleChoice.objects.filter(
+        Q(programadeposgrado=programa) |
+        Q(id__in=ReactivoCompartidoPrograma.objects.filter(programa=programa).values('reactivo_id'))
+    )
+
+def reactivo_usado_en_programa(programa, reactivo_id):
+    return ReactivoPorEvaluacion.objects.filter(
+        evaluacion__programa=programa,
+        reactivo_id=reactivo_id
+    ).exists()
+
+@login_required
+def importar_reactivos_rae_por_modulo(request, programa_id):
+    programa_destino = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    modulo_id = None
+    if request.method == 'POST':
+        form = ImportarReactivosPorModuloForm(request.POST, programa_destino=programa_destino)
+        if form.is_valid():
+            programa_origen = form.cleaned_data['programa_origen']
+            modulo = form.cleaned_data['modulo']
+
+            # Seguridad: misma maestría (obligatoria)
+            if str(programa_origen.maestria) != str(programa_destino.maestria):
+                messages.error(request, "Solo se puede importar desde cohortes de la misma maestría.")
+                return redirect('importar_reactivos_rae_por_modulo', programa_id=programa_destino.id)
+
+            # Solo reactivos validados (estado=2) del módulo seleccionado
+            qs = ReactivosMultipleChoice.objects.filter(
+                programadeposgrado=programa_origen,
+                modulo=modulo,
+                estado=2
+            )
+            ids = list(qs.values_list('id', flat=True))
+
+            if not ids:
+                messages.warning(request, "No se encontraron reactivos validados (estado=2) para ese módulo en la cohorte origen.")
+                return redirect('importar_reactivos_rae_por_modulo', programa_id=programa_destino.id)
+
+            # Evitar duplicar vínculos
+            existentes = set(
+                ReactivoCompartidoPrograma.objects.filter(
+                    programa=programa_destino,
+                    reactivo_id__in=ids
+                ).values_list('reactivo_id', flat=True)
+            )
+            nuevos = [rid for rid in ids if rid not in existentes]
+
+            ReactivoCompartidoPrograma.objects.bulk_create(
+                [ReactivoCompartidoPrograma(programa=programa_destino, reactivo_id=rid) for rid in nuevos],
+                ignore_conflicts=True
+            )
+
+            messages.success(
+                request,
+                f"Importación por módulo completada: {len(nuevos)} reactivos compartidos. "
+                f"(ya existían {len(ids) - len(nuevos)})."
+            )
+            return redirect('reactivosmodulo', programa_id=programa_destino.id, modulo_id=modulo.id)
+            # return redirect('rae_programaposgrado', programa_id=programa_destino.id)
+
+    else:
+        form = ImportarReactivosPorModuloForm(programa_destino=programa_destino)
+        modulo_id = request.GET.get('modulo')
+        if modulo_id:
+            form.initial['modulo'] = modulo_id
+
+    return render(request, 'importar_reactivos_rae_por_modulo.html', {
+        'programa': programa_destino,
+        'modulo_id': modulo_id,
+        'form': form
+    })
+
+@require_POST
+@login_required
+def quitar_compartido_reactivo(request, programa_id, modulo_id, reactivo_id):
+    programaposgrado = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    modulo = get_object_or_404(Modulos, id=modulo_id)
+
+    #  Bloqueo solo si está usado en evaluaciones DEL PROGRAMA DESTINO
+    if reactivo_usado_en_programa(programaposgrado, reactivo_id):
+        messages.error(
+            request,
+            "No se puede quitar este reactivo compartido porque ya está siendo utilizado en una evaluación de este programa."
+        )
+        return redirect('reactivosmodulo', programa_id=programaposgrado.id, modulo_id=modulo.id)
+    # Solo elimina el vínculo del programa destino, y solo si pertenece a ese módulo
+    deleted, _ = ReactivoCompartidoPrograma.objects.filter(
+        programa=programaposgrado,
+        reactivo_id=reactivo_id,
+        reactivo__modulo=modulo
+    ).delete()
+
+    if deleted:
+        messages.success(request, "Reactivo compartido eliminado de este programa (no se borró el reactivo original).")
+    else:
+        messages.warning(request, "No se encontró un reactivo compartido para eliminar en este módulo.")
+
+    return redirect('reactivosmodulo', programa_id=programaposgrado.id, modulo_id=modulo.id)
+
+@require_POST
+@login_required
+def quitar_compartidos_modulo(request, programa_id, modulo_id):
+    programaposgrado = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    modulo = get_object_or_404(Modulos, id=modulo_id)
+
+    # IDs compartidos en este programa y módulo
+    compartidos_qs = ReactivoCompartidoPrograma.objects.filter(
+        programa=programaposgrado,
+        reactivo__modulo=modulo
+    )
+    ids_compartidos = list(compartidos_qs.values_list('reactivo_id', flat=True))
+
+    if not ids_compartidos:
+        messages.warning(request, "No hay reactivos compartidos en este módulo para quitar.")
+        return redirect('reactivosmodulo', programa_id=programaposgrado.id, modulo_id=modulo.id)
+
+    # Reactivos usados en evaluaciones del programa destino
+    usados_ids = set(
+        ReactivoPorEvaluacion.objects.filter(
+            evaluacion__programa=programaposgrado,
+            reactivo_id__in=ids_compartidos
+        ).values_list('reactivo_id', flat=True)
+    )
+
+    # Solo se pueden quitar los NO usados
+    quitables_ids = [rid for rid in ids_compartidos if rid not in usados_ids]
+
+    deleted = 0
+    if quitables_ids:
+        deleted, _ = ReactivoCompartidoPrograma.objects.filter(
+            programa=programaposgrado,
+            reactivo_id__in=quitables_ids
+        ).delete()
+
+    bloqueados = len(usados_ids)
+
+    if deleted and bloqueados:
+        messages.warning(
+            request,
+            f"Se quitaron {deleted} reactivos compartidos. "
+            f"No se pudieron quitar {bloqueados} porque ya están usados en evaluaciones de este programa."
+        )
+    elif deleted:
+        messages.success(
+            request,
+            f"Se quitaron {deleted} reactivos compartidos de este módulo (no se borraron los reactivos originales)."
+        )
+    else:
+        messages.error(
+            request,
+            "No se pudo quitar ninguno: todos los reactivos compartidos de este módulo ya están usados en evaluaciones de este programa."
+        )
+
+    return redirect('reactivosmodulo', programa_id=programaposgrado.id, modulo_id=modulo.id)
+
 
 def obtener_reactivos_para_evaluacion(programa, tipo, estudiante=None):
     import random
@@ -398,8 +562,12 @@ def obtener_reactivos_para_evaluacion(programa, tipo, estudiante=None):
         except ReactivosModuloRAE.DoesNotExist:
             continue
 
-        reactivos_query = ReactivosMultipleChoice.objects.filter(
-            programadeposgrado=programa,
+        # reactivos_query = ReactivosMultipleChoice.objects.filter(
+        #     programadeposgrado=programa,
+        #     modulo=modulo,
+        #     estado=2
+        # )
+        reactivos_query = qs_reactivos_disponibles_programa(programa).filter(
             modulo=modulo,
             estado=2
         )
@@ -469,8 +637,12 @@ def evaluacionrae_activar(request, programa_id, tipo):
             except ReactivosModuloRAE.DoesNotExist:
                 continue
 
-            reactivos = ReactivosMultipleChoice.objects.filter(
-                programadeposgrado=programa,
+            # reactivos = ReactivosMultipleChoice.objects.filter(
+            #     programadeposgrado=programa,
+            #     modulo=modulo,
+            #     estado=2
+            # )
+            reactivos = qs_reactivos_disponibles_programa(programa).filter(
                 modulo=modulo,
                 estado=2
             )

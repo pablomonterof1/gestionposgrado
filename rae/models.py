@@ -182,3 +182,24 @@ class SubcomponenteModuloRAE(models.Model):
         ).exclude(pk=self.pk).exists()
         if ya:
             raise ValidationError('Este módulo ya está asignado a otro subcomponente del mismo programa.')
+        
+class ReactivoCompartidoPrograma(models.Model):
+    programa = models.ForeignKey(
+        ProgramaPosgrado,
+        on_delete=models.CASCADE,
+        related_name='reactivos_compartidos'
+    )
+    reactivo = models.ForeignKey(
+        ReactivosMultipleChoice,
+        on_delete=models.CASCADE,
+        related_name='compartido_en_programas'
+    )
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [('programa', 'reactivo')]
+        verbose_name = 'Reactivo compartido a programa'
+        verbose_name_plural = 'Reactivos compartidos a programas'
+
+    def __str__(self):
+        return f'{self.programa} ← {self.reactivo.id}'

@@ -3,7 +3,7 @@ from .models import ReactivosMultipleChoice, ComponenteRAE, SubcomponenteRAE, Su
 from django.forms import inlineformset_factory
 from django.contrib.auth import get_user_model
 from tinymce.widgets import TinyMCE
-from programasposgrado.models import Modulos
+from programasposgrado.models import Modulos, ProgramaPosgrado
 
 
 User = get_user_model()
@@ -140,3 +140,36 @@ class SubcomponenteAsignarModulosForm(forms.Form):
         for modulo in seleccionados:
             if modulo.id not in existentes:
                 SubcomponenteModuloRAE.objects.create(subcomponente=sub, modulo=modulo)
+
+
+class ImportarReactivosPorModuloForm(forms.Form):
+    programa_origen = forms.ModelChoiceField(
+        queryset=ProgramaPosgrado.objects.none(),
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label="Cohorte origen"
+    )
+    modulo = forms.ModelChoiceField(
+        queryset=Modulos.objects.none(),
+        required=True,  # OBLIGATORIO
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label="Módulo"
+    )
+
+    def __init__(self, *args, **kwargs):
+        programa_destino = kwargs.pop('programa_destino')
+        super().__init__(*args, **kwargs)
+
+        # Cohortes candidatas: misma maestría (modalidad puede variar)
+        self.fields['programa_origen'].queryset = (
+            ProgramaPosgrado.objects
+            .filter(maestria=programa_destino.maestria)
+            .exclude(id=programa_destino.id)
+            .order_by('-created')
+        )
+
+        # Módulos de la maestría del destino
+        self.fields['modulo'].queryset = (
+            Modulos.objects
+            .filter(maestria=programa_destino.maestria)
+            .order_by('codificacion', 'nombre')
+        )

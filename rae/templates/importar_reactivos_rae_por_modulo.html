@@ -1,0 +1,25 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<main class="container py-4">
+  <section class="card p-4">
+    <h4 class="mb-2">Importar/Compartir reactivos (por módulo)</h4>
+    <p class="mb-4"><b>Programa destino:</b> {{ programa }}</p>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        {{ form.programa_origen.label_tag }}
+        {{ form.programa_origen }}
+      </div>
+      <div class="mb-3">
+        {{ form.modulo.label_tag }}
+        {{ form.modulo }}
+        <small class="text-muted">La importación es módulo por módulo para soportar cambios o nuevos módulos.</small>
+      </div>
+
+      <button class="btn btn-primary">Importar reactivos</button>
+      <a class="btn btn-outline-secondary" href="{% url 'reactivosmodulo' programa.id modulo_id %}">Volver</a>
+    </form>
+  </section>
+</main>
+{% endblock %}
