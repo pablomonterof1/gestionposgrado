@@ -14,7 +14,7 @@ class MaestriaForm(forms.ModelForm):
         }
         labels = {
             'nombre': 'Nombre',
-            'descripcion': 'Descripción',
+            'descripcion': 'Codificación',
             'evaluado': 'Evaluado',
         }
 

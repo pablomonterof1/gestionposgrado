@@ -10,7 +10,7 @@ from main.decorators import role_required
 @login_required
 @role_required([4])
 def maestrias(request):
-    maestrias_list = Maestrias.objects.all().order_by('-created')
+    maestrias_list = Maestrias.objects.all().order_by('nombre')
     return render(request, 'maestrias.html', {
         'maestrias_list': maestrias_list
     })
