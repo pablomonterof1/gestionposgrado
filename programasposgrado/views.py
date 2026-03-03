@@ -201,7 +201,7 @@ def modulos_delete(request, modulo_id):
 @login_required
 @role_required([4])
 def programasdeposgrado(request):
-    programadeposgrado_list = ProgramaPosgrado.objects.all().order_by('campoamplio')
+    programadeposgrado_list = ProgramaPosgrado.objects.all().order_by('periodoacademico')
     for programadeposgrado in programadeposgrado_list:
         # Obtener los objetos relacionados para mostrar sus nombres en lugar de IDs
         programadeposgrado.maestria = Maestrias.objects.get(

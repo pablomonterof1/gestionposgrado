@@ -30,11 +30,11 @@
         <table class="table table-striped table-bordered table-hover" id="programasposgradoTable">
             <thead>
                 <tr>
-                    <th>Campo amplio</th>
+                    <th>Periodo académico</th>                  
                     <th>Nombre</th>
-                    <th>Periodo académico</th>
                     <th>Modalidad</th>
                     <th>Cohorte</th>
+                    <th>Campo amplio</th>
                     <th>Accciones</th>
 
                 </tr>
@@ -42,11 +42,11 @@
             <tbody>
                 {% for programaposgrado in programadeposgrado_list %}
                 <tr>
-                    <td>{{ programaposgrado.campoamplio }}</td>
-                    <td>{{ programaposgrado.maestria }}</td>
                     <td>{{ programaposgrado.periodoacademico }}</td>
+                    <td>{{ programaposgrado.maestria }}</td>
                     <td>{{ programaposgrado.modalidad }}</td>
                     <td>{{ programaposgrado.get_cohorte_display }}</td>
+                    <td>{{ programaposgrado.campoamplio }}</td>
             
                     <td>
 
