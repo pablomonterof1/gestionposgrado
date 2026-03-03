@@ -2,6 +2,8 @@ from django import forms
 from .models import ValorProgramaPosgrado, CoordinadorPrograma, CoordinadorPagos, ContratoDocenteGestion, ContratoTutorGestion, EstudianteProgramaGestion
 from usuarios.models import User
 from datosposgrado.models import ContratoCoordinador, ContratosDocentes
+from django.contrib.contenttypes.models import ContentType
+from programasposgrado.models import ProgramaPosgrado
 
 class ValorProgramaPosgradoForm(forms.ModelForm):
     class Meta:
@@ -72,17 +74,22 @@ class CoordinadorPagosForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         programa = kwargs.pop('programa', None)
         coordinador_id = kwargs.pop('coordinador_id', None)
-        contrato_fijo = kwargs.pop('contrato_fijo', None)  # <- NUEVO
+        contrato_fijo = kwargs.pop('contrato_fijo', None)
+
         super().__init__(*args, **kwargs)
 
         if contrato_fijo is not None:
-            # Forzar solo ese contrato (crear/editar)
             self.fields['contrato'].queryset = ContratoCoordinador.objects.filter(pk=contrato_fijo)
+
         elif programa and coordinador_id:
+            ct = ContentType.objects.get_for_model(programa.__class__)
+
             self.fields['contrato'].queryset = ContratoCoordinador.objects.filter(
-                programadeposgrado=programa.id,
+                programa_content_type=ct,
+                programa_object_id=programa.id,
                 coordinador=coordinador_id
             ).order_by('-created')
+
         else:
             self.fields['contrato'].queryset = ContratoCoordinador.objects.none()
 

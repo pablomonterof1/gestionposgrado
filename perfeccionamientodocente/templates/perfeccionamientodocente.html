@@ -1,0 +1,135 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+
+<main class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h2 class="mb-1">Perfeccionamiento Docente</h2>
+      <p class="text-muted m-0">
+        Gestión de cursos de capacitación, clasificación por áreas/subáreas/campos y participación docente.
+      </p>
+    </div>
+  </div>
+
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="row g-3">
+
+    <!-- Cursos -->
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h4 class="card-title mb-2">
+            <i class="fa fa-chalkboard-teacher me-2"></i> Cursos de capacitación
+          </h4>
+          <p class="text-muted">
+            Crea y administra los cursos que se dictarán (fechas, horas, modalidad, facilitador, financiamiento).
+          </p>
+
+          <div class="d-flex flex-wrap gap-2">
+            <!-- Cambia las URLs cuando tengas las vistas -->
+            <a href="{% url 'pd_curso_create' %}" class="btn btn-primary">
+              <i class="fa fa-plus me-1"></i> Crear curso
+            </a>
+            <a href="{% url 'pd_cursos_list' %}" class="btn btn-outline-dark">
+              <i class="fa fa-list me-1"></i> Ver cursos
+            </a>
+          </div>
+
+          <hr class="my-3">
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Clasificación -->
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h4 class="card-title mb-2">
+            <i class="fa fa-sitemap me-2"></i> Clasificación (Áreas / Subáreas / Campos)
+          </h4>
+          <p class="text-muted">
+            Administra manualmente el catálogo para asegurar que los códigos y nombres estén correctos.
+          </p>
+
+          <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'pd_areasconocimiento_list' %}" class="btn btn-outline-primary">
+              <i class="fa fa-layer-group me-1"></i> Áreas
+            </a>
+            <a href="{% url 'pd_subareasconocimiento_list' %}" class="btn btn-outline-primary">
+              <i class="fa fa-th-large me-1"></i> Subáreas
+            </a>
+            <a href="{% url 'pd_camposconocimiento_list' %}" class="btn btn-outline-primary">
+              <i class="fa fa-tags me-1"></i> Campos
+            </a>
+          </div>
+
+          <hr class="my-3">
+
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Participación docente (para después) -->
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h4 class="card-title mb-2">
+            <i class="fa fa-user-check me-2"></i> Participantes
+          </h4>
+          <p class="text-muted">
+            Registra participantes por curso y resultados.
+          </p>
+
+          <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'pd_participantescursos_list' %}" class="btn btn-outline-dark">
+              <i class="fa fa-users me-1"></i> Gestionar
+            </a>
+
+          </div>
+
+          <hr class="my-3">
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Reportes (opcional para después) -->
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h4 class="card-title mb-2">
+            <i class="fa fa-chart-bar me-2"></i> Reportes
+          </h4>
+          <p class="text-muted">
+            Exporta listados por curso, docente o programa. (PDF)
+
+          </p>
+
+          <div class="d-flex flex-wrap gap-2">
+
+            <a href="{% url 'pd_reportes_list' %}" class="btn btn-outline-secondary">
+              <i class="fa fa-file-pdf me-1"></i> Exportar PDF
+            </a>
+          </div>
+
+          <hr class="my-3">
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+{% endblock %}

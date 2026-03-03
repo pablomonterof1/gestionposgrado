@@ -1,18 +1,26 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import ProgramaPosgrado, ValorProgramaPosgrado, CoordinadorPrograma, CoordinadorPagos, ContratoDocenteGestion, ContratoTutorGestion, EstudianteProgramaGestion
-from .forms import ValorProgramaPosgradoForm, CoordinadorProgramaForm, CoordinadorPagosForm, ContratoDocenteGestionForm, ContratoTutorGestionForm, EstudianteProgramaGestionForm
+from .models import (
+    ProgramaPosgrado,  # viene re-exportado desde .models (alias a programasposgrado)
+    ValorProgramaPosgrado, CoordinadorPrograma, CoordinadorPagos,
+    ContratoDocenteGestion, ContratoTutorGestion, EstudianteProgramaGestion
+)
+from .forms import (
+    ValorProgramaPosgradoForm, CoordinadorProgramaForm, CoordinadorPagosForm,
+    ContratoDocenteGestionForm, ContratoTutorGestionForm, EstudianteProgramaGestionForm
+)
 from datosposgrado.models import ContratoCoordinador, ContratosDocentes, ContratoTutor
 from usuarios.models import PerfilUsuario, PerfilAcademicoUsuario
-from programasposgrado.models import Maestrias, Modulos
+from programasposgrado.models import Maestrias, Modulos, ProgramaPosgradoEM, ModulosEM
+
 from django.db import transaction
 from usuarios.models import User, MatriculaUsuario
 from django.urls import reverse
 from django.core.exceptions import ValidationError
 from decimal import Decimal
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Sum, F
+from django.db.models import Sum
 from django.conf import settings
 from xhtml2pdf import pisa
 import os
@@ -21,10 +29,61 @@ from django.http import HttpResponse
 from django.utils import timezone
 from main.decorators import role_required
 
+
+# ---------------------------------------------------
+# Helpers GFK
+# ---------------------------------------------------
+def _ct_for(obj):
+    return ContentType.objects.get_for_model(obj.__class__)
+
+def _programa_filter(programa):
+    ct = _ct_for(programa)
+    return {"programa_content_type": ct, "programa_object_id": programa.id}
+
+def _get_programa_or_404(programa_id):
+    """
+    Soporta ProgramaPosgrado (Maestría) y ProgramaPosgradoEM (Especialidad).
+    """
+    try:
+        return get_object_or_404(ProgramaPosgrado, id=programa_id)
+    except Exception:
+        return get_object_or_404(ProgramaPosgradoEM, id=programa_id)
+
+def _resolve_modulos_map(contratos_docentes):
+    """
+    Devuelve un dict {(ct_id, object_id): modulo_obj} para Modulos y ModulosEM.
+    Evita N+1 al mostrar nombre de módulo.
+    """
+    pares = []
+    for c in contratos_docentes:
+        if c.modulo_content_type_id and c.modulo_object_id:
+            pares.append((c.modulo_content_type_id, c.modulo_object_id))
+
+    if not pares:
+        return {}
+
+    # separar ids por tipo
+    ct_mod_m = ContentType.objects.get_for_model(Modulos).id
+    ct_mod_em = ContentType.objects.get_for_model(ModulosEM).id
+
+    ids_m = [oid for (ctid, oid) in pares if ctid == ct_mod_m]
+    ids_em = [oid for (ctid, oid) in pares if ctid == ct_mod_em]
+
+    mod_map = {}
+    if ids_m:
+        for m in Modulos.objects.filter(id__in=ids_m):
+            mod_map[(ct_mod_m, m.id)] = m
+    if ids_em:
+        for m in ModulosEM.objects.filter(id__in=ids_em):
+            mod_map[(ct_mod_em, m.id)] = m
+
+    return mod_map
+
+
 # Create your views here.
 @role_required([3, 4, 7])
 def informacionprogramaposgrado(request, programa_id):
-    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    programa = _get_programa_or_404(programa_id)
     fin = _calc_programa_finanzas(programa)
 
     return render(request, 'info_programaposgrado.html', {
@@ -35,24 +94,23 @@ def informacionprogramaposgrado(request, programa_id):
 
 
 @login_required
-@role_required([3, 4, 7])  
+@role_required([3, 4, 7])
 def valorprogramaposgrado_detail(request, programa_id):
-    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
-    vp = ValorProgramaPosgrado.objects.filter(programa=programa).first()
+    programa = _get_programa_or_404(programa_id)
+
+    vp = ValorProgramaPosgrado.objects.filter(**_programa_filter(programa)).first()
     if not vp:
-        # si no existe, manda a crear
         return redirect('valorprogramaposgrado_create', programa_id=programa.id)
-    # si quieres una vista de solo lectura, puedes renderizar otro template.
-    # Aquí te redirijo al editar directamente:
+
     return redirect('valorprogramaposgrado_update', programa_id=programa.id)
 
-@login_required
-@role_required([3, 4]) 
-def valorprogramaposgrado_create(request, programa_id):
-    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
 
-    # si ya existe, NO permitir crear de nuevo
-    existente = ValorProgramaPosgrado.objects.filter(programa=programa).first()
+@login_required
+@role_required([3, 4])
+def valorprogramaposgrado_create(request, programa_id):
+    programa = _get_programa_or_404(programa_id)
+
+    existente = ValorProgramaPosgrado.objects.filter(**_programa_filter(programa)).first()
     if existente:
         messages.info(request, 'El valor de este programa ya existe. Puedes editarlo.')
         return redirect('valorprogramaposgrado_update', programa_id=programa.id)
@@ -61,8 +119,7 @@ def valorprogramaposgrado_create(request, programa_id):
         form = ValorProgramaPosgradoForm(request.POST)
         if form.is_valid():
             vp = form.save(commit=False)
-            vp.programa = programa
-            # forzar USD si quieres:
+            vp.programa = programa  # ✅ asigna GFK
             if not vp.moneda:
                 vp.moneda = 'USD'
             vp.save()
@@ -77,11 +134,13 @@ def valorprogramaposgrado_create(request, programa_id):
         'modo': 'crear',
     })
 
+
 @login_required
-@role_required([3, 4]) 
+@role_required([3, 4])
 def valorprogramaposgrado_update(request, programa_id):
-    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
-    vp = ValorProgramaPosgrado.objects.filter(programa=programa).first()
+    programa = _get_programa_or_404(programa_id)
+
+    vp = ValorProgramaPosgrado.objects.filter(**_programa_filter(programa)).first()
     if not vp:
         messages.info(request, 'Aún no existe el valor de este programa. Crea uno.')
         return redirect('valorprogramaposgrado_create', programa_id=programa.id)
@@ -106,45 +165,37 @@ def valorprogramaposgrado_update(request, programa_id):
     })
 
 
-
 @login_required
-@role_required([3, 4]) 
+@role_required([3, 4])
 def contratos_coordinadores_programa(request, programa_id):
-    """
-    Lista los contratos de coordinadores (de datosposgrado) para el programa dado y
-    muestra/gestiona periodos (fecha_inicio/fecha_fin) de CoordinadorPrograma.
-    """
-    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    programa = _get_programa_or_404(programa_id)
+    pf = _programa_filter(programa)
 
-    # 1) Traer contratos por programa (sin FK)
     contratos = list(
         ContratoCoordinador.objects
-        .filter(programadeposgrado=programa_id)
+        .filter(**pf)
         .order_by('-created')
     )
 
-    # 2) Resolver usuarios por ID en batch (evita N+1)
     coord_ids = [c.coordinador for c in contratos if c.coordinador]
     usuarios = {u.id: u for u in User.objects.filter(id__in=coord_ids)}
 
-    # 3) Traer periodos existentes por (programa, coordinador)
     periodos = CoordinadorPrograma.objects.filter(
-        programa=programa,
+        programa_content_type=pf["programa_content_type"],
+        programa_object_id=pf["programa_object_id"],
         coordinador_id__in=coord_ids
     ).order_by('-fecha_inicio', '-created')
 
-    # 4) Indexar periodos por coordinador_id
     periodos_por_coord = {}
     for p in periodos:
         periodos_por_coord.setdefault(p.coordinador_id, []).append(p)
 
-    # 5) Preparar filas simples para el template (evitando templatetags extra)
     filas = []
     for c in contratos:
         u = usuarios.get(c.coordinador)
         filas.append({
             'contrato': c,
-            'usuario': u,  # puede ser None si no existe el User con ese ID
+            'usuario': u,
             'periodos': periodos_por_coord.get(c.coordinador, []),
             'fecha_inicio_contrato': getattr(c, 'fechainicio', None),
             'fecha_fin_contrato': getattr(c, 'fechafin', None),
@@ -157,14 +208,16 @@ def contratos_coordinadores_programa(request, programa_id):
 
 
 @login_required
-@role_required([3, 4]) 
+@role_required([3, 4])
 @transaction.atomic
 def coordinadorperiodo_create(request, programa_id, coordinador_id):
-    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    programa = _get_programa_or_404(programa_id)
     coordinador = get_object_or_404(User, id=coordinador_id)
 
-    # Instancia con FKs preasignadas
-    base_instance = CoordinadorPrograma(programa=programa, coordinador=coordinador)
+    base_instance = CoordinadorPrograma(
+        coordinador=coordinador,
+        programa=programa  # ✅ setea GFK
+    )
 
     if request.method == 'POST':
         form = CoordinadorProgramaForm(request.POST, instance=base_instance)
@@ -174,14 +227,11 @@ def coordinadorperiodo_create(request, programa_id, coordinador_id):
             messages.success(request, 'Periodo creado correctamente.')
             return redirect('contratos_coordinadores_programa', programa_id=programa.id)
         else:
-            # Pasar cada error del form al sistema de mensajes
             for field, errors in form.errors.items():
                 for error in errors:
                     if field == '__all__':
-                        # errores generales (non_field_errors)
                         messages.error(request, error)
                     else:
-                        # errores asociados a un campo específico
                         label = form.fields[field].label if field in form.fields else field
                         messages.error(request, f"{label}: {error}")
     else:
@@ -196,16 +246,18 @@ def coordinadorperiodo_create(request, programa_id, coordinador_id):
 
 
 @login_required
-@role_required([3, 4]) 
+@role_required([3, 4])
 @transaction.atomic
 def coordinadorperiodo_update(request, programa_id, coordinador_id, pk):
-    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    programa = _get_programa_or_404(programa_id)
     coordinador = get_object_or_404(User, id=coordinador_id)
-    # Traemos el periodo existente (esto asegura que la instance tenga las FKs)
+    pf = _programa_filter(programa)
+
     periodo = get_object_or_404(
         CoordinadorPrograma,
         pk=pk,
-        programa=programa,
+        programa_content_type=pf["programa_content_type"],
+        programa_object_id=pf["programa_object_id"],
         coordinador=coordinador
     )
 
@@ -219,7 +271,6 @@ def coordinadorperiodo_update(request, programa_id, coordinador_id, pk):
                 url = reverse('contratos_coordinadores_programa', args=[programa.id])
                 return redirect(f"{url}?coord={coordinador.id}#coord-{coordinador.id}")
             except ValidationError as e:
-                # Si por alguna razón el modelo lanza ValidationError aquí
                 if hasattr(e, "message_dict"):
                     for field, errs in e.message_dict.items():
                         for err in errs:
@@ -231,7 +282,6 @@ def coordinadorperiodo_update(request, programa_id, coordinador_id, pk):
         else:
             messages.error(request, 'No se pudo actualizar. Revisa los errores del formulario.')
     else:
-        # GET → el form viene precargado con las fechas actuales
         form = CoordinadorProgramaForm(instance=periodo)
 
     return render(request, 'coordinadorperiodo_form.html', {
@@ -244,15 +294,20 @@ def coordinadorperiodo_update(request, programa_id, coordinador_id, pk):
 
 
 @login_required
-@role_required([3, 4]) 
+@role_required([3, 4])
 @transaction.atomic
 def coordinadorperiodo_delete(request, programa_id, coordinador_id, pk):
-    """
-    Eliminar un periodo (confirmación).
-    """
-    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    programa = _get_programa_or_404(programa_id)
     coordinador = get_object_or_404(User, id=coordinador_id)
-    periodo = get_object_or_404(CoordinadorPrograma, pk=pk, programa=programa, coordinador=coordinador)
+    pf = _programa_filter(programa)
+
+    periodo = get_object_or_404(
+        CoordinadorPrograma,
+        pk=pk,
+        programa_content_type=pf["programa_content_type"],
+        programa_object_id=pf["programa_object_id"],
+        coordinador=coordinador
+    )
 
     if request.method == 'POST':
         periodo.delete()
@@ -266,38 +321,34 @@ def coordinadorperiodo_delete(request, programa_id, coordinador_id, pk):
     })
 
 
-
 @login_required
-@role_required([3, 4]) 
+@role_required([3, 4])
 def pagos_coordinadores_programa(request, programa_id):
-    """
-    Lista pagos agrupados por CONTRATO dentro del programa.
-    Muestra total por contrato y total general del programa.
-    """
-    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    programa = _get_programa_or_404(programa_id)
+    pf = _programa_filter(programa)
 
-    # Todos los contratos de este programa (sin FK)
     contratos = list(
         ContratoCoordinador.objects
-        .filter(programadeposgrado=programa.id)
+        .filter(**pf)
         .order_by('-created')
     )
 
-    # Mapa de coordinadores (User)
     coord_ids = sorted({c.coordinador for c in contratos if c.coordinador})
     usuarios = {u.id: u for u in User.objects.filter(id__in=coord_ids)}
 
-    # Pagos por programa y por contrato
-    pagos = CoordinadorPagos.objects.filter(programa=programa).select_related('contrato', 'coordinador').order_by('-mes_pago', '-created')
+    pagos = (
+        CoordinadorPagos.objects
+        .filter(programa_content_type=pf["programa_content_type"], programa_object_id=pf["programa_object_id"])
+        .select_related('contrato', 'coordinador')
+        .order_by('-mes_pago', '-created')
+    )
 
-    # Indexar pagos por contrato_id
     pagos_por_contrato = {}
     total_programa = Decimal('0.00')
     for p in pagos:
         pagos_por_contrato.setdefault(p.contrato_id, []).append(p)
         total_programa += (p.valor_total or Decimal('0.00'))
 
-    # Construir secciones por contrato (cada sección pertenece a un coordinador)
     secciones = []
     for c in contratos:
         u = usuarios.get(c.coordinador)
@@ -310,31 +361,26 @@ def pagos_coordinadores_programa(request, programa_id):
             'total_contrato': total_contrato,
         })
 
-    context = {
+    return render(request, 'pagos_coordinadores_programa.html', {
         'programa': programa,
         'secciones': secciones,
         'total_programa': total_programa,
-    }
-    return render(request, 'pagos_coordinadores_programa.html', context)
+    })
 
 
 @login_required
-@role_required([3, 4]) 
+@role_required([3, 4])
 @transaction.atomic
 def coordinadorpago_create_by_contrato(request, programa_id, contrato_id):
-    """
-    Crear pago en la sección de un CONTRATO específico.
-    No se listan todos los contratos; solo el del ID recibido.
-    """
-    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    programa = _get_programa_or_404(programa_id)
     contrato = get_object_or_404(ContratoCoordinador, pk=contrato_id)
 
-    # Validación de pertenencia del contrato al programa
-    if contrato.programadeposgrado != programa.id:
+    # ✅ Validación de pertenencia por GFK
+    pf = _programa_filter(programa)
+    if (contrato.programa_content_type_id != pf["programa_content_type"].id) or (contrato.programa_object_id != pf["programa_object_id"]):
         messages.error(request, 'El contrato no pertenece a este programa.')
         return redirect('pagos_coordinadores_programa', programa_id=programa.id)
 
-    # Resolver coordinador (User) desde entero
     coordinador = get_object_or_404(User, id=contrato.coordinador)
 
     if request.method == 'POST':
@@ -346,7 +392,7 @@ def coordinadorpago_create_by_contrato(request, programa_id, contrato_id):
         )
         if form.is_valid():
             pago = form.save(commit=False)
-            pago.programa = programa
+            pago.programa = programa  # ✅ setea GFK
             pago.coordinador = coordinador
             try:
                 pago.full_clean()
@@ -365,7 +411,6 @@ def coordinadorpago_create_by_contrato(request, programa_id, contrato_id):
                 pago.save()
                 messages.success(request, 'Pago registrado correctamente.')
                 url = reverse('pagos_coordinadores_programa', args=[programa.id])
-                # anclar al contrato
                 return redirect(f"{url}?contrato={contrato.id}#contrato-{contrato.id}")
         else:
             for field, errors in form.errors.items():
@@ -390,14 +435,19 @@ def coordinadorpago_create_by_contrato(request, programa_id, contrato_id):
 
 
 @login_required
-@role_required([3, 4]) 
+@role_required([3, 4])
 @transaction.atomic
 def coordinadorpago_update(request, programa_id, pago_id):
-    """
-    Edita un pago. El contrato NO se cambia (se bloquea a su valor actual).
-    """
-    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
-    pago = get_object_or_404(CoordinadorPagos, pk=pago_id, programa=programa)
+    programa = _get_programa_or_404(programa_id)
+    pf = _programa_filter(programa)
+
+    pago = get_object_or_404(
+        CoordinadorPagos,
+        pk=pago_id,
+        programa_content_type=pf["programa_content_type"],
+        programa_object_id=pf["programa_object_id"]
+    )
+
     contrato = get_object_or_404(ContratoCoordinador, pk=pago.contrato_id)
     coordinador = get_object_or_404(User, id=pago.coordinador_id)
 
@@ -407,7 +457,7 @@ def coordinadorpago_update(request, programa_id, pago_id):
             instance=pago,
             programa=programa,
             coordinador_id=coordinador.id,
-            contrato_fijo=contrato.id  # <- bloquea el select a un solo contrato
+            contrato_fijo=contrato.id
         )
         if form.is_valid():
             obj = form.save(commit=False)
@@ -449,11 +499,19 @@ def coordinadorpago_update(request, programa_id, pago_id):
 
 
 @login_required
-@role_required([3, 4]) 
+@role_required([3, 4])
 @transaction.atomic
 def coordinadorpago_delete(request, programa_id, pago_id):
-    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
-    pago = get_object_or_404(CoordinadorPagos, pk=pago_id, programa=programa)
+    programa = _get_programa_or_404(programa_id)
+    pf = _programa_filter(programa)
+
+    pago = get_object_or_404(
+        CoordinadorPagos,
+        pk=pago_id,
+        programa_content_type=pf["programa_content_type"],
+        programa_object_id=pf["programa_object_id"]
+    )
+
     contrato = get_object_or_404(ContratoCoordinador, pk=pago.contrato_id)
     coordinador = get_object_or_404(User, id=pago.coordinador_id)
 
@@ -472,31 +530,22 @@ def coordinadorpago_delete(request, programa_id, pago_id):
 
 
 @login_required
-@role_required([3, 4]) 
+@role_required([3, 4])
 def docentes_contratos_programa(request, programa_id):
-    """
-    Lista contratos de docentes para el programa (desde datosposgrado.ContratosDocentes),
-    muestra datos de usuario/perfil/títulos y permite agregar/editar 'gestión' adicional
-    (fecha_contratacion, pago_realizado, numero_factura, observaciones).
-    """
-    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    programa = _get_programa_or_404(programa_id)
+    pf = _programa_filter(programa)
 
-    # 1) Contratos del programa (sin FK)
     contratos = list(
         ContratosDocentes.objects
-        .filter(programadeposgrado=programa.id)
+        .filter(**pf)
         .order_by('-created')
     )
 
-    # 2) Resolver docentes (User) por IDs enteros
     docente_ids = sorted({c.docente for c in contratos if c.docente})
     usuarios = {u.id: u for u in User.objects.filter(id__in=docente_ids)}
-    modulo_ids = sorted({c.modulo for c in contratos if c.modulo})
-    modulos = {m.id: m for m in Modulos.objects.filter(id__in=modulo_ids)}
-    # 3) Perfiles (RUC/CI, teléfono)
+
     perfiles = {p.user_id: p for p in PerfilUsuario.objects.filter(user_id__in=docente_ids)}
 
-    # 4) Académicos (busca un “título” representativo: doctorado > maestría > grado)
     acad_por_user = {}
     for pa in PerfilAcademicoUsuario.objects.select_related('usuario__user').all():
         uid = pa.usuario.user_id
@@ -505,10 +554,10 @@ def docentes_contratos_programa(request, programa_id):
             if uid not in acad_por_user or (pa.titulo_postgrado_doctorado and acad_por_user[uid] != pa.titulo_postgrado_doctorado):
                 acad_por_user[uid] = tit
 
-    # 5) Gestión adicional existente por contrato
     gestiones = {g.contrato_id: g for g in ContratoDocenteGestion.objects.filter(contrato_id__in=[c.id for c in contratos])}
 
-    # 6) Construir filas + totales
+    mod_map = _resolve_modulos_map(contratos)
+
     filas = []
     total_contratado = Decimal('0.00')
     total_pagado = Decimal('0.00')
@@ -521,8 +570,9 @@ def docentes_contratos_programa(request, programa_id):
         valor_total = (c.horasacademicas or 0) * (c.valorxhora or Decimal('0.00'))
         total_contratado += Decimal(valor_total)
 
-        modulo_obj = modulos.get(c.modulo)
-        modulo_nombre = getattr(modulo_obj, 'nombre', None) or f"ID {c.modulo}"
+        key_mod = (c.modulo_content_type_id, c.modulo_object_id)
+        modulo_obj = mod_map.get(key_mod)
+        modulo_nombre = getattr(modulo_obj, 'nombre', None) if modulo_obj else (f"ID {c.modulo_object_id}" if c.modulo_object_id else "")
 
         g = gestiones.get(c.id)
         if g and g.pago_realizado:
@@ -550,12 +600,15 @@ def docentes_contratos_programa(request, programa_id):
 
 
 @login_required
-@role_required([3, 4]) 
+@role_required([3, 4])
 def contratodocente_gestion_create(request, programa_id, contrato_id):
-    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    programa = _get_programa_or_404(programa_id)
+    pf = _programa_filter(programa)
+
     contrato = get_object_or_404(ContratosDocentes, pk=contrato_id)
 
-    if contrato.programadeposgrado != programa.id:
+    # ✅ pertenencia por GFK
+    if (contrato.programa_content_type_id != pf["programa_content_type"].id) or (contrato.programa_object_id != pf["programa_object_id"]):
         messages.error(request, 'El contrato no pertenece a este programa.')
         return redirect('docentes_contratos_programa', programa_id=programa.id)
 
@@ -578,7 +631,6 @@ def contratodocente_gestion_create(request, programa_id, contrato_id):
     else:
         form = ContratoDocenteGestionForm()
 
-    # Resolver docente para mostrar en la cabecera
     docente_user = User.objects.filter(id=contrato.docente).first()
 
     return render(request, 'contratodocente_gestion_form.html', {
@@ -591,9 +643,9 @@ def contratodocente_gestion_create(request, programa_id, contrato_id):
 
 
 @login_required
-@role_required([3, 4]) 
+@role_required([3, 4])
 def contratodocente_gestion_update(request, programa_id, contrato_id):
-    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    programa = _get_programa_or_404(programa_id)
     contrato = get_object_or_404(ContratosDocentes, pk=contrato_id)
     gestion = get_object_or_404(ContratoDocenteGestion, contrato=contrato)
 
@@ -623,30 +675,23 @@ def contratodocente_gestion_update(request, programa_id, contrato_id):
     })
 
 
-
 @login_required
-@role_required([3, 4]) 
+@role_required([3, 4])
 def tutores_contratos_programa(request, programa_id):
-    """
-    Lista contratos de tutores del programa, permite ver/crear/editar datos adicionales.
-    Muestra totales: contratado, pagado, pendiente.
-    """
-    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    programa = _get_programa_or_404(programa_id)
+    pf = _programa_filter(programa)
 
     contratos = list(
-        ContratoTutor.objects.filter(programadeposgrado=programa.id).order_by('-created')
+        ContratoTutor.objects.filter(**pf).order_by('-created')
     )
 
-    # Mapear Users por IDs enteros (tutor y maestrante)
     tutor_ids = {c.tutor for c in contratos if c.tutor}
     est_ids = {c.maestrante for c in contratos if c.maestrante}
     user_ids = sorted(tutor_ids | est_ids)
     usuarios = {u.id: u for u in User.objects.filter(id__in=user_ids)}
 
-    # Perfiles (para CI/telefono)
     perfiles = {p.user_id: p for p in PerfilUsuario.objects.filter(user_id__in=user_ids)}
 
-    # Gestión existente
     gestiones = {g.contrato_id: g for g in ContratoTutorGestion.objects.filter(
         contrato_id__in=[c.id for c in contratos]
     )}
@@ -688,12 +733,14 @@ def tutores_contratos_programa(request, programa_id):
 
 
 @login_required
-@role_required([3, 4]) 
+@role_required([3, 4])
 def contratotutor_gestion_create(request, programa_id, contrato_id):
-    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    programa = _get_programa_or_404(programa_id)
+    pf = _programa_filter(programa)
+
     contrato = get_object_or_404(ContratoTutor, pk=contrato_id)
 
-    if contrato.programadeposgrado != programa.id:
+    if (contrato.programa_content_type_id != pf["programa_content_type"].id) or (contrato.programa_object_id != pf["programa_object_id"]):
         messages.error(request, 'El contrato no pertenece a este programa.')
         return redirect('tutores_contratos_programa', programa_id=programa.id)
 
@@ -712,7 +759,7 @@ def contratotutor_gestion_create(request, programa_id, contrato_id):
                 messages.success(request, 'Datos guardados correctamente.')
                 url = reverse('tutores_contratos_programa', args=[programa.id])
                 return redirect(f"{url}#contrato-{contrato.id}")
-            except Exception as e:
+            except Exception:
                 messages.error(request, 'No se pudo guardar. Revisa los errores.')
         else:
             messages.error(request, 'Corrige los errores del formulario.')
@@ -733,9 +780,9 @@ def contratotutor_gestion_create(request, programa_id, contrato_id):
 
 
 @login_required
-@role_required([3, 4]) 
+@role_required([3, 4])
 def contratotutor_gestion_update(request, programa_id, contrato_id):
-    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    programa = _get_programa_or_404(programa_id)
     contrato = get_object_or_404(ContratoTutor, pk=contrato_id)
     gestion = get_object_or_404(ContratoTutorGestion, contrato=contrato)
 
@@ -769,15 +816,17 @@ def contratotutor_gestion_update(request, programa_id, contrato_id):
         'gestion': gestion,
     })
 
-@login_required
-@role_required([3, 4]) 
-def estudiantes_programa_list(request, programa_id):
-    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
 
-    ct = ContentType.objects.get_for_model(ProgramaPosgrado)
+@login_required
+@role_required([3, 4])
+def estudiantes_programa_list(request, programa_id):
+    programa = _get_programa_or_404(programa_id)
+    pf = _programa_filter(programa)
+
+    ct_prog = pf["programa_content_type"]
     matriculas = (
         MatriculaUsuario.objects
-        .filter(content_type=ct, object_id=programa.id, rol_en_programa='estudiante')
+        .filter(content_type=ct_prog, object_id=programa.id, rol_en_programa='estudiante')
         .select_related('usuario')
         .order_by('-fecha_matricula')
     )
@@ -788,18 +837,22 @@ def estudiantes_programa_list(request, programa_id):
 
     gestiones = {
         g.usuario_id: g
-        for g in EstudianteProgramaGestion.objects.filter(usuario_id__in=user_ids, programa=programa)
+        for g in EstudianteProgramaGestion.objects.filter(
+            usuario_id__in=user_ids,
+            programa_content_type=pf["programa_content_type"],
+            programa_object_id=pf["programa_object_id"]
+        )
     }
 
-    # valores del programa (si existen)
-    vp = ValorProgramaPosgrado.objects.filter(programa=programa).first()
+    vp = ValorProgramaPosgrado.objects.filter(**pf).first()
+
     valores_programa = None
     total_programa = None
     plan_pago = None
     cuota_mensual = None
 
     if vp:
-        plan_pago = vp.plan_pago  # '2_COLEGIATURAS' o '10_CUOTAS'
+        plan_pago = vp.plan_pago
         if plan_pago == ValorProgramaPosgrado.PLAN_2:
             valores_programa = {
                 'inscripcion': vp.valorinscripcion or Decimal('0.00'),
@@ -833,7 +886,6 @@ def estudiantes_programa_list(request, programa_id):
 
         total_pagado_est = Decimal('0.00')
         if vp and g:
-            # Inscripción / Matrícula (independiente del plan)
             if g.pago_inscripcion:
                 total_pagado_est += valores_programa['inscripcion']
             if g.pago_matricula:
@@ -845,7 +897,6 @@ def estudiantes_programa_list(request, programa_id):
                 if g.pago_segunda_colegiatura:
                     total_pagado_est += valores_programa['cole2']
             else:
-                # 10 cuotas: sumar n * cuota_mensual
                 n = g.cuotas_pagadas or 0
                 total_pagado_est += (cuota_mensual or Decimal('0.00')) * Decimal(n)
 
@@ -862,22 +913,25 @@ def estudiantes_programa_list(request, programa_id):
         'filas': filas,
         'valores_programa': valores_programa,
         'total_programa': total_programa,
-        'plan_pago': plan_pago,              # <-- para condicionar columnas en el HTML
+        'plan_pago': plan_pago,
     })
 
 
 @login_required
-@role_required([3, 4]) 
+@role_required([3, 4])
 @transaction.atomic
 def estudiante_programa_gestion_upsert(request, programa_id, user_id):
-    programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
+    programa = _get_programa_or_404(programa_id)
     user = get_object_or_404(User, id=user_id)
+    pf = _programa_filter(programa)
 
     obj, created = EstudianteProgramaGestion.objects.get_or_create(
-        usuario=user, programa=programa
+        usuario=user,
+        programa_content_type=pf["programa_content_type"],
+        programa_object_id=pf["programa_object_id"]
     )
 
-    vp = ValorProgramaPosgrado.objects.filter(programa=programa).first()
+    vp = ValorProgramaPosgrado.objects.filter(**pf).first()
     plan_pago = vp.plan_pago if vp else None
 
     if request.method == 'POST':
@@ -885,21 +939,19 @@ def estudiante_programa_gestion_upsert(request, programa_id, user_id):
         if form.is_valid():
             g = form.save(commit=False)
             g.usuario = user
-            g.programa = programa
-            # Si el plan es 2 colegiaturas, fuerza 0 (None -> 0)
+            g.programa = programa  # ✅ setea GFK
+
             if plan_pago == getattr(vp, 'PLAN_2', '2_COLEGIATURAS'):
                 g.cuotas_pagadas = 0
-            # En plan 10, si viene vacío, trata como 0
             if g.cuotas_pagadas is None:
                 g.cuotas_pagadas = 0
+
             g.full_clean()
             g.save()
             messages.success(request, 'Datos del estudiante guardados correctamente.')
             url = reverse('estudiantes_programa_list', args=[programa.id])
             return redirect(f"{url}#est-{user.id}")
         else:
-            #messages.error(request, 'Corrige los errores del formulario.')
-                # Mostrar errores con detalle
             messages.error(request, 'Corrige los errores del formulario.')
             for field, errs in form.errors.items():
                 for err in errs:
@@ -918,23 +970,16 @@ def estudiante_programa_gestion_upsert(request, programa_id, user_id):
         'perfil': perfil,
         'form': form,
         'creando': created,
-        'plan_pago': plan_pago,        # <-- para condicionar el formulario
-        'vp': vp,                      # opcional por si quieres mostrar cuota en el form
+        'plan_pago': plan_pago,
+        'vp': vp,
     })
 
-def _calc_programa_finanzas(programa: ProgramaPosgrado):
-    """
-    Retorna un dict con:
-      total_ingresos, total_egresos, saldo,
-      desgloses:
-        - plan 2: ingresos_{inscripcion,matricula,colegiatura1,colegiatura2}
-        - plan 10: ingresos_{inscripcion,matricula,cuotas10} y total_cuotas_pagadas
-      además: moneda, plan_pago, cuota_mensual (si aplica), valor_total_programa
-    """
-    cero = Decimal('0.00')
 
-    # ---------- Valores del programa ----------
-    vp = ValorProgramaPosgrado.objects.filter(programa=programa).first()
+def _calc_programa_finanzas(programa):
+    cero = Decimal('0.00')
+    pf = _programa_filter(programa)
+
+    vp = ValorProgramaPosgrado.objects.filter(**pf).first()
     moneda = vp.moneda if vp else 'USD'
     plan_pago = getattr(vp, 'plan_pago', getattr(ValorProgramaPosgrado, 'PLAN_2', '2_COLEGIATURAS'))
     cuota_mensual = getattr(vp, 'cuota_mensual', None) or cero
@@ -942,43 +987,46 @@ def _calc_programa_finanzas(programa: ProgramaPosgrado):
     ingresos_insc = ingresos_mat = ingresos_cole1 = ingresos_cole2 = ingresos_cuotas10 = cero
     total_cuotas_pagadas = 0
 
-    # ---------- INGRESOS (estudiantes) ----------
     if vp:
-        gestiones = EstudianteProgramaGestion.objects.filter(programa=programa).only(
+        gestiones = EstudianteProgramaGestion.objects.filter(
+            programa_content_type=pf["programa_content_type"],
+            programa_object_id=pf["programa_object_id"]
+        ).only(
             'pago_inscripcion', 'pago_matricula',
             'pago_primera_colegiatura', 'pago_segunda_colegiatura',
             'cuotas_pagadas'
         )
 
         pagaron_insc = gestiones.filter(pago_inscripcion=True).count()
-        pagaron_mat  = gestiones.filter(pago_matricula=True).count()
+        pagaron_mat = gestiones.filter(pago_matricula=True).count()
 
-        ingresos_insc  = (vp.valorinscripcion or cero) * Decimal(pagaron_insc)
-        ingresos_mat   = (vp.valormatricula or cero) * Decimal(pagaron_mat)
+        ingresos_insc = (vp.valorinscripcion or cero) * Decimal(pagaron_insc)
+        ingresos_mat = (vp.valormatricula or cero) * Decimal(pagaron_mat)
 
         if plan_pago == ValorProgramaPosgrado.PLAN_2:
-            pagaron_c1   = gestiones.filter(pago_primera_colegiatura=True).count()
-            pagaron_c2   = gestiones.filter(pago_segunda_colegiatura=True).count()
+            pagaron_c1 = gestiones.filter(pago_primera_colegiatura=True).count()
+            pagaron_c2 = gestiones.filter(pago_segunda_colegiatura=True).count()
             ingresos_cole1 = (vp.primeracolegiatura or cero) * Decimal(pagaron_c1)
             ingresos_cole2 = (vp.segundacolegiatura or cero) * Decimal(pagaron_c2)
         else:
-            # 10 cuotas: sumar n * cuota_mensual
             total_cuotas_pagadas = sum((g.cuotas_pagadas or 0) for g in gestiones)
             ingresos_cuotas10 = cuota_mensual * Decimal(total_cuotas_pagadas)
 
     total_ingresos = ingresos_insc + ingresos_mat + ingresos_cole1 + ingresos_cole2 + ingresos_cuotas10
 
-    # ---------- EGRESOS ----------
     eg_coordinadores = (
         CoordinadorPagos.objects
-        .filter(programa=programa)
+        .filter(programa_content_type=pf["programa_content_type"], programa_object_id=pf["programa_object_id"])
         .aggregate(s=Sum('valor_total'))['s'] or cero
     )
 
-    # Docentes pagados (por gestión)
     docentes_pagados_ids = list(
         ContratoDocenteGestion.objects
-        .filter(contrato__programadeposgrado=programa.id, pago_realizado=True)
+        .filter(
+            contrato__programa_content_type=pf["programa_content_type"],
+            contrato__programa_object_id=pf["programa_object_id"],
+            pago_realizado=True
+        )
         .values_list('contrato_id', flat=True)
     )
     eg_docentes = cero
@@ -988,10 +1036,13 @@ def _calc_programa_finanzas(programa: ProgramaPosgrado):
             for c in ContratosDocentes.objects.filter(id__in=docentes_pagados_ids)
         )
 
-    # Tutores pagados (por gestión)
     tutores_pagados_ids = list(
         ContratoTutorGestion.objects
-        .filter(contrato__programadeposgrado=programa.id, pago_realizado=True)
+        .filter(
+            contrato__programa_content_type=pf["programa_content_type"],
+            contrato__programa_object_id=pf["programa_object_id"],
+            pago_realizado=True
+        )
         .values_list('contrato_id', flat=True)
     )
     eg_tutores = cero
@@ -1015,25 +1066,21 @@ def _calc_programa_finanzas(programa: ProgramaPosgrado):
         'total_egresos': total_egresos,
         'saldo': saldo,
 
-        # Desglose plan 2
         'ingresos_inscripcion': ingresos_insc,
         'ingresos_matricula': ingresos_mat,
         'ingresos_colegiatura1': ingresos_cole1,
         'ingresos_colegiatura2': ingresos_cole2,
 
-        # Desglose plan 10
         'ingresos_cuotas10': ingresos_cuotas10,
         'total_cuotas_pagadas': total_cuotas_pagadas,
 
-        # Egresos
         'egresos_coordinadores': eg_coordinadores,
         'egresos_docentes': eg_docentes,
         'egresos_tutores': eg_tutores,
     }
 
-###################REPORTE PDF#########################
 
-# --- Resolver paths de static/media para xhtml2pdf
+# ---------------- PDF helpers (igual que tu original) ----------------
 def _link_callback(uri, rel):
     sUrl, sRoot = settings.STATIC_URL, settings.STATIC_ROOT
     mUrl, mRoot = settings.MEDIA_URL, settings.MEDIA_ROOT
@@ -1048,31 +1095,18 @@ def _link_callback(uri, rel):
 
 
 @login_required
-@role_required([3, 4]) 
+@role_required([3, 4])
 def programa_reporte_pdf(request, programa_id):
-    """
-    PDF general con: resumen financiero, valores del programa,
-    coordinadores (contratos/pagos), docentes (contratos/gestión),
-    tutores (contratos/gestión) y estudiantes (pagos/estado).
-    """
-    programa = ProgramaPosgrado.objects.get(id=programa_id)
+    programa = _get_programa_or_404(programa_id)
+    pf = _programa_filter(programa)
 
-    # 1) Resumen financiero con TU helper ya existente:
-    #    Debe aceptar el objeto programa y devolver un dict 'fin'
-    #    con llaves: moneda, total_ingresos, total_egresos, saldo,
-    #    ingresos_* y egresos_* (como ya usas en la vista HTML).
     fin = _calc_programa_finanzas(programa)
+    vp = ValorProgramaPosgrado.objects.filter(**pf).first()
 
-    # 2) Valores del programa
-    vp = ValorProgramaPosgrado.objects.filter(programa=programa).first()
-
-    # 3) Coordinadores (contratos + pagos)
-    contratos_coord = list(
-        ContratoCoordinador.objects.filter(programadeposgrado=programa.id)
-    )
+    contratos_coord = list(ContratoCoordinador.objects.filter(**pf))
     pagos_coord = (
         CoordinadorPagos.objects
-        .filter(programa=programa)
+        .filter(programa_content_type=pf["programa_content_type"], programa_object_id=pf["programa_object_id"])
         .select_related('coordinador', 'contrato')
         .order_by('mes_pago')
     )
@@ -1094,25 +1128,19 @@ def programa_reporte_pdf(request, programa_id):
             'fecha_fin_contrato': getattr(c, 'fechafin', None),
         })
 
-    # 4) Docentes (contratos + gestión)
-    contratos_doc = list(
-        ContratosDocentes.objects.filter(programadeposgrado=programa.id)
-    )
-    modulos = {
-        m.id: m for m in Modulos.objects.filter(
-            id__in=[c.modulo for c in contratos_doc if c.modulo]
-        )
-    }
+    contratos_doc = list(ContratosDocentes.objects.filter(**pf))
+    mod_map = _resolve_modulos_map(contratos_doc)
+
     gest_doc = {
-        g.contrato_id: g for g in ContratoDocenteGestion.objects.filter(
-            contrato__in=contratos_doc
-        )
+        g.contrato_id: g for g in ContratoDocenteGestion.objects.filter(contrato__in=contratos_doc)
     }
+
     doc_detalle = []
     for c in contratos_doc:
         docente = User.objects.filter(id=c.docente).first()
-        modulo_nombre = (modulos.get(c.modulo).nombre
-                         if modulos.get(c.modulo) else f"ID {c.modulo}")
+        key_mod = (c.modulo_content_type_id, c.modulo_object_id)
+        modulo_obj = mod_map.get(key_mod)
+        modulo_nombre = getattr(modulo_obj, 'nombre', None) if modulo_obj else (f"ID {c.modulo_object_id}" if c.modulo_object_id else "")
         valor_total = (c.horasacademicas or 0) * (c.valorxhora or Decimal('0.00'))
         g = gest_doc.get(c.id)
         doc_detalle.append({
@@ -1123,14 +1151,9 @@ def programa_reporte_pdf(request, programa_id):
             'gestion': g,
         })
 
-    # 5) Tutores (contratos + gestión)
-    contratos_tut = list(
-        ContratoTutor.objects.filter(programadeposgrado=programa.id)
-    )
+    contratos_tut = list(ContratoTutor.objects.filter(**pf))
     gest_tut = {
-        g.contrato_id: g for g in ContratoTutorGestion.objects.filter(
-            contrato__in=contratos_tut
-        )
+        g.contrato_id: g for g in ContratoTutorGestion.objects.filter(contrato__in=contratos_tut)
     }
     tut_detalle = []
     for c in contratos_tut:
@@ -1144,11 +1167,9 @@ def programa_reporte_pdf(request, programa_id):
             'gestion': g,
         })
 
-    # 6) Estudiantes (matriculados + gestión + total pagado)
-    ct = ContentType.objects.get_for_model(ProgramaPosgrado)
     matriculas = (
         MatriculaUsuario.objects
-        .filter(content_type=ct, object_id=programa.id, rol_en_programa='estudiante')
+        .filter(content_type=pf["programa_content_type"], object_id=programa.id, rol_en_programa='estudiante')
         .select_related('usuario')
         .order_by('usuario__last_name', 'usuario__first_name')
     )
@@ -1158,7 +1179,10 @@ def programa_reporte_pdf(request, programa_id):
         )
     }
     gest_est = {
-        g.usuario_id: g for g in EstudianteProgramaGestion.objects.filter(programa=programa)
+        g.usuario_id: g for g in EstudianteProgramaGestion.objects.filter(
+            programa_content_type=pf["programa_content_type"],
+            programa_object_id=pf["programa_object_id"]
+        )
     }
     est_detalle = []
     for m in matriculas:
@@ -1181,7 +1205,6 @@ def programa_reporte_pdf(request, programa_id):
             'total_pagado': total_pagado,
         })
 
-    # 7) Render del PDF
     template = get_template('reporte_programa.html')
     html = template.render({
         'programa': programa,

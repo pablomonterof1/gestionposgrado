@@ -20,15 +20,17 @@
       </a>
     </div>
   </div>
-        {% if messages %}   
-        <div class="mt-2">
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                {{ message }}
-            </div>
-            {% endfor %}
+
+  {% if messages %}   
+    <div class="mt-2">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+          {{ message }}
         </div>
-        {% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
   <!-- Contenedor tabla -->
   <section class="card border-2 shadow-lg" style="padding: 1%;">
     <div class="card-body p-0">
@@ -60,15 +62,60 @@
           <tbody id="contratosTableBody">
             {% for contrato in contratos_por_periordo %}
             <tr>
-              <td class="text-nowrap">{{ contrato.tutor_obj.perfilusuario.ci }}</td>
-              <td class="fw-semibold">
-                <a href="{% url 'usuario_editar_dp' contrato.tutor_obj.perfilusuario.user.id %}?next={{ request.path }}">{{ contrato.tutor_obj.get_full_name }}</a>
+              <td class="text-nowrap">
+                {% if contrato.tutor_obj and contrato.tutor_obj.perfilusuario %}
+                  {{ contrato.tutor_obj.perfilusuario.ci }}
+                {% else %}
+                  -
+                {% endif %}
               </td>
-              <td>{{ contrato.maestria_obj.nombre }}</td>
-              <td>{{ contrato.campoamplio_obj.nombre }}</td>
-              <td>{{ contrato.modalidad_obj.modalidad }}</td>
-              <td class="text-nowrap">{{ contrato.programadeposgrado_obj.get_cohorte_display }}</td>
-              <td class="text-nowrap">{{ contrato.maestrante_obj.get_full_name }}</td>
+
+              <td class="fw-semibold">
+                {% if contrato.tutor_obj and contrato.tutor_obj.perfilusuario %}
+                  <a href="{% url 'usuario_editar_dp' contrato.tutor_obj.perfilusuario.user.id %}?next={{ request.path }}">
+                    {{ contrato.tutor_obj.get_full_name }}
+                  </a>
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+
+              <!-- Programa (Maestría o Especialidad) -->
+              <td>
+                {% if contrato.programa_nombre %}
+                  {{ contrato.programa_nombre.nombre }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+
+              <td>
+                {% if contrato.campoamplio_obj %}
+                  {{ contrato.campoamplio_obj.nombre }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+
+              <td>
+                {% if contrato.modalidad_obj %}
+                  {{ contrato.modalidad_obj.modalidad }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+
+              <td class="text-nowrap">
+                {{ contrato.cohorte_label|default:"-" }}
+              </td>
+
+              <td class="text-nowrap">
+                {% if contrato.maestrante_obj %}
+                  {{ contrato.maestrante_obj.get_full_name }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
 
               <td class="text-center">{{ contrato.plazo }}</td>
 
@@ -86,6 +133,7 @@
               <td class="text-truncate" style="max-width: 160px;" title="{{ contrato.adenda }}">
                 {{ contrato.adenda }}
               </td>
+
               <td class="text-truncate" style="max-width: 200px;" title="{{ contrato.observaciones }}">
                 {{ contrato.observaciones }}
               </td>
@@ -104,6 +152,7 @@
                      class="btn btn-warning btn-sm" data-bs-toggle="tooltip" title="Editar">
                     <i class="fa-solid fa-pen-to-square"></i>
                   </a>
+
                   <form id="form-borrar-{{ contrato.id }}"
                         action="{% url 'contratotutor_delete' contrato.id periodo_id %}"
                         method="POST" class="form-borrar m-0">
@@ -118,6 +167,7 @@
             </tr>
             {% endfor %}
           </tbody>
+
         </table>
       </div>
     </div>
@@ -139,10 +189,10 @@
         paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
       },
       columnDefs: [
-        { targets: [7,9], className: 'text-center' },   // plazo / fecha cert.
-        { targets: [10], className: 'text-end' },       // valor contrato
-        { targets: [8,15], className: 'text-truncate' },// certificación / observaciones
-        { targets: [16], className: 'text-center' }     // acciones
+        { targets: [7,9], className: 'text-center' },
+        { targets: [10], className: 'text-end' },
+        { targets: [8,15], className: 'text-truncate' },
+        { targets: [16], className: 'text-center' }
       ]
     });
   });

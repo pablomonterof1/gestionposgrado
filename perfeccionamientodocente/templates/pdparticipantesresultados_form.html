@@ -1,0 +1,46 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+
+<main class="container py-4">
+  <section class="card p-4">
+
+    <h3 class="mb-2">{{ titulo }}</h3>
+
+    <p class="text-muted">
+      <b>Curso:</b> {{ participacion.curso.nombre }}<br>
+      <b>Docente:</b> {{ participacion.docente.get_full_name }} ({{ participacion.docente.username }})<br>
+      <b>Programa:</b> {% if participacion.programa %}{{ participacion.programa }}{% else %}SIN PROGRAMA{% endif %}
+    </p>
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label"><b>% Asistencia</b></label>
+          {{ form.porcentaje_asistencia }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label"><b>Nota final</b></label>
+          {{ form.nota_final }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label"><b>Estado</b></label>
+          {{ form.estado_resultado }}
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-4">
+        <button class="btn btn-primary" type="submit">{{ btn }}</button>
+        <a href="{% url 'pd_participantes_curso_detalle' participacion.curso_id %}" class="btn btn-outline-dark">
+          Volver
+        </a>
+      </div>
+    </form>
+
+  </section>
+</main>
+
+{% endblock %}

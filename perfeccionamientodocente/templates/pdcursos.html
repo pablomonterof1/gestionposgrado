@@ -1,0 +1,139 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+
+<main class="container py-4">
+        <div class="mb-3">
+      <a href="{% url 'perfeccionamientodocente' %}" class="btn btn-secondary btn-sm"><i class="fa fa-arrow-left"></i> Volver</a>
+    </div>
+  <section class="card p-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h3 class="m-0">Cursos de capacitación</h3>
+        <small class="text-muted">Listado y filtros por clasificación</small>
+      </div>
+      <a href="{% url 'pd_curso_create' %}" class="btn btn-primary">
+        <i class="fa fa-plus me-1"></i> Nuevo curso
+      </a>
+    </div>
+
+    {% if messages %}
+      <div class="mb-3">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Filtros -->
+    <form class="row g-2 mb-3" method="GET">
+      <div class="col-md-6">
+        <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Buscar por nombre...">
+      </div>
+
+      <!-- <div class="col-md-2">
+        <select name="area" class="form-select">
+          <option value="">Área</option>
+          {% for a in areas %}
+            <option value="{{ a.id }}" {% if area_id == a.id|stringformat:"s" %}selected{% endif %}>
+              {{ a.codigo }} - {{ a.nombre }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <select name="subarea" class="form-select">
+          <option value="">Subárea</option>
+          {% for s in subareas %}
+            <option value="{{ s.id }}" {% if subarea_id == s.id|stringformat:"s" %}selected{% endif %}>
+              {{ s.area.codigo }} | {{ s.codigo }} - {{ s.nombre }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <select name="campo" class="form-select">
+          <option value="">Campo</option>
+          {% for c in campos %}
+            <option value="{{ c.id }}" {% if campo_id == c.id|stringformat:"s" %}selected{% endif %}>
+              {{ c.subarea.codigo }} | {{ c.codigo }} - {{ c.nombre }}
+            </option>
+          {% endfor %}
+        </select>
+      </div> -->
+
+      <div class="col-md-12 d-flex gap-2">
+        <button class="btn btn-outline-dark" type="submit">Filtrar</button>
+        <a class="btn btn-outline-secondary" href="{% url 'pd_cursos_list' %}">Limpiar</a>
+      </div>
+    </form>
+
+    <!-- Tabla -->
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered align-middle">
+        <thead>
+          <tr>
+            <th>Curso</th>
+            <th>Clasificación</th>
+            <th>Facilitador</th>
+            <th style="width:120px;">Fecha</th>
+            <th style="width:90px;">Horas</th>
+            <th style="width:120px;">Modalidad</th>
+            <th style="width:120px;">Estado</th>
+            <th style="width:120px;" class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in cursos %}
+          <tr>
+            <td>
+              <b>{{ c.nombre }}</b><br>
+              <small class="text-muted">{{ c.dirigido_a|default:"" }}</small>
+            </td>
+            <td>
+              <small>
+                {{ c.area.codigo }} - {{ c.area.nombre }}<br>
+                {{ c.subarea.codigo }} - {{ c.subarea.nombre }}<br>
+                {{ c.campo.codigo }} - {{ c.campo.nombre }}
+              </small>
+            </td>
+            <td>{{ c.facilitador_nombres }}<br>
+              <small class="text-muted">{{ c.interno_externo }}</small></td>
+            <td>{{ c.fecha_inicio|date:"Y-m-d" }}-{{ c.fecha_fin|date:"Y-m-d" }}</td>
+            <td class="text-center">{{ c.horas_totales }}</td>
+            <td class="text-center">{{ c.get_modalidad_display }}</td>
+            <td class="text-center">
+              {% if c.activo %}
+                <span class="badge bg-success">Activo</span>
+              {% else %}
+                <span class="badge bg-secondary">Inactivo</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              <a href="{% url 'pd_curso_update' c.id %}"
+                 class="btn btn-sm btn-outline-primary"
+                 title="Editar" data-bs-toggle="tooltip">
+                <i class="fa fa-pen-to-square"></i>
+              </a>
+              <a href="{% url 'pd_curso_delete' c.id %}"
+                 class="btn btn-sm btn-outline-danger"
+                 title="Eliminar" data-bs-toggle="tooltip">
+                <i class="fa fa-trash"></i>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center">No hay cursos registrados.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+</main>
+
+{% endblock %}

@@ -1,9 +1,26 @@
 from django.db import models
-from programasposgrado.models import ProgramaPosgrado, ModalidadDeTitulacion
-from usuarios.models import User 
 from django.core.exceptions import ValidationError
-from datosposgrado.models import ContratoCoordinador, ContratosDocentes, ContratoTutor
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.db.models import Q
+
+from programasposgrado.models import ProgramaPosgrado, ModalidadDeTitulacion
+
+from programasposgrado.models import ProgramaPosgradoEM
+
+from usuarios.models import User
+from datosposgrado.models import ContratoCoordinador, ContratosDocentes, ContratoTutor
+
+
+# -----------------------------
+# Helpers: limit_choices_to (igual concepto que datosposgrado)
+# -----------------------------
+LIMIT_PROGRAMA_CT = (
+    Q(app_label='programasposgrado', model='programaposgrado') |
+    Q(app_label='programasposgrado', model='programaposgradoem')
+)
+
 
 class ValorProgramaPosgrado(models.Model):
     PLAN_10 = '10_CUOTAS'
@@ -13,7 +30,16 @@ class ValorProgramaPosgrado(models.Model):
         (PLAN_2, '2 colegiaturas'),
     ]
 
-    programa = models.OneToOneField(ProgramaPosgrado, on_delete=models.PROTECT, related_name='valor_programa')
+    # ✅ GFK: Programa (Maestría o Especialidad Médica)
+    programa_content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.PROTECT,
+        limit_choices_to=LIMIT_PROGRAMA_CT,
+        related_name='ct_valor_programa',
+        null=True, blank=True
+    )
+    programa_object_id = models.PositiveIntegerField(db_index=True, null=True, blank=True)
+    programa = GenericForeignKey('programa_content_type', 'programa_object_id')
 
     # Montos base
     valorinscripcion = models.DecimalField(max_digits=10, decimal_places=2)
@@ -22,13 +48,12 @@ class ValorProgramaPosgrado(models.Model):
     # Plan de pago
     plan_pago = models.CharField(max_length=20, choices=PLAN_PAGO_CHOICES, default=PLAN_10)
 
-    # Si plan = 2 colegiaturas (se usan estos dos)
+    # Si plan = 2 colegiaturas
     primeracolegiatura = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     segundacolegiatura = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
-    # Si plan = 10 cuotas (se usa valor_total y se calcula cuota_mensual)
+    # Si plan = 10 cuotas
     valor_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    # opcional: almacenar la cuota calculada para mostrar rápido
     cuota_mensual = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
     moneda = models.CharField(max_length=10, default='USD')
@@ -37,21 +62,25 @@ class ValorProgramaPosgrado(models.Model):
     class Meta:
         ordering = ['-created']
         verbose_name = 'Valor Programa de Posgrado'
+        indexes = [
+            models.Index(fields=['programa_content_type', 'programa_object_id']),
+        ]
+        constraints = [
+            # ✅ “OneToOne” lógico para GFK: 1 registro por programa
+            models.UniqueConstraint(
+                fields=['programa_content_type', 'programa_object_id'],
+                name='uniq_valor_programa_gfk'
+            )
+        ]
 
     def __str__(self):
-        base = f"{self.programa} - Inscr:{self.valorinscripcion} {self.moneda} - Matri:{self.valormatricula} {self.moneda}"
+        programa_str = str(self.programa) if self.programa else f"Programa {self.programa_object_id}"
+        base = f"{programa_str} - Inscr:{self.valorinscripcion} {self.moneda} - Matri:{self.valormatricula} {self.moneda}"
         if self.plan_pago == self.PLAN_2:
             return f"{base} - Cole1:{self.primeracolegiatura or 0} {self.moneda} - Cole2:{self.segundacolegiatura or 0} {self.moneda}"
         return f"{base} - Total:{self.valor_total or 0} {self.moneda} - Cuota:{self.cuota_mensual or 0} {self.moneda} x10"
 
     def clean(self):
-        """
-        Reglas:
-        - Siempre deben ser >= 0
-        - PLAN_2: requiere colegiaturas; valor_total/cuota_mensual pueden ir en blanco
-        - PLAN_10: requiere valor_total; colegiaturas pueden ir en blanco
-                   cuota_mensual = (valor_total - inscripcion - matricula) / 10
-        """
         errors = {}
 
         def nonneg(name, value):
@@ -70,7 +99,6 @@ class ValorProgramaPosgrado(models.Model):
                 errors['primeracolegiatura'] = 'Requerido para el plan de 2 colegiaturas.'
             if self.segundacolegiatura is None:
                 errors['segundacolegiatura'] = 'Requerido para el plan de 2 colegiaturas.'
-            # opcional: puedes forzar que valor_total/cuota_mensual queden vacíos
             self.valor_total = self.valor_total or None
             self.cuota_mensual = self.cuota_mensual or None
 
@@ -79,11 +107,9 @@ class ValorProgramaPosgrado(models.Model):
                 errors['valor_total'] = 'Requerido para el plan de 10 cuotas.'
             else:
                 base = (self.valor_total or 0) - (self.valorinscripcion or 0) - (self.valormatricula or 0)
-                # redondeo a 2 decimales
                 self.cuota_mensual = round(base / 10, 2)
                 if self.cuota_mensual < 0:
                     errors['valor_total'] = 'El total debe ser mayor o igual a inscripción + matrícula.'
-            # opcional: limpiar colegiaturas si no se usan
             self.primeracolegiatura = self.primeracolegiatura or None
             self.segundacolegiatura = self.segundacolegiatura or None
 
@@ -91,14 +117,22 @@ class ValorProgramaPosgrado(models.Model):
             raise ValidationError(errors)
 
 
-
 class CoordinadorPrograma(models.Model):
     coordinador = models.ForeignKey(
         User, on_delete=models.PROTECT, related_name='programas_coordinador'
     )
-    programa = models.ForeignKey(
-        ProgramaPosgrado, on_delete=models.PROTECT, related_name='coordinadores_programa'
+
+    # ✅ GFK: Programa (Maestría o Especialidad)
+    programa_content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.PROTECT,
+        limit_choices_to=LIMIT_PROGRAMA_CT,
+        related_name='ct_coordinador_programa',
+        null=True, blank=True
     )
+    programa_object_id = models.PositiveIntegerField(db_index=True, null=True, blank=True)
+    programa = GenericForeignKey('programa_content_type', 'programa_object_id')
+
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField()
     created = models.DateTimeField(auto_now_add=True)
@@ -107,51 +141,57 @@ class CoordinadorPrograma(models.Model):
         ordering = ['-fecha_inicio', '-created']
         verbose_name = 'Coordinador Programa'
         indexes = [
-            models.Index(fields=['programa', 'fecha_inicio']),
-            models.Index(fields=['programa', 'coordinador']),
+            models.Index(fields=['programa_content_type', 'programa_object_id', 'fecha_inicio']),
+            models.Index(fields=['programa_content_type', 'programa_object_id', 'coordinador']),
         ]
 
     def __str__(self):
-        return f"{self.coordinador} — {self.programa} ({self.fecha_inicio} → {self.fecha_fin})"
+        programa_str = str(self.programa) if self.programa else f"Programa {self.programa_object_id}"
+        return f"{self.coordinador} — {programa_str} ({self.fecha_inicio} → {self.fecha_fin})"
 
     def clean(self):
         if self.fecha_fin and self.fecha_inicio and self.fecha_fin < self.fecha_inicio:
             raise ValidationError("La fecha de fin no puede ser anterior a la fecha de inicio.")
 
         qs = CoordinadorPrograma.objects.filter(
-            programa=self.programa,
+            programa_content_type=self.programa_content_type,
+            programa_object_id=self.programa_object_id,
             coordinador=self.coordinador
         )
         if self.pk:
             qs = qs.exclude(pk=self.pk)
 
-        # solapa si: (ini<=fin_existente) y (fin>=ini_existente)
         if self.fecha_inicio and self.fecha_fin and qs.filter(
             fecha_inicio__lte=self.fecha_fin,
             fecha_fin__gte=self.fecha_inicio
         ).exists():
             raise ValidationError("El rango de fechas se solapa con otro periodo para este coordinador en este programa.")
-        
 
 
 class CoordinadorPagos(models.Model):
     coordinador = models.ForeignKey(
         User,
-        on_delete=models.PROTECT,                # evita borrar pagos si borran el usuario
+        on_delete=models.PROTECT,
         related_name='pagos_coordinador'
     )
-    programa = models.ForeignKey(
-        ProgramaPosgrado,
-        on_delete=models.PROTECT,               # evita borrar pagos si borran el programa
-        related_name='pagos_programa'
+
+    # ✅ GFK: Programa (Maestría o Especialidad)
+    programa_content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.PROTECT,
+        limit_choices_to=LIMIT_PROGRAMA_CT,
+        related_name='ct_pagos_programa',
+        null=True, blank=True
     )
+    programa_object_id = models.PositiveIntegerField(db_index=True, null=True, blank=True)
+    programa = GenericForeignKey('programa_content_type', 'programa_object_id')
+
     contrato = models.ForeignKey(
         ContratoCoordinador,
-        on_delete=models.PROTECT,               # evita borrar pagos si borran el contrato
+        on_delete=models.PROTECT,
         related_name='pagos_contrato'
     )
 
-    # Mejor como fecha (primer día del mes pagado) para ordenar/filtrar bien
     mes_pago = models.DateField(
         help_text="Usa el primer día del mes pagado (e.g., 2025-10-01)."
     )
@@ -160,7 +200,6 @@ class CoordinadorPagos(models.Model):
     valor_total = models.DecimalField(max_digits=10, decimal_places=2)
     numero_oficio_tramite = models.CharField(max_length=100, blank=True, null=True)
     moneda = models.CharField(max_length=10, default='USD')
-
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -171,12 +210,11 @@ class CoordinadorPagos(models.Model):
         verbose_name = 'Pago Coordinador'
         verbose_name_plural = 'Pagos Coordinadores'
         indexes = [
-            models.Index(fields=['programa', 'mes_pago']),
+            models.Index(fields=['programa_content_type', 'programa_object_id', 'mes_pago']),
             models.Index(fields=['coordinador', 'mes_pago']),
             models.Index(fields=['contrato', 'numero_factura']),
         ]
         constraints = [
-            # Evita duplicar misma factura para el mismo contrato y mes
             models.UniqueConstraint(
                 fields=['contrato', 'mes_pago', 'numero_factura'],
                 name='uniq_contrato_mes_factura'
@@ -186,29 +224,25 @@ class CoordinadorPagos(models.Model):
     def clean(self):
         errors = {}
 
-        # 1) Valor no negativo
         if self.valor_total is not None and self.valor_total < 0:
             errors['valor_total'] = "El valor no puede ser negativo."
 
-        # 2) Consistencia con el contrato (ContratoCoordinador guarda enteros)
+        # ✅ Consistencia con el contrato (ahora por GFK)
         if self.contrato_id:
-            # coordenador debe coincidir con el ID entero en ContratoCoordinador
             if self.coordinador_id and self.contrato.coordinador != self.coordinador_id:
                 errors['coordinador'] = "El coordinador no coincide con el contrato seleccionado."
-            # programa debe coincidir con el ID entero en ContratoCoordinador
-            if self.programa_id and self.contrato.programadeposgrado != self.programa_id:
+
+            # contrato.programa_content_type / contrato.programa_object_id
+            if self.programa_content_type_id and self.contrato.programa_content_type_id != self.programa_content_type_id:
+                errors['programa'] = "El programa no coincide con el contrato seleccionado."
+            if self.programa_object_id and self.contrato.programa_object_id != self.programa_object_id:
                 errors['programa'] = "El programa no coincide con el contrato seleccionado."
 
         if errors:
             raise ValidationError(errors)
-        
 
 
 class ContratoDocenteGestion(models.Model):
-    """
-    Datos adicionales para cada contrato de docente (1 a 1).
-    NO modifica tu tabla original; solo la complementa.
-    """
     contrato = models.OneToOneField(
         ContratosDocentes,
         on_delete=models.PROTECT,
@@ -218,7 +252,6 @@ class ContratoDocenteGestion(models.Model):
     pago_realizado = models.BooleanField(default=False)
     numero_factura = models.CharField(max_length=100, blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True)
-
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -229,16 +262,11 @@ class ContratoDocenteGestion(models.Model):
         return f"Gestión — Contrato {self.contrato.numerocontrato}"
 
     def clean(self):
-        # Si marcas pagado, pide número de factura (ajústalo si no lo necesitas)
         if self.pago_realizado and not self.numero_factura:
             raise ValidationError({'numero_factura': 'Requerido cuando el pago está marcado como realizado.'})
-        
+
 
 class ContratoTutorGestion(models.Model):
-    """
-    Datos adicionales por cada contrato de tutor.
-    Uno a uno con ContratoTutor (no toca tu tabla original).
-    """
     contrato = models.OneToOneField(
         ContratoTutor,
         on_delete=models.PROTECT,
@@ -249,7 +277,6 @@ class ContratoTutorGestion(models.Model):
     pago_realizado = models.BooleanField(default=False)
     numero_factura = models.CharField(max_length=100, blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True)
-
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -265,19 +292,25 @@ class ContratoTutorGestion(models.Model):
 
 
 class EstudianteProgramaGestion(models.Model):
-    """
-    Datos de pagos y proceso de titulación por estudiante y programa.
-    Uno por (usuario, programa).
-    """
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='gestiones_estudiante')
-    programa = models.ForeignKey(ProgramaPosgrado, on_delete=models.PROTECT, related_name='gestiones_estudiantes')
 
-    # Pagos (según ValorProgramaPosgrado del programa)
+    # ✅ GFK: Programa (Maestría o Especialidad)
+    programa_content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.PROTECT,
+        limit_choices_to=LIMIT_PROGRAMA_CT,
+        related_name='ct_gestion_estudiante_programa',
+        null=True, blank=True
+    )
+    programa_object_id = models.PositiveIntegerField(db_index=True, null=True, blank=True)
+    programa = GenericForeignKey('programa_content_type', 'programa_object_id')
+
+    # Pagos
     pago_inscripcion = models.BooleanField(default=False)
     pago_matricula = models.BooleanField(default=False)
     pago_primera_colegiatura = models.BooleanField(default=False)
     pago_segunda_colegiatura = models.BooleanField(default=False)
-    # NUEVO: solo para plan de 10 cuotas (para plan 2 se ignora)
+
     cuotas_pagadas = models.PositiveSmallIntegerField(
         default=0,
         blank=True,
@@ -313,12 +346,22 @@ class EstudianteProgramaGestion(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = [('usuario', 'programa')]
         ordering = ['-updated', '-created']
         verbose_name = 'Gestión Estudiante en Programa'
+        indexes = [
+            models.Index(fields=['programa_content_type', 'programa_object_id']),
+            models.Index(fields=['usuario', 'updated']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['usuario', 'programa_content_type', 'programa_object_id'],
+                name='uniq_estudiante_programa_gfk'
+            )
+        ]
 
     def __str__(self):
-        return f"{self.usuario.get_full_name()} — {self.programa}"
+        programa_str = str(self.programa) if self.programa else f"Programa {self.programa_object_id}"
+        return f"{self.usuario.get_full_name()} — {programa_str}"
 
     def clean(self):
         # Si marcó tutor_resolucion, pedir fecha (y viceversa) — opcional, descomenta si lo quieres obligatorio en pareja

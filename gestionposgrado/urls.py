@@ -32,6 +32,7 @@ from django.conf.urls.static import static
 from django.conf import settings
 from datosposgrado import views as datosposgrado_views
 from administracionposgrado import views as administracionposgrado_views
+from perfeccionamientodocente import views as perfeccionamientodocente_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -203,7 +204,8 @@ urlpatterns = [
     path('contratosdocentes/create/<int:periodo_id>', datosposgrado_views.contratosdocentes_create, name='contratosdocentes_create'),
     path('contratosdocentesupdate/<int:contratosdocentes_id>/<int:periodo_id>', datosposgrado_views.contratosdocentes_update, name='contratosdocentes_update'),
     path('contratosdocentes/<int:contratosdocentes_id>/<int:periodo_id>/delete', datosposgrado_views.contratosdocentes_delete, name='contratosdocentes_delete'),
-    path('api/modulos/<int:programa_id>/', datosposgrado_views.obtener_modulos_por_maestria, name='obtener_modulos_por_maestria'),
+    # path('api/modulos/<int:programa_id>/', datosposgrado_views.obtener_modulos_por_maestria, name='obtener_modulos_por_maestria'),
+    path('api/modulos/<str:tipo>/<int:programa_id>/', datosposgrado_views.obtener_modulos_por_programa, name='obtener_modulos_por_programa'),
     #Contratos tutores
     path('contratotutor/<int:periodo_id>/', datosposgrado_views.contratotutor, name='contratotutor'),
     path('contratotutor/create/<int:periodo_id>', datosposgrado_views.contratotutor_create, name='contratotutor_create'),
@@ -263,7 +265,47 @@ urlpatterns = [
     path('aulavirtualdocente/<int:programa_id>/<int:modulo_id>/', aulavirtual_views.AulaVirtual_Docente, name='aulavirtual_docente'),
     path('aulavirtualestudiante/<int:programa_id>/', aulavirtual_views.AulaVirtual_Estudiante, name='aulavirtual_estudiante'),
 
+    #PERFECCIONAMIENTO DOCENTE
+    ############################
+    path("perfeccionamientodocente/", perfeccionamientodocente_views.perfeccionamientodocente, name="perfeccionamientodocente"),
+    # Áreas conocimiento
+    path("areasconocimiento/", perfeccionamientodocente_views.areas_list, name="pd_areasconocimiento_list"),
+    path("areasconocimiento/crear/", perfeccionamientodocente_views.area_create, name="pd_areaconocimiento_create"),
+    path("areasconocimiento/<int:area_id>/editar/", perfeccionamientodocente_views.area_update, name="pd_areaconocimiento_update"),
+    path("areasconocimiento/<int:area_id>/eliminar/", perfeccionamientodocente_views.area_delete, name="pd_areaconocimiento_delete"),
 
+    # Subáreas conocimiento
+    path("subareasconocimiento/", perfeccionamientodocente_views.subareas_list, name="pd_subareasconocimiento_list"),
+    path("subareasconocimiento/crear/", perfeccionamientodocente_views.subarea_create, name="pd_subareaconocimiento_create"),
+    path("subareasconocimiento/<int:subarea_id>/editar/", perfeccionamientodocente_views.subarea_update, name="pd_subareaconocimiento_update"),
+    path("subareasconocimiento/<int:subarea_id>/eliminar/", perfeccionamientodocente_views.subarea_delete, name="pd_subareaconocimiento_delete"),
+
+    # Campos conocimiento
+    path("camposconocimiento/", perfeccionamientodocente_views.campos_list, name="pd_camposconocimiento_list"),
+    path("camposconocimiento/crear/", perfeccionamientodocente_views.campo_create, name="pd_campoconocimiento_create"),
+    path("camposconocimiento/<int:campo_id>/editar/", perfeccionamientodocente_views.campo_update, name="pd_campoconocimiento_update"),
+    path("camposconocimiento/<int:campo_id>/eliminar/", perfeccionamientodocente_views.campo_delete, name="pd_campoconocimiento_delete"),
+
+    # PDCursos
+    path("pdcursos/", perfeccionamientodocente_views.cursos_list, name="pd_cursos_list"),
+    path("pdcursos/crear/", perfeccionamientodocente_views.curso_create, name="pd_curso_create"),
+    path("pdcursos/<int:curso_id>/editar/", perfeccionamientodocente_views.curso_update, name="pd_curso_update"),
+    path("pdcursos/<int:curso_id>/eliminar/", perfeccionamientodocente_views.curso_delete, name="pd_curso_delete"),
+    path("ajax/subareas/", perfeccionamientodocente_views.ajax_subareas_por_area, name="pd_ajax_subareas_por_area"),
+    path("ajax/campos/", perfeccionamientodocente_views.ajax_campos_por_subarea, name="pd_ajax_campos_por_subarea"),
+
+    # Participantes PDCursos
+    path("pdparticipantescursos/", perfeccionamientodocente_views.participantes_cursos_list, name="pd_participantescursos_list"),
+    # Detalle por curso
+    path("pdparticipantes/curso/<int:curso_id>/", perfeccionamientodocente_views.participantes_curso_detalle, name="pd_participantes_curso_detalle"),
+    path("pdparticipantes/curso/<int:curso_id>/matricular/", perfeccionamientodocente_views.participantes_curso_matricular, name="pd_participantes_curso_matricular"),
+    # Resultados y eliminar matrícula
+    path("pdparticipantes/<int:participacion_id>/resultados/", perfeccionamientodocente_views.participantes_resultados_update, name="pd_participantes_resultados"),
+    path("pdparticipantes/<int:participacion_id>/eliminar/", perfeccionamientodocente_views.participantes_matricula_delete, name="pd_participantes_eliminar"),
+
+    # Reportes
+    path("pdreportes/", perfeccionamientodocente_views.reportes_cursos_list, name="pd_reportes_list"),
+    path("pdreportes/<int:curso_id>/pdf/", perfeccionamientodocente_views.reporte_curso_pdf, name="pd_reporte_curso_pdf"),
     ############################
 
 

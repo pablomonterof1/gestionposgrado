@@ -1,0 +1,78 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+
+<main class="container py-4">
+    <div class="mb-3">
+        <a href="{% url 'perfeccionamientodocente' %}" class="btn btn-secondary btn-sm"><i class="fa fa-arrow-left"></i>
+            Volver</a>
+    </div>
+    <section class="card p-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="m-0">Campos de conocimiento</h3>
+            <a href="{% url 'pd_campoconocimiento_create' %}" class="btn btn-primary">+ Nuevo campo</a>
+        </div>
+
+        {% if messages %}
+        <div class="mb-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form class="row g-2 mb-3" method="GET">
+            <div class="col-md-6">
+                <select name="subarea" class="form-select">
+                    <option value="">-- Filtrar por subárea --</option>
+                    {% for s in subareas %}
+                    <option value="{{ s.id }}" {% if subarea_id == s.id|stringformat:"s" %}selected{% endif %}>
+                        {{ s.area.codigo }} - {{ s.area.nombre }} | {{ s.codigo }} - {{ s.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6 d-flex gap-2">
+                <button class="btn btn-outline-dark" type="submit">Filtrar</button>
+                <a class="btn btn-outline-secondary" href="{% url 'pd_camposconocimiento_list' %}">Limpiar</a>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered align-middle">
+                <thead>
+                    <tr>
+                        <th>Área</th>
+                        <th>Subárea</th>
+                        <th style="width:120px;">Código</th>
+                        <th>Nombre</th>
+                        <th style="width:140px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in campos %}
+                    <tr>
+                        <td>{{ c.subarea.area.codigo }} - {{ c.subarea.area.nombre }}</td>
+                        <td>{{ c.subarea.codigo }} - {{ c.subarea.nombre }}</td>
+                        <td><b>{{ c.codigo }}</b></td>
+                        <td>{{ c.nombre }}</td>
+                        <td class="d-flex gap-2 justify-content-center">
+                            <a href="{% url 'pd_campoconocimiento_update' c.id %}"
+                                class="btn btn-sm btn-outline-dark" title="Editar" data-bs-toggle="tooltip"><i class="fa fa-pen-to-square"></i></a>
+                            <a href="{% url 'pd_campoconocimiento_delete' c.id %}"
+                                class="btn btn-sm btn-outline-danger" title="Eliminar" data-bs-toggle="tooltip"><i class="fa fa-trash"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No hay campos registrados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+</main>
+
+{% endblock %}

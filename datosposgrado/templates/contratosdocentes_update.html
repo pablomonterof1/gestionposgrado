@@ -1,4 +1,4 @@
-{% extends 'layouts/base.html' %} 
+{% extends 'layouts/base.html' %}
 
 {% block content %}
 
@@ -13,7 +13,7 @@
           Contrato docente - Actualizar
         </h3>
         <p class="mb-0 text-muted">
-          <strong>Periodo:</strong> {{ periodoacademico }}
+          <strong>Periodo:</strong> {{ periodoacademico.nombre }}
         </p>
       </div>
       <div>
@@ -25,7 +25,7 @@
 
     <div class="card-body" style="padding: 2rem;">
 
-      {% if messages %}   
+      {% if messages %}
         <div class="mb-3">
           {% for message in messages %}
             <div class="alert alert-{{ message.tags }}">
@@ -38,57 +38,90 @@
       <form action="{% url 'contratosdocentes_update' contratodocente.id periodo_id %}" method="POST">
         {% csrf_token %}
 
-        <!-- Bloque 1: Docente, Programa, Módulo -->
+        <!-- Bloque 1: Docente, Programa, Módulo, Tipo Docente -->
         <div class="border rounded-3 p-3 mb-4 bg-light">
           <h5 class="mb-3">
             <i class="fa fa-chalkboard-teacher me-2"></i> Asignación del docente
           </h5>
 
           <div class="row g-3">
-            <div class="col-md-4">
+
+            <!-- Docente -->
+            <div class="col-md-6">
               <label for="selectdocente" class="form-label fw-semibold">
                 Docente
               </label>
-              <select name="docente" class="form-select" id="selectdocente" aria-label="Default select example">
+              <select name="docente" class="form-select" id="selectdocente">
                 <option selected disabled>Seleccione un docente</option>
                 {% for docente in docentes_list %}
                   <option value="{{ docente.id }}"
-                    {% if contratodocente.docente == docente.user.id %} selected {% endif %}>
-                    {{ docente.user.get_full_name }}
+                    {% if initial_docente_id == docente.id %} selected {% endif %}>
+                    {{ docente.user.get_full_name }} - {{ docente.user.perfilusuario.ci }}
                   </option>
                 {% endfor %}
               </select>
             </div>
 
-            <div class="col-md-4">
+            <!-- Programa -->
+            <div class="col-md-6">
               <label for="selectprogramadeposgrado" class="form-label fw-semibold">
                 Programa de posgrado
               </label>
-              <select name="programadeposgrado" class="form-select" id="selectprogramadeposgrado" aria-label="Default select example">
+
+              <!-- ✅ GFK: programa_mix -->
+              <select name="programa_mix" class="form-select" id="selectprogramadeposgrado">
                 <option selected disabled>Seleccione un programa de posgrado</option>
-                {% for programadeposgrado in programasdeposgrado_list %}
-                  <option value="{{ programadeposgrado.id }}"
-                    {% if contratodocente.programadeposgrado == programadeposgrado.id %} selected {% endif %}>
-                    {{ programadeposgrado.maestria.nombre }}
+
+                <optgroup label="Maestrías">
+                  {% for p in programas_m %}
+                    <option value="PP-{{ p.id }}"
+                      {% if initial_programa_tipo == "PP" and initial_programa_id == p.id %} selected {% endif %}>
+                      {{ p.periodo_obj.nombre }} - {{ p.maestria_obj.nombre }}
+                    </option>
+                  {% endfor %}
+                </optgroup>
+
+                <optgroup label="Especialidades Médicas">
+                  {% for p in programas_e %}
+                    <option value="EM-{{ p.id }}"
+                      {% if initial_programa_tipo == "EM" and initial_programa_id == p.id %} selected {% endif %}>
+                      {{ p.periodo_obj.nombre }} - {{ p.especialidad_obj.nombre }}
+                    </option>
+                  {% endfor %}
+                </optgroup>
+
+              </select>
+            </div>
+
+            <!-- Módulo -->
+            <div class="col-md-6">
+              <label for="selectmodulo" class="form-label fw-semibold">
+                Módulo
+              </label>
+
+              <!-- ✅ GFK: modulo_mix -->
+              <select name="modulo_mix" class="form-select" id="selectmodulo">
+                <option selected disabled>Seleccione un módulo</option>
+
+                {# ✅ En update, precargamos módulos según el programa actual #}
+                {% for m in modulos_list %}
+                  <option value="{{ m.mix }}"
+                    {% if initial_modulo_mix == m.mix %} selected {% endif %}>
+                    {{ m.nombre }}
                   </option>
                 {% endfor %}
               </select>
             </div>
 
-            <div class="col-md-4">
-              <label for="selectmodulo" class="form-label fw-semibold">
-                Módulo
-              </label>
-              <select name="modulo" class="form-select" id="selectmodulo">
-                <option selected disabled>Seleccione un módulo</option>
-                {% for modulo in modulos_list %}
-                  <option value="{{ modulo.id }}"
-                    {% if contratodocente.modulo == modulo.id %} selected {% endif %}>
-                    {{ modulo.nombre }}
-                  </option>
-                {% endfor %}
+            <!-- Tipo docente (solo EM) -->
+            <div class="col-md-6 {% if not show_docente_tipo %}d-none{% endif %}" id="box_docente_tipo">
+              <label class="form-label fw-semibold">Tipo de docente</label>
+              <select name="docente_tipo" class="form-select">
+                <option value="1" {% if contratodocente.docente_tipo == 1 %}selected{% endif %}>Docente</option>
+                <option value="2" {% if contratodocente.docente_tipo == 2 %}selected{% endif %}>Docente de práctica asistencial</option>
               </select>
             </div>
+
           </div>
         </div>
 
@@ -100,30 +133,22 @@
 
           <div class="row g-3">
             <div class="col-md-3">
-              <label for="horasacademicas" class="form-label fw-semibold">
-                Horas académicas
-              </label>
+              <label class="form-label fw-semibold">Horas académicas</label>
               {{ form.horasacademicas }}
             </div>
 
             <div class="col-md-3">
-              <label for="valorxhora" class="form-label fw-semibold">
-                Valor por hora
-              </label>
+              <label class="form-label fw-semibold">Valor por hora</label>
               {{ form.valorxhora }}
             </div>
 
             <div class="col-md-3">
-              <label for="certificacionpresupuestaria" class="form-label fw-semibold">
-                Certificación presupuestaria
-              </label>
+              <label class="form-label fw-semibold">Certificación presupuestaria</label>
               {{ form.certificacionpresupuestaria }}
             </div>
 
             <div class="col-md-3">
-              <label for="fechacertificacionpresupuestaria" class="form-label fw-semibold">
-                Fecha - Certificación presupuestaria
-              </label>
+              <label class="form-label fw-semibold">Fecha - Certificación presupuestaria</label>
               {{ form.fechacertificacionpresupuestaria }}
             </div>
           </div>
@@ -137,37 +162,27 @@
 
           <div class="row g-3">
             <div class="col-md-4">
-              <label for="plazo" class="form-label fw-semibold">
-                Plazo
-              </label>
+              <label class="form-label fw-semibold">Plazo</label>
               {{ form.plazo }}
             </div>
 
             <div class="col-md-4">
-              <label for="numerocontrato" class="form-label fw-semibold">
-                Número de contrato
-              </label>
+              <label class="form-label fw-semibold">Número de contrato</label>
               {{ form.numerocontrato }}
             </div>
 
             <div class="col-md-4">
-              <label for="numeromemorandotthh" class="form-label fw-semibold">
-                Número de Memorando TTHH
-              </label>
+              <label class="form-label fw-semibold">Número de Memorando TTHH</label>
               {{ form.numeromemorandotthh }}
             </div>
 
             <div class="col-md-4">
-              <label for="tipopersonalacademico" class="form-label fw-semibold">
-                Tipo de personal académico
-              </label>
+              <label class="form-label fw-semibold">Tipo de personal académico</label>
               {{ form.tipopersonalacademico }}
             </div>
 
             <div class="col-md-4">
-              <label for="adenda" class="form-label fw-semibold">
-                Adenda
-              </label>
+              <label class="form-label fw-semibold">Adenda</label>
               {{ form.adenda }}
             </div>
           </div>
@@ -181,16 +196,12 @@
 
           <div class="row g-3">
             <div class="col-md-12">
-              <label for="observaciones" class="form-label fw-semibold">
-                Observaciones
-              </label>
+              <label class="form-label fw-semibold">Observaciones</label>
               {{ form.observaciones }}
             </div>
 
             <div class="col-md-12">
-              <label for="urldocumento" class="form-label fw-semibold">
-                URL del Documento
-              </label>
+              <label class="form-label fw-semibold">URL del Documento</label>
               {{ form.urldocumento }}
             </div>
           </div>
@@ -214,19 +225,29 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
   $(document).ready(function () {
-    $('#selectdocente').select2({
-      placeholder: "Seleccione un docente",
-      width: '100%'
-    });
-    $('#selectprogramadeposgrado').select2({
-      placeholder: "Seleccione un programa de posgrado",
-      width: '100%'
-    });
+
+    $('#selectdocente').select2({ width: '100%' });
+    $('#selectprogramadeposgrado').select2({ width: '100%' });
+    $('#selectmodulo').select2({ width: '100%' });
 
     $('#selectprogramadeposgrado').on('change', function () {
-      let programaId = $(this).val();
+      let value = $(this).val(); // "PP-12" o "EM-5"
+      if (!value || value.indexOf('-') === -1) return;
+
+      let parts = value.split('-');
+      let tipo = parts[0];       // PP / EM
+      let programaId = parts[1];
+
+      // ✅ Mostrar tipo docente solo para EM (igual que create)
+      if (tipo === 'EM') {
+        $('#box_docente_tipo').removeClass('d-none').show();
+      } else {
+        $('#box_docente_tipo').addClass('d-none').hide();
+        $('select[name="docente_tipo"]').val('1');
+      }
 
       // Limpiar y desactivar el select de módulos mientras se carga
       $('#selectmodulo').empty()
@@ -234,14 +255,19 @@
         .prop('disabled', true);
 
       $.ajax({
-        url: `/api/modulos/${programaId}/`,
+        url: `/api/modulos/${tipo}/${programaId}/`,
         type: 'GET',
         success: function (modulos) {
           $('#selectmodulo').empty().append('<option selected disabled>Seleccione un módulo</option>');
+
+          // ✅ El endpoint ya devuelve modulo.mix: "M-33" o "MEM-8"
           modulos.forEach(modulo => {
-            $('#selectmodulo').append(`<option value="${modulo.id}">${modulo.nombre}</option>`);
+            $('#selectmodulo').append(`<option value="${modulo.mix}">${modulo.nombre}</option>`);
           });
+
+          // ✅ evitar valor viejo pegado con select2
           $('#selectmodulo').prop('disabled', false);
+          $('#selectmodulo').val(null).trigger('change');
         },
         error: function () {
           $('#selectmodulo').empty().append('<option selected disabled>Error al cargar</option>');
@@ -249,10 +275,6 @@
       });
     });
 
-    $('#selectmodulo').select2({
-      placeholder: "Seleccione un módulo",
-      width: '100%'
-    });
   });
 </script>
 

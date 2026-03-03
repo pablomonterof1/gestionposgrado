@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'seleccionperfiles',
     'aulavirtual',
     'administracionposgrado',
+    'perfeccionamientodocente',
 ]
 
 MESSAGE_TAGS = {

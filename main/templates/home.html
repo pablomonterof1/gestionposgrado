@@ -17,7 +17,7 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ">
                         <div class="nav-divider"></div>
-                        {% if tiene_permiso_edicion or tiene_permiso_coordinador  %}
+                        {% if tiene_permiso_edicion or tiene_permiso_coordinador or tiene_permiso_analista %}
                         <li class="nav-item">
                             <a class="nav-link fs-5" aria-current="page" href="{% url 'periodosacademicosmain' %}"
                                 style="color: white !important;">
@@ -38,6 +38,15 @@
                             <a class="nav-link fs-5" aria-current="page" href="{% url 'periodosacademicosdp' %}"
                                 style="color: white !important;">
                                 Base de datos Pogrado
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if tiene_permiso_edicion or tiene_permiso_tecnico %}
+                        <div class="nav-divider"></div>
+                        <li class="nav-item">
+                            <a class="nav-link fs-5" aria-current="page" href="{% url 'perfeccionamientodocente' %}"
+                                style="color: white !important;">
+                                Perfeccionamiento Docente
                             </a>
                         </li>
                         {% endif %}

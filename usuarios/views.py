@@ -259,10 +259,18 @@ def perfil_password(request):
 
 @login_required
 def datosUsuario(request):
-    usuarios_sin_perfil = User.objects.filter(perfilusuario__isnull=True)
-    for usuario in usuarios_sin_perfil:
-        PerfilUsuario.objects.create(user=usuario)
-    datosUsuario_list = User.objects.filter(is_active=1)
+    # 1) Crear perfiles faltantes en batch (1 query para traer IDs + 1 bulk_create)
+    usuarios_ids_sin_perfil = list(
+        User.objects.filter(perfilusuario__isnull=True).values_list('id', flat=True)
+    )
+
+    if usuarios_ids_sin_perfil:
+        perfiles = [PerfilUsuario(user_id=uid) for uid in usuarios_ids_sin_perfil]
+        PerfilUsuario.objects.bulk_create(perfiles, ignore_conflicts=True)
+
+    # 2) Traer usuarios activos + su perfil en la misma consulta (evita N+1 en template)
+    datosUsuario_list = User.objects.filter(is_active=True).select_related('perfilusuario')
+
     return render(request, 'gestionusuarios.html', {
         'datosUsuario_list': datosUsuario_list
     })
@@ -848,6 +856,7 @@ def DocentesMatriculadosModuloM(request, programa_id):
 
     for modulo in modulos:
         docentesmatriculados = MatriculaDocenteModulo.objects.filter(
+            programa=programa.id,
             content_type=modulo_ct,
             object_id=modulo.id
         )
@@ -874,11 +883,11 @@ def DocentesMatricularModuloM(request, programa_id):
 
         modulo_ct = ContentType.objects.get_for_model(Modulos)
 
-        obj, created = MatriculaDocenteModulo.objects.get_or_create(
-            docente=docente,
+        obj, created = MatriculaDocenteModulo.objects.update_or_create(
+            programa=programa.id,
             content_type=modulo_ct,
             object_id=modulo.id,
-            programa=programa.id
+            defaults={'docente': docente}
         )
 
         if created:

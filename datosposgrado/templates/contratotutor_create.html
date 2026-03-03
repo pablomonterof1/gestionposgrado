@@ -4,7 +4,7 @@
 
 <main class="container py-5">
   <section class="card border-0 shadow-sm">
-    
+
     <!-- Encabezado -->
     <div class="card-header bg-light d-flex justify-content-between align-items-center">
       <div>
@@ -38,8 +38,6 @@
         </div>
       {% endif %}
 
-      {{ error }}
-
       <form action="{% url 'contratotutor_create' periodo_id %}" method="POST">
         {% csrf_token %}
 
@@ -57,23 +55,34 @@
               <select name="tutor" class="form-select" id="selecttutor" aria-label="Seleccione un Tutor, por favor">
                 <option selected disabled>Seleccione un Tutor, por favor</option>
                 {% for tutor in tutor_list %}
-                  <option value="{{ tutor.id }}">{{ tutor.user.get_full_name }}</option>
+                  <option value="{{ tutor.id }}">{{ tutor.user.get_full_name }} - {{ tutor.user.perfilusuario.ci }}</option>
                 {% endfor %}
               </select>
             </div>
 
             <div class="col-md-4">
-              <label for="selectprogramadeposgrado" class="form-label fw-semibold">
+              <label for="selectprograma" class="form-label fw-semibold">
                 Programa de posgrado
               </label>
-              <select name="programadeposgrado" class="form-select" id="selectprogramadeposgrado"
-                      aria-label="Seleccione un programa de posgrado">
+              <select name="programa_mix" class="form-select" id="selectprograma" aria-label="Seleccione un programa de posgrado">
                 <option selected disabled>Seleccione un programa de posgrado</option>
-                {% for programadeposgrado in programasdeposgrado_list %}
-                  <option value="{{ programadeposgrado.id }}">
-                    {{ programadeposgrado.periodoacademico }} - {{ programadeposgrado.maestria.nombre }}
-                  </option>
-                {% endfor %}
+
+                <optgroup label="Maestrías">
+                  {% for p in programas_pp %}
+                    <option value="PP-{{ p.id }}">
+                      {{ periodoacademico.nombre }} - {{ p.nombre_programa }}
+                    </option>
+                  {% endfor %}
+                </optgroup>
+
+                <optgroup label="Especialidades Médicas">
+                  {% for p in programas_em %}
+                    <option value="EM-{{ p.id }}">
+                      {{ periodoacademico.nombre }} - {{ p.nombre_programa }}
+                    </option>
+                  {% endfor %}
+                </optgroup>
+
               </select>
             </div>
 
@@ -93,18 +102,18 @@
           </div>
         </div>
 
-        <!-- Bloque 2: Modalidad, plazo, certificación -->
+        <!-- Bloque 2: Plazo, certificación y valor -->
         <div class="border rounded-3 p-3 mb-4">
           <h5 class="mb-3">
-            <i class="fa fa-file-alt me-2"></i> Modalidad, plazo y certificación
+            <i class="fa fa-file-alt me-2"></i> Plazo, certificación y valor
           </h5>
 
           <div class="row g-3">
             <div class="col-md-4">
-              <label for="modalidad" class="form-label fw-semibold">
+              <label class="form-label fw-semibold">
                 Modalidad
               </label>
-              {{ form.plazo }}
+              <input type="text" class="form-control" value="Según programa seleccionado" disabled>
             </div>
 
             <div class="col-md-4">
@@ -217,48 +226,9 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
   $(document).ready(function () {
-    $('#selecttutor').select2({
-      placeholder: "Seleccione un Tutor, por favor",
-      width: '100%'
-    });
-    $('#selectprogramadeposgrado').select2({
-      placeholder: "Seleccione un programa de posgrado",
-      width: '100%'
-    });
-
-    $('#selectmaestrante').select2({
-      placeholder: "Seleccione un maestrante, por favor",
-      width: '100%'
-    });
-
-    $('#selectprogramadeposgrado').on('change', function () {
-      let programaId = $(this).val();
-
-      // Limpiar y desactivar el select de módulos mientras se carga
-      $('#selectmodulo').empty()
-        .append('<option selected disabled>Cargando módulos...</option>')
-        .prop('disabled', true);
-
-      $.ajax({
-        url: `/api/modulos/${programaId}/`,
-        type: 'GET',
-        success: function (modulos) {
-          $('#selectmodulo').empty().append('<option selected disabled>Seleccione un módulo</option>');
-          modulos.forEach(modulo => {
-            $('#selectmodulo').append(`<option value="${modulo.id}">${modulo.nombre}</option>`);
-          });
-          $('#selectmodulo').prop('disabled', false);
-        },
-        error: function () {
-          $('#selectmodulo').empty().append('<option selected disabled>Error al cargar</option>');
-        }
-      });
-    });
-
-    $('#selectmodulo').select2({
-      placeholder: "Seleccione un módulo",
-      width: '100%'
-    });
+    $('#selecttutor').select2({ placeholder: "Seleccione un Tutor, por favor", width: '100%' });
+    $('#selectprograma').select2({ placeholder: "Seleccione un programa de posgrado", width: '100%' });
+    $('#selectmaestrante').select2({ placeholder: "Seleccione un maestrante, por favor", width: '100%' });
   });
 </script>
 

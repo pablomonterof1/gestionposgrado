@@ -1,27 +1,29 @@
 {% extends 'layouts/base.html' %}
-
 {% block content %}
 
 <main class="container py-5">
 
   <section class="card border-0 shadow-sm">
+
     <!-- Encabezado -->
     <div class="card-header bg-light d-flex justify-content-between align-items-center">
       <div>
         <h3 class="mb-0">
-          <i class="fa fa-file-signature me-2"></i>
+          <i class="fa fa-file-contract me-2"></i>
           Crear contrato - Coordinador
         </h3>
         <div class="text-muted mt-1" style="font-size: 1.05em;">
           Período: <strong>{{ periodoacademico.nombre }}</strong>
         </div>
       </div>
+
       <div class="text-end">
         <p class="mb-1 small text-muted">
           Si el coordinador no se encuentra en la lista, debe crear un nuevo registro.
         </p>
+        {# Ajusta esta URL si tu ruta se llama distinto #}
         <a class="btn btn-sm btn-primary" href="{% url 'coordinadordp_create' periodo_id %}">
-          <i class="fa fa-user-plus me-1"></i> Crear nuevo coordinador
+          <i class="fa fa-user-plus me-1"></i> Crear coordinador
         </a>
       </div>
     </div>
@@ -31,168 +33,201 @@
       {% if messages %}
         <div class="mb-3">
           {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
+            <div class="alert alert-{{ message.tags }} mb-2">
               {{ message }}
             </div>
           {% endfor %}
         </div>
       {% endif %}
 
+      {# Errores del form (útil para ver qué campo falla) #}
+      {% if form.errors %}
+        <div class="alert alert-danger">
+          <strong>Revise los campos:</strong>
+          <ul class="mb-0">
+            {% for field in form %}
+              {% for error in field.errors %}
+                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+              {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
       <form action="{% url 'contratocoordinador_create' periodo_id %}" method="POST">
         {% csrf_token %}
 
-        <!-- Bloque 1: Datos del coordinador y programa -->
+        <!-- Bloque 1: Coordinador y programa -->
         <div class="border rounded-3 p-3 mb-4 bg-light">
           <h5 class="mb-3">
-            <i class="fa fa-user-tie me-2"></i> Datos del coordinador y programa
+            <i class="fa fa-user-tie me-2"></i> Coordinador y programa
           </h5>
 
           <div class="row g-3">
-            <div class="col-md-6">
-              <label for="selectcoordinador" class="form-label fw-semibold">
-                Coordinador
-              </label>
-              <select name="coordinador" class="form-select" id="selectcoordinador" aria-label="Seleccione un coordinador">
-                <option selected disabled>Seleccione un Coordinador</option>
-                {% for coordinador in coordinadores_list %}
-                  <option value="{{ coordinador.id }}">{{ coordinador.user.get_full_name }}</option>
-                {% endfor %}
-              </select>
-            </div>
 
+            <!-- Coordinador -->
             <div class="col-md-6">
-              <label for="selectprogramadeposgrado" class="form-label fw-semibold">
-                Programa de posgrado
-              </label>
-              <select name="programadeposgrado" class="form-select" id="selectprogramadeposgrado"
-                      aria-label="Seleccione un programa de posgrado">
-                <option selected disabled>Seleccione un programa de posgrado</option>
-                {% for programadeposgrado in programasdeposgrado_list %}
-                  <option value="{{ programadeposgrado.id }}">
-                    {{ programadeposgrado.periodoacademico.nombre }} - {{ programadeposgrado.maestria.nombre }}
+              <label class="form-label fw-semibold">Coordinador</label>
+              <select name="coordinador" class="form-select" id="selectcoordinador" required>
+                <option value="" selected disabled>Seleccione un coordinador</option>
+                {% for c in coordinadores_list %}
+                  <option value="{{ c.id }}"
+                    {% if request.POST.coordinador == c.id|stringformat:"s" %}selected{% endif %}>
+                    {{ c.user.get_full_name }} - {{ c.user.perfilusuario.ci }}
                   </option>
                 {% endfor %}
               </select>
             </div>
+
+            <!-- Programa (programa_mix desde el FORM para que coincida con choices) -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Programa de posgrado</label>
+
+              {# IMPORTANTÍSIMO: usar el field del form para no romper invalid_choice #}
+              {{ form.programa_mix }}
+
+              {% if form.programa_mix.errors %}
+                <div class="text-danger small mt-1">
+                  {{ form.programa_mix.errors }}
+                </div>
+              {% endif %}
+            </div>
+
           </div>
         </div>
 
         <!-- Bloque 2: Certificación, plazo y fechas -->
         <div class="border rounded-3 p-3 mb-4">
           <h5 class="mb-3">
-            <i class="fa fa-file-alt me-2"></i> Certificación, plazo y fechas del contrato
+            <i class="fa fa-file-alt me-2"></i> Certificación, plazo y fechas
           </h5>
 
           <div class="row g-3">
-            <div class="col-md-5">
-              <label for="certificacionpresupuestaria" class="form-label fw-semibold">
-                Certificación presupuestaria
-              </label>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Certificación presupuestaria</label>
               {{ form.certificacionpresupuestaria }}
+              {% if form.certificacionpresupuestaria.errors %}
+                <div class="text-danger small mt-1">{{ form.certificacionpresupuestaria.errors }}</div>
+              {% endif %}
             </div>
 
-            <div class="col-md-5">
-              <label for="fechacertificacionpresupuestaria" class="form-label fw-semibold">
-                Fecha - Certificación presupuestaria
-              </label>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Fecha - Certificación</label>
               {{ form.fechacertificacionpresupuestaria }}
+              {% if form.fechacertificacionpresupuestaria.errors %}
+                <div class="text-danger small mt-1">{{ form.fechacertificacionpresupuestaria.errors }}</div>
+              {% endif %}
             </div>
 
-            <div class="col-md-2">
-              <label for="plazo" class="form-label fw-semibold">
-                Plazo (Opcional)
-              </label>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Plazo</label>
               {{ form.plazo }}
-              <small class="text-muted d-block">
-                Puede seguir usando texto si es un caso especial.
-              </small>
+              {% if form.plazo.errors %}
+                <div class="text-danger small mt-1">{{ form.plazo.errors }}</div>
+              {% endif %}
             </div>
 
-            <div class="col-md-3">
-              <label for="fechainicio" class="form-label fw-semibold">
-                Fecha de inicio (Contrato)
-              </label>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Fecha inicio</label>
               {{ form.fechainicio }}
+              {% if form.fechainicio.errors %}
+                <div class="text-danger small mt-1">{{ form.fechainicio.errors }}</div>
+              {% endif %}
             </div>
 
-            <div class="col-md-3">
-              <label for="fechafin" class="form-label fw-semibold">
-                Fecha de fin (Contrato)
-              </label>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Fecha fin</label>
               {{ form.fechafin }}
+              {% if form.fechafin.errors %}
+                <div class="text-danger small mt-1">{{ form.fechafin.errors }}</div>
+              {% endif %}
             </div>
 
-            <div class="col-md-3">
-              <label for="honorario" class="form-label fw-semibold">
-                Honorario
-              </label>
-              {{ form.honorario }}
-            </div>
           </div>
         </div>
 
-        <!-- Bloque 3: Identificación y datos administrativos -->
+        <!-- Bloque 3: Honorario y datos del contrato -->
         <div class="border rounded-3 p-3 mb-4 bg-light">
           <h5 class="mb-3">
-            <i class="fa fa-hashtag me-2"></i> Identificación y datos administrativos
+            <i class="fa fa-coins me-2"></i> Honorario y datos del contrato
           </h5>
 
           <div class="row g-3">
             <div class="col-md-4">
-              <label for="numerocontrato" class="form-label fw-semibold">
-                Número de contrato
-              </label>
+              <label class="form-label fw-semibold">Honorario</label>
+              {{ form.honorario }}
+              {% if form.honorario.errors %}
+                <div class="text-danger small mt-1">{{ form.honorario.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Número de contrato</label>
               {{ form.numerocontrato }}
+              {% if form.numerocontrato.errors %}
+                <div class="text-danger small mt-1">{{ form.numerocontrato.errors }}</div>
+              {% endif %}
             </div>
 
             <div class="col-md-4">
-              <label for="cargo" class="form-label fw-semibold">
-                Cargo
-              </label>
+              <label class="form-label fw-semibold">Cargo</label>
               {{ form.cargo }}
+              {% if form.cargo.errors %}
+                <div class="text-danger small mt-1">{{ form.cargo.errors }}</div>
+              {% endif %}
             </div>
 
             <div class="col-md-4">
-              <label for="noactasseleccion" class="form-label fw-semibold">
-                Número de acta de selección
-              </label>
+              <label class="form-label fw-semibold">No. Actas de Selección</label>
               {{ form.noactasseleccion }}
+              {% if form.noactasseleccion.errors %}
+                <div class="text-danger small mt-1">{{ form.noactasseleccion.errors }}</div>
+              {% endif %}
             </div>
 
             <div class="col-md-4">
-              <label for="oficioentregadoporth" class="form-label fw-semibold">
-                Oficio entregado por TTHH
-              </label>
+              <label class="form-label fw-semibold">Oficio entregado por TH</label>
               {{ form.oficioentregadoporth }}
+              {% if form.oficioentregadoporth.errors %}
+                <div class="text-danger small mt-1">{{ form.oficioentregadoporth.errors }}</div>
+              {% endif %}
             </div>
 
             <div class="col-md-4">
-              <label for="modalidadcontractuar" class="form-label fw-semibold">
-                Modalidad Contractuar
-              </label>
+              <label class="form-label fw-semibold">Modalidad contractuar</label>
               {{ form.modalidadcontractuar }}
+              {% if form.modalidadcontractuar.errors %}
+                <div class="text-danger small mt-1">{{ form.modalidadcontractuar.errors }}</div>
+              {% endif %}
             </div>
           </div>
         </div>
 
-        <!-- Bloque 4: Observaciones y URL -->
+        <!-- Bloque 4: Observaciones y documento -->
         <div class="border rounded-3 p-3 mb-4">
           <h5 class="mb-3">
             <i class="fa fa-comment-dots me-2"></i> Observaciones y documento
           </h5>
 
-          <div class="mb-3">
-            <label for="observaciones" class="form-label fw-semibold">
-              Observaciones
-            </label>
-            {{ form.observaciones }}
-          </div>
+          <div class="row g-3">
+            <div class="col-md-12">
+              <label class="form-label fw-semibold">Observaciones</label>
+              {{ form.observaciones }}
+              {% if form.observaciones.errors %}
+                <div class="text-danger small mt-1">{{ form.observaciones.errors }}</div>
+              {% endif %}
+            </div>
 
-          <div class="mb-3">
-            <label for="urldocumento" class="form-label fw-semibold">
-              URL del Documento
-            </label>
-            {{ form.urldocumento }}
+            <div class="col-md-12">
+              <label class="form-label fw-semibold">URL del Documento</label>
+              {{ form.urldocumento }}
+              {% if form.urldocumento.errors %}
+                <div class="text-danger small mt-1">{{ form.urldocumento.errors }}</div>
+              {% endif %}
+            </div>
           </div>
         </div>
 
@@ -215,46 +250,17 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
-  $(document).ready(function () {
-    $('#selectcoordinador').select2({
-      placeholder: "Seleccione un coordinador",
-      width: '100%'
-    });
-    $('#selectprogramadeposgrado').select2({
-      placeholder: "Seleccione un programa de posgrado",
-      width: '100%'
-    });
+$(document).ready(function () {
+  $('#selectcoordinador').select2({ width: '100%' });
 
-    $('#selectprogramadeposgrado').on('change', function () {
-      let programaId = $(this).val();
-
-      // Limpiar y desactivar el select de módulos mientras se carga
-      $('#selectmodulo').empty()
-        .append('<option selected disabled>Cargando módulos...</option>')
-        .prop('disabled', true);
-
-      $.ajax({
-        url: `/api/modulos/${programaId}/`,
-        type: 'GET',
-        success: function (modulos) {
-          $('#selectmodulo').empty().append('<option selected disabled>Seleccione un módulo</option>');
-          modulos.forEach(modulo => {
-            $('#selectmodulo').append(`<option value="${modulo.id}">${modulo.nombre}</option>`);
-          });
-          $('#selectmodulo').prop('disabled', false);
-        },
-        error: function () {
-          $('#selectmodulo').empty().append('<option selected disabled>Error al cargar</option>');
-        }
-      });
-    });
-
-    $('#selectmodulo').select2({
-      placeholder: "Seleccione un módulo",
-      width: '100%'
-    });
+  // programa_mix viene como <select> del form
+  $('#id_programa_mix').select2({
+    width: '100%',
+    placeholder: "Seleccione un programa"
   });
+});
 </script>
 
 {% endblock %}

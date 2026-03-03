@@ -1,0 +1,97 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+
+<main class="container py-5">
+  <section class="card" style="padding: 2%;">
+
+    <h3 class="display-6">Matricular participantes</h3>
+    <br>
+
+    <p class="lead">
+      <b>Curso:</b> {{ curso.nombre }}
+    </p>
+
+    <div class="mb-3">
+      <a class="btn btn-sm btn-danger" href="{% url 'pd_participantes_curso_detalle' curso.id %}">
+        Regresar
+      </a>
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-info">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <div class="table-responsive">
+      <table id="docentes_matricular" class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th scope="col" style="width:60px;">#</th>
+            <th scope="col">Nombre</th>
+            <th scope="col">Programa</th>
+            <th scope="col" style="width:140px;">CI</th>
+            <th scope="col" style="width:100px;">Matricular</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in usuarios_info %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ item.user.get_full_name }}</td>
+            <td>
+              {% if item.programa == "SIN PROGRAMA" %}
+                <span class="badge bg-secondary">SIN PROGRAMA</span>
+              {% else %}
+                {{ item.programa }}
+              {% endif %}
+            </td>
+            <td>
+              {% if item.user.perfilusuario.ci %}
+                {{ item.user.perfilusuario.ci }}
+              {% else %}
+                {{ item.user.username }}
+              {% endif %}
+            </td>
+
+            <td>
+              <form method="POST" action="{% url 'pd_participantes_curso_matricular' curso.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="usuario" value="{{ item.user.id }}">
+                <button type="submit" class="btn btn-success btn-sm">
+                  Matricular
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+</main>
+
+<script>
+  $(document).ready(function () {
+    $('#docentes_matricular').DataTable({
+      "pageLength": 25,
+      "language": {
+        "lengthMenu": "Mostrar _MENU_ registros por página",
+        "zeroRecords": "No se encontraron resultados",
+        "info": "Mostrando página _PAGE_ de _PAGES_",
+        "infoEmpty": "No hay registros disponibles",
+        "infoFiltered": "(filtrado de _MAX_ registros totales)",
+        "search": "Buscar:",
+        "paginate": {
+          "first": "Primera",
+          "last": "Última",
+          "next": "Siguiente",
+          "previous": "Anterior"
+        },
+      }
+    });
+  });
+</script>
+
+{% endblock %}

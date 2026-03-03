@@ -13,7 +13,7 @@
           Contrato Tutor - Actualizar
         </h3>
         <p class="mb-0 text-muted">
-          <strong>Periodo:</strong> {{ periodoacademico }}
+          <strong>Periodo:</strong> {{ periodoacademico.nombre }}
         </p>
       </div>
       <div>
@@ -25,10 +25,10 @@
 
     <div class="card-body" style="padding: 2rem;">
 
-      {% if messages %}   
+      {% if messages %}
         <div class="mb-3">
           {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
+            <div class="alert alert-{{ message.tags }} mb-2">
               {{ message }}
             </div>
           {% endfor %}
@@ -38,59 +38,58 @@
       <form action="{% url 'contratotutor_update' contratotutor.id periodo_id %}" method="POST">
         {% csrf_token %}
 
-        <!-- Bloque 1: Asignación tutor / programa / maestrante -->
+        <!-- Bloque 1 -->
         <div class="border rounded-3 p-3 mb-4 bg-light">
           <h5 class="mb-3">
             <i class="fa fa-users me-2"></i> Asignación del tutor y maestrante
           </h5>
 
           <div class="row g-3">
+
+            <!-- Tutor -->
             <div class="col-md-4">
-              <label for="selecttutor" class="form-label fw-semibold">
-                Tutor
-              </label>
-              <select name="tutor" class="form-select" id="selecttutor" aria-label="Default select example">
-                <option selected disabled>Seleccione un docente</option>
+              <label class="form-label fw-semibold">Tutor</label>
+              <select name="tutor" class="form-select" id="selecttutor">
+                <option disabled>Seleccione un tutor</option>
                 {% for tutor in tutor_list %}
-                  <option value="{{ tutor.id }}" {% if contratotutor.tutor == tutor.user.id %} selected {% endif %}>
-                    {{ tutor.user.get_full_name }}
+                  <option value="{{ tutor.id }}" {% if contratotutor.tutor == tutor.user.id %}selected{% endif %}>
+                    {{ tutor.user.get_full_name }} - {{ tutor.user.perfilusuario.ci }}
                   </option>
                 {% endfor %}
               </select>
             </div>
 
+            <!-- Programa (✅ USAR EL CAMPO DEL FORM) -->
             <div class="col-md-4">
-              <label for="selectprogramadeposgrado" class="form-label fw-semibold">
-                Programa de posgrado
-              </label>
-              <select name="programadeposgrado" class="form-select" id="selectprogramadeposgrado" aria-label="Default select example">
-                <option selected disabled>Seleccione un programa de posgrado</option>
-                {{ programadeposgrado.periodoacademico.nombre }} - 
-                {% for programadeposgrado in programasdeposgrado_list %}
-                  <option value="{{ programadeposgrado.id }}" {% if contratotutor.programadeposgrado == programadeposgrado.id %} selected {% endif %}>
-                    {{ programadeposgrado.maestria.nombre }}
+              <label class="form-label fw-semibold">Programa de posgrado</label>
+
+              {# esto ya trae optgroups y selected correcto #}
+              {{ form.programa_mix }}
+
+              {% if form.programa_mix.errors %}
+                <div class="text-danger small mt-1">
+                  {{ form.programa_mix.errors }}
+                </div>
+              {% endif %}
+            </div>
+
+            <!-- Maestrante -->
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Maestrante</label>
+              <select name="maestrante" class="form-select" id="selectmaestrante">
+                <option disabled>Seleccione un maestrante</option>
+                {% for m in maestrantes_list %}
+                  <option value="{{ m.id }}" {% if contratotutor.maestrante == m.user.id %}selected{% endif %}>
+                    {{ m.user.get_full_name }} - {{ m.user.perfilusuario.ci }}
                   </option>
                 {% endfor %}
               </select>
             </div>
 
-            <div class="col-md-4">
-              <label for="selectmaestrante" class="form-label fw-semibold">
-                Maestrante
-              </label>
-              <select name="maestrante" class="form-select" id="selectmaestrante" aria-label="Default select example">
-                <option disabled {% if not contratotutor.maestrante %}selected{% endif %}>Seleccione un maestrante</option>
-                {% for maestrante in maestrantes_list %}
-                  <option value="{{ maestrante.id }}" {% if contratotutor.maestrante.id == maestrante.id %}selected{% endif %}>
-                    {{ maestrante.user.get_full_name }}
-                  </option>
-                {% endfor %}
-              </select>
-            </div>
           </div>
         </div>
 
-        <!-- Bloque 2: Valores y certificación -->
+        <!-- Bloque 2 -->
         <div class="border rounded-3 p-3 mb-4">
           <h5 class="mb-3">
             <i class="fa fa-coins me-2"></i> Valor y certificación
@@ -98,29 +97,23 @@
 
           <div class="row g-3">
             <div class="col-md-4">
-              <label for="valorcontrato" class="form-label fw-semibold">
-                Valor del contrato
-              </label>
+              <label class="form-label fw-semibold">Valor del contrato</label>
               {{ form.valorcontrato }}
             </div>
 
             <div class="col-md-4">
-              <label for="certificacionpresupuestaria" class="form-label fw-semibold">
-                Certificación presupuestaria
-              </label>
+              <label class="form-label fw-semibold">Certificación presupuestaria</label>
               {{ form.certificacionpresupuestaria }}
             </div>
 
             <div class="col-md-4">
-              <label for="fechacertificacionpresupuestaria" class="form-label fw-semibold">
-                Fecha - Certificación presupuestaria
-              </label>
+              <label class="form-label fw-semibold">Fecha - Certificación presupuestaria</label>
               {{ form.fechacertificacionpresupuestaria }}
             </div>
           </div>
         </div>
 
-        <!-- Bloque 3: Datos del contrato -->
+        <!-- Bloque 3 -->
         <div class="border rounded-3 p-3 mb-4 bg-light">
           <h5 class="mb-3">
             <i class="fa fa-file-signature me-2"></i> Datos del contrato
@@ -128,43 +121,33 @@
 
           <div class="row g-3">
             <div class="col-md-4">
-              <label for="plazo" class="form-label fw-semibold">
-                Plazo
-              </label>
+              <label class="form-label fw-semibold">Plazo</label>
               {{ form.plazo }}
             </div>
 
             <div class="col-md-4">
-              <label for="numerocontrato" class="form-label fw-semibold">
-                Número de contrato
-              </label>
+              <label class="form-label fw-semibold">Número de contrato</label>
               {{ form.numerocontrato }}
             </div>
 
             <div class="col-md-4">
-              <label for="numeromemorandotthh" class="form-label fw-semibold">
-                Número de Memorando TTHH
-              </label>
+              <label class="form-label fw-semibold">Número de Memorando TTHH</label>
               {{ form.numeromemorandotthh }}
             </div>
 
             <div class="col-md-4">
-              <label for="tipopersonalacademico" class="form-label fw-semibold">
-                Tipo de personal académico
-              </label>
+              <label class="form-label fw-semibold">Tipo de personal académico</label>
               {{ form.tipopersonalacademico }}
             </div>
 
             <div class="col-md-4">
-              <label for="adenda" class="form-label fw-semibold">
-                Adenda
-              </label>
+              <label class="form-label fw-semibold">Adenda</label>
               {{ form.adenda }}
             </div>
           </div>
         </div>
 
-        <!-- Bloque 4: Observaciones y URL -->
+        <!-- Bloque 4 -->
         <div class="border rounded-3 p-3 mb-4">
           <h5 class="mb-3">
             <i class="fa fa-comment-dots me-2"></i> Observaciones y documento
@@ -172,16 +155,12 @@
 
           <div class="row g-3">
             <div class="col-md-12">
-              <label for="observaciones" class="form-label fw-semibold">
-                Observaciones
-              </label>
+              <label class="form-label fw-semibold">Observaciones</label>
               {{ form.observaciones }}
             </div>
 
             <div class="col-md-12">
-              <label for="urldocumento" class="form-label fw-semibold">
-                URL del Documento
-              </label>
+              <label class="form-label fw-semibold">URL del Documento</label>
               {{ form.urldocumento }}
             </div>
           </div>
@@ -207,47 +186,11 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
   $(document).ready(function () {
-    $('#selecttutor').select2({
-      placeholder: "Seleccione un tutor",
-      width: '100%'
-    });
-    $('#selectmaestrante').select2({
-      placeholder: "Seleccione un maestrante",
-      width: '100%'
-    });
-    $('#selectprogramadeposgrado').select2({
-      placeholder: "Seleccione un programa de posgrado",
-      width: '100%'
-    });
+    $('#selecttutor').select2({ placeholder: "Seleccione un tutor", width: '100%' });
+    $('#selectmaestrante').select2({ placeholder: "Seleccione un maestrante", width: '100%' });
 
-    $('#selectprogramadeposgrado').on('change', function () {
-      let programaId = $(this).val();
-
-      // Limpiar y desactivar el select de módulos mientras se carga
-      $('#selectmodulo').empty()
-        .append('<option selected disabled>Cargando módulos...</option>')
-        .prop('disabled', true);
-
-      $.ajax({
-        url: `/api/modulos/${programaId}/`,
-        type: 'GET',
-        success: function (modulos) {
-          $('#selectmodulo').empty().append('<option selected disabled>Seleccione un módulo</option>');
-          modulos.forEach(modulo => {
-            $('#selectmodulo').append(`<option value="${modulo.id}">${modulo.nombre}</option>`);
-          });
-          $('#selectmodulo').prop('disabled', false);
-        },
-        error: function () {
-          $('#selectmodulo').empty().append('<option selected disabled>Error al cargar</option>');
-        }
-      });
-    });
-
-    $('#selectmodulo').select2({
-      placeholder: "Seleccione un módulo",
-      width: '100%'
-    });
+    // ✅ El id real de Django para ese field normalmente es: id_programa_mix
+    $('#id_programa_mix').select2({ placeholder: "Seleccione un programa", width: '100%' });
   });
 </script>
 

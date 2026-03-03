@@ -21,15 +21,15 @@
     </div>
   </div>
 
-          {% if messages %}   
-        <div class="mt-2">
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                {{ message }}
-            </div>
-            {% endfor %}
+  {% if messages %}
+    <div class="mt-2">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+          {{ message }}
         </div>
-        {% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
 
   <!-- Contenedor tabla -->
   <section class="card border-2 shadow-lg" style="padding: 1%;">
@@ -64,19 +64,63 @@
           <tbody id="contratosTableBody">
             {% for contrato in contratos_por_periordo %}
             <tr>
-              <td class="text-nowrap">{{ contrato.coordinador_obj.perfilusuario.ci }}</td>
-              <td class="fw-semibold">  
-                <a href="{% url 'usuario_editar_dp' contrato.coordinador_obj.perfilusuario.user.id %}?next={{ request.path }}">{{ contrato.coordinador_obj.get_full_name }}</a>
+              <td class="text-nowrap">
+                {% if contrato.coordinador_obj and contrato.coordinador_obj.perfilusuario %}
+                  {{ contrato.coordinador_obj.perfilusuario.ci }}
+                {% else %}
+                  -
+                {% endif %}
               </td>
-              <td>{{ contrato.maestria_obj.nombre }}</td>
-              <td>{{ contrato.campoamplio_obj.nombre }}</td>
-              <td class="text-nowrap">{{ contrato.programadeposgrado_obj.get_cohorte_display }}</td>
-              <td>{{ contrato.modalidad_obj.modalidad }}</td>
+
+              <td class="fw-semibold">
+                {% if contrato.coordinador_obj %}
+                  <a href="{% url 'usuario_editar_dp' contrato.coordinador_obj.id %}?next={{ request.path }}">
+                    {{ contrato.coordinador_obj.get_full_name }}
+                  </a>
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+
+              <!-- ✅ Programa (Maestría o EM) -->
+              <td>
+                {% if contrato.nombre_programa %}
+                  {{ contrato.nombre_programa }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+
+              <td>
+                {% if contrato.campoamplio_obj %}
+                  {{ contrato.campoamplio_obj.nombre }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+
+              <td class="text-nowrap">
+                {% if contrato.cohorte_display %}
+                  {{ contrato.cohorte_display }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+
+              <td>
+                {% if contrato.modalidad_obj %}
+                  {{ contrato.modalidad_obj.modalidad }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
 
               <td class="text-truncate" style="max-width: 240px;" title="{{ contrato.certificacionpresupuestaria }}">
                 {{ contrato.certificacionpresupuestaria }}
               </td>
+
               <td class="text-center text-nowrap">{{ contrato.fechacertificacionpresupuestaria }}</td>
+
               <td class="text-center">
                 {% if contrato.plazo %}
                   {{ contrato.plazo }}
@@ -84,6 +128,7 @@
                   -
                 {% endif %}
               </td>
+
               <td class="text-center text-nowrap">
                 {% if contrato.fechainicio %}
                   {{ contrato.fechainicio }}
@@ -91,6 +136,7 @@
                   -
                 {% endif %}
               </td>
+
               <td class="text-center text-nowrap">
                 {% if contrato.fechafin %}
                   {{ contrato.fechafin }}
@@ -98,7 +144,9 @@
                   -
                 {% endif %}
               </td>
+
               <td class="text-end text-nowrap">${{ contrato.honorario }}</td>
+
               <td class="text-nowrap">{{ contrato.numerocontrato }}</td>
               <td class="text-nowrap">{{ contrato.cargo }}</td>
               <td class="text-nowrap">{{ contrato.noactasseleccion }}</td>
@@ -106,14 +154,20 @@
               <td class="text-nowrap">{{ contrato.modalidadcontractuar }}</td>
 
               <td class="text-truncate" style="max-width: 220px;" title="{{ contrato.observaciones }}">
-                {{ contrato.observaciones }}
+                {% if contrato.observaciones %}
+                  {{ contrato.observaciones }}
+                {% else %}
+                  -
+                {% endif %}
               </td>
+
               <td class="text-truncate" style="max-width: 220px;">
                 {% if contrato.urldocumento %}
-                  <a href="{{ contrato.urldocumento }}" target="_blank">Ver Documento</a>
+                  <a href="{{ contrato.urldocumento }}" target="_blank" rel="noopener">Ver Documento</a>
                 {% else %}
                   No disponible
                 {% endif %}
+              </td>
 
               <td>
                 <div class="d-flex gap-2">
@@ -142,10 +196,7 @@
   </section>
 </main>
 
-<!-- Scripts (se mantiene DataTables y buscador tal cual) -->
 <script>
-  const buscador = document.getElementById('buscador');
-
   $(document).ready(function () {
     $('#tablaContratos').DataTable({
       language: {
@@ -158,10 +209,10 @@
         paginate: { first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior" }
       },
       columnDefs: [
-        { targets: [7,8], className: 'text-center' },   // fecha cert., plazo
-        { targets: [9], className: 'text-end' },        // honorario
-        { targets: [6,15], className: 'text-truncate' },// certificación / observaciones
-        { targets: [16], className: 'text-center' }     // acciones
+        { targets: [7,8,9,10], className: 'text-center' }, // fechas + plazo
+        { targets: [11], className: 'text-end' },          // honorario
+        { targets: [6,17], className: 'text-truncate' },   // certificación / observaciones
+        { targets: [19], className: 'text-center' }        // acciones
       ]
     });
   });
@@ -184,7 +235,6 @@
   }
 </script>
 
-<!-- Estilos finos -->
 <style>
   .sticky-header th {
     position: sticky;

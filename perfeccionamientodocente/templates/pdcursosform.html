@@ -1,0 +1,330 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+
+<main class="container py-4">
+        <div class="mb-3">
+      <a href="{% url 'perfeccionamientodocente' %}" class="btn btn-secondary btn-sm"><i class="fa fa-arrow-left"></i> Volver</a>
+    </div>
+  <section class="card p-4">
+
+    <h3 class="mb-3">{{ titulo }}</h3>
+
+    {% if messages %}
+      <div class="mb-3">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <div class="row g-3">
+
+        <!-- =========================
+             DATOS DEL CURSO
+        ========================== -->
+        <div class="col-md-12">
+          <label class="form-label"><b>Nombre del curso</b></label>
+          {{ form.nombre }}
+          {% if form.nombre.errors %}<div class="text-danger">{{ form.nombre.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label"><b>Área</b></label>
+          {{ form.area }}
+          {% if form.area.errors %}<div class="text-danger">{{ form.area.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label"><b>Subárea</b></label>
+          {{ form.subarea }}
+          {% if form.subarea.errors %}<div class="text-danger">{{ form.subarea.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label"><b>Campo</b></label>
+          {{ form.campo }}
+          {% if form.campo.errors %}<div class="text-danger">{{ form.campo.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label"><b>Dirigido a</b></label>
+          {{ form.dirigido_a }}
+          {% if form.dirigido_a.errors %}<div class="text-danger">{{ form.dirigido_a.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label"><b>Carrera</b></label>
+          {{ form.carrera }}
+          {% if form.carrera.errors %}<div class="text-danger">{{ form.carrera.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label"><b>Fecha inicio</b></label>
+          {{ form.fecha_inicio }}
+          {% if form.fecha_inicio.errors %}<div class="text-danger">{{ form.fecha_inicio.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label"><b>Fecha fin</b></label>
+          {{ form.fecha_fin }}
+          {% if form.fecha_fin.errors %}<div class="text-danger">{{ form.fecha_fin.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label"><b>Horario</b></label>
+          {{ form.horario }}
+          {% if form.horario.errors %}<div class="text-danger">{{ form.horario.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label"><b>Horas totales</b></label>
+          {{ form.horas_totales }}
+          {% if form.horas_totales.errors %}<div class="text-danger">{{ form.horas_totales.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label"><b># Docentes dirigido</b></label>
+          {{ form.num_docentes_dirigido }}
+          {% if form.num_docentes_dirigido.errors %}<div class="text-danger">{{ form.num_docentes_dirigido.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label"><b>Modalidad</b></label>
+          {{ form.modalidad }}
+          {% if form.modalidad.errors %}<div class="text-danger">{{ form.modalidad.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label"><b>Lugar / Plataforma</b></label>
+          {{ form.lugar }}
+          {% if form.lugar.errors %}<div class="text-danger">{{ form.lugar.errors }}</div>{% endif %}
+        </div>
+
+        <hr class="my-2">
+
+        <!-- =========================
+             FACILITADOR (primero tipo)
+        ========================== -->
+        <div class="col-md-4">
+          <label class="form-label"><b>Facilitador: Interno / Externo</b></label>
+          {{ form.interno_externo }}
+          {% if form.interno_externo.errors %}<div class="text-danger">{{ form.interno_externo.errors }}</div>{% endif %}
+          <small class="text-muted">Selecciona primero si el facilitador pertenece a la UNACH (interno) o es externo.</small>
+        </div>
+
+        <!-- Interno -->
+        <div class="col-md-8" id="wrap_facilitador_interno" style="display:none;">
+          <label class="form-label"><b>Facilitador interno (usuario)</b></label>
+          {{ form.facilitador }}
+          {% if form.facilitador.errors %}<div class="text-danger">{{ form.facilitador.errors }}</div>{% endif %}
+          <small class="text-muted">Se mostrará el nombre completo y la cédula.</small>
+        </div>
+
+        <!-- Externo -->
+        <div class="col-md-4" id="wrap_facilitador_nombres" style="display:none;">
+          <label class="form-label"><b>Facilitador externo (nombres completos)</b></label>
+          {{ form.facilitador_nombres }}
+          {% if form.facilitador_nombres.errors %}<div class="text-danger">{{ form.facilitador_nombres.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-4" id="wrap_facilitador_cedula" style="display:none;">
+          <label class="form-label"><b>Facilitador externo (cédula)</b></label>
+          {{ form.facilitador_cedula }}
+          {% if form.facilitador_cedula.errors %}<div class="text-danger">{{ form.facilitador_cedula.errors }}</div>{% endif %}
+        </div>
+
+        <hr class="my-2">
+
+        <!-- =========================
+             FINANCIAMIENTO
+        ========================== -->
+        <div class="col-md-4">
+          <label class="form-label"><b>Financiamiento</b></label>
+          {{ form.financiamiento }}
+          {% if form.financiamiento.errors %}<div class="text-danger">{{ form.financiamiento.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label"><b>Presupuesto (USD)</b></label>
+          {{ form.presupuesto_monto }}
+          {% if form.presupuesto_monto.errors %}<div class="text-danger">{{ form.presupuesto_monto.errors }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-4 d-flex align-items-end">
+          <div class="form-check">
+            {{ form.activo }}
+            <label class="form-check-label"><b>Curso activo</b></label>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="d-flex gap-2 mt-4">
+        <button class="btn btn-primary" type="submit">{{ btn }}</button>
+        <a href="{% url 'pd_cursos_list' %}" class="btn btn-outline-dark">Cancelar</a>
+      </div>
+
+    </form>
+
+  </section>
+</main>
+
+<script>
+/* =====================================================
+   FACILITADOR: INTERNO / EXTERNO
+===================================================== */
+function toggleFacilitadorFields() {
+  const tipo = document.getElementById("id_interno_externo").value;
+
+  const wrapInterno = document.getElementById("wrap_facilitador_interno");
+  const wrapNombres = document.getElementById("wrap_facilitador_nombres");
+  const wrapCedula  = document.getElementById("wrap_facilitador_cedula");
+
+  const inputInterno = document.getElementById("id_facilitador");
+  const inputNombres = document.getElementById("id_facilitador_nombres");
+  const inputCedula  = document.getElementById("id_facilitador_cedula");
+
+  if (tipo === "interno") {
+    wrapInterno.style.display = "block";
+    wrapNombres.style.display = "none";
+    wrapCedula.style.display  = "none";
+
+    if (inputNombres) inputNombres.value = "";
+    if (inputCedula) inputCedula.value = "";
+  }
+
+  if (tipo === "externo") {
+    wrapInterno.style.display = "none";
+    wrapNombres.style.display = "block";
+    wrapCedula.style.display  = "block";
+
+    if (inputInterno) inputInterno.value = "";
+  }
+}
+
+/* =====================================================
+   ÁREA → SUBÁREA → CAMPO (DEPENDIENTES)
+===================================================== */
+const areaSelect    = document.getElementById("id_area");
+const subareaSelect = document.getElementById("id_subarea");
+const campoSelect   = document.getElementById("id_campo");
+
+function resetSubarea(disabled = true) {
+  subareaSelect.innerHTML = `
+    <option value="">Seleccione un área primero</option>
+  `;
+  subareaSelect.disabled = disabled;
+}
+
+function resetCampo(disabled = true) {
+  campoSelect.innerHTML = `
+    <option value="">Seleccione una subárea primero</option>
+  `;
+  campoSelect.disabled = disabled;
+}
+
+async function cargarSubareas(areaId, selectedSubareaId = null) {
+  resetSubarea(false);
+  resetCampo(true);
+
+  if (!areaId) {
+    resetSubarea(true);
+    return;
+  }
+
+  const url = "{% url 'pd_ajax_subareas_por_area' %}?area_id=" + areaId;
+  const res = await fetch(url);
+  const data = await res.json();
+
+  subareaSelect.innerHTML = `
+    <option value="">Seleccione una subárea</option>
+  `;
+
+  data.results.forEach(item => {
+    const opt = document.createElement("option");
+    opt.value = item.id;
+    opt.textContent = item.text;
+    if (selectedSubareaId && String(item.id) === String(selectedSubareaId)) {
+      opt.selected = true;
+    }
+    subareaSelect.appendChild(opt);
+  });
+
+  subareaSelect.disabled = false;
+}
+
+async function cargarCampos(subareaId, selectedCampoId = null) {
+  resetCampo(false);
+
+  if (!subareaId) {
+    resetCampo(true);
+    return;
+  }
+
+  const url = "{% url 'pd_ajax_campos_por_subarea' %}?subarea_id=" + subareaId;
+  const res = await fetch(url);
+  const data = await res.json();
+
+  campoSelect.innerHTML = `
+    <option value="">Seleccione un campo</option>
+  `;
+
+  data.results.forEach(item => {
+    const opt = document.createElement("option");
+    opt.value = item.id;
+    opt.textContent = item.text;
+    if (selectedCampoId && String(item.id) === String(selectedCampoId)) {
+      opt.selected = true;
+    }
+    campoSelect.appendChild(opt);
+  });
+
+  campoSelect.disabled = false;
+}
+
+/* =====================================================
+   INIT
+===================================================== */
+document.addEventListener("DOMContentLoaded", async function () {
+
+  /* Facilitador */
+  toggleFacilitadorFields();
+  document
+    .getElementById("id_interno_externo")
+    .addEventListener("change", toggleFacilitadorFields);
+
+  /* Área / Subárea / Campo */
+  const selectedArea    = areaSelect.value || null;
+  const selectedSubarea = subareaSelect.value || null;
+  const selectedCampo   = campoSelect.value || null;
+
+  resetSubarea(true);
+  resetCampo(true);
+
+  // Modo edición
+  if (selectedArea) {
+    await cargarSubareas(selectedArea, selectedSubarea);
+    if (selectedSubarea) {
+      await cargarCampos(selectedSubarea, selectedCampo);
+    }
+  }
+
+  areaSelect.addEventListener("change", async function () {
+    await cargarSubareas(this.value);
+  });
+
+  subareaSelect.addEventListener("change", async function () {
+    await cargarCampos(this.value);
+  });
+});
+</script>
+
+
+{% endblock %}

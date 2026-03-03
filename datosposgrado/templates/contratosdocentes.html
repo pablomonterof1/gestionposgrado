@@ -21,15 +21,16 @@
     </div>
   </div>
 
-        {% if messages %}
-        <div class="mt-2">
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                {{ message }}
-            </div>
-            {% endfor %}
+  {% if messages %}
+    <div class="mt-2">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+          {{ message }}
         </div>
-        {% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
   <!-- Contenedor tabla -->
   <section class="card border-2 shadow-lg " style="padding: 1%;">
     <div class="card-body p-0">
@@ -38,7 +39,7 @@
           <thead class="table-primary sticky-header">
             <tr>
               <th scope="col">Cédula</th>
-              <th scope="col">Docente</th>
+              <th scope="col" colspan="2" style="text-align: center;">Docente</th>
               <th scope="col">Programa</th>
               <th scope="col">Campo amplio</th>
               <th scope="col">Modalidad</th>
@@ -58,29 +59,101 @@
               <th scope="col">Acciones</th>
             </tr>
           </thead>
+
           <tbody id="contratosTableBody">
             {% for contrato in contratos_por_periordo %}
             <tr>
-              <td>{{ contrato.docente_obj.perfilusuario.ci }}</td>
-              <td class="fw-semibold"> <a href="{% url 'usuario_editar_dp' contrato.docente_obj.perfilusuario.user.id %}?next={{ request.path }}">{{ contrato.docente_obj.get_full_name }}</a> </td>
-              <td>{{ contrato.maestria_obj.nombre }}</td>
-              <td>{{ contrato.campoamplio_obj.nombre }}</td>
-              <td>{{ contrato.modalidad_obj.modalidad }}</td>
-              <td>{{ contrato.programadeposgrado_obj.get_cohorte_display }}</td>
-              <td>{{ contrato.modulo_obj.nombre }}</td>
+              <!-- Cédula -->
+              <td>
+                {% if contrato.docente_obj and contrato.docente_obj.perfilusuario %}
+                  {{ contrato.docente_obj.perfilusuario.ci }}
+                {% else %}
+                  ---
+                {% endif %}
+              </td>
+
+              <!-- Docente (con link si existe) -->
+              <td class="fw-semibold">
+                {% if contrato.docente_obj %}
+                  <a href="{% url 'usuario_editar_dp' contrato.docente_obj.id %}?next={{ request.path }}">
+                    {{ contrato.docente_obj.get_full_name }}
+                  </a>
+                {% else %}
+                  Usuario no encontrado
+                {% endif %}
+              </td>
+
+              <!-- Tipo docente -->
+              <td>
+                {{ contrato.get_docente_tipo_display }}
+              </td>
+
+              <!-- Programa -->
+              <td>
+                {% if contrato.maestria_obj %}
+                  {{ contrato.maestria_obj.nombre }}
+                {% else %}
+                  ---
+                {% endif %}
+              </td>
+
+              <!-- Campo amplio -->
+              <td>
+                {% if contrato.campoamplio_obj %}
+                  {{ contrato.campoamplio_obj.nombre }}
+                {% else %}
+                  ---
+                {% endif %}
+              </td>
+
+              <!-- Modalidad -->
+              <td>
+                {% if contrato.modalidad_obj %}
+                  {{ contrato.modalidad_obj.modalidad }}
+                {% else %}
+                  ---
+                {% endif %}
+              </td>
+
+              <!-- Cohorte -->
+              <td>
+                {% if contrato.programadeposgrado_obj %}
+                  {{ contrato.programadeposgrado_obj.get_cohorte_display }}
+                {% else %}
+                  ---
+                {% endif %}
+              </td>
+
+              <!-- Módulo -->
+              <td>
+                {% if contrato.modulo_obj %}
+                  {{ contrato.modulo_obj.nombre }}
+                {% else %}
+                  ---
+                {% endif %}
+              </td>
+
               <td class="text-center">{{ contrato.horasacademicas }}</td>
               <td class="text-end">${{ contrato.valorxhora }}</td>
+
               <td class="text-truncate" style="max-width: 220px;" title="{{ contrato.certificacionpresupuestaria }}">
                 {{ contrato.certificacionpresupuestaria }}
               </td>
+
               <td class="text-center">{{ contrato.fechacertificacionpresupuestaria }}</td>
               <td class="text-center">{{ contrato.plazo }}</td>
               <td class="text-nowrap">{{ contrato.numerocontrato }}</td>
               <td class="text-nowrap">{{ contrato.numeromemorandotthh }}</td>
               <td>{{ contrato.get_tipopersonalacademico_display }}</td>
-              <td class="text-truncate" style="max-width: 140px;" title="{{ contrato.adenda }}">{{ contrato.adenda }}
+
+              <td class="text-truncate" style="max-width: 140px;" title="{{ contrato.adenda }}">
+                {{ contrato.adenda }}
               </td>
-              <td class="text-truncate" style="max-width: 180px;" title="{{ contrato.observaciones }}">{{ contrato.observaciones }}</td>
+
+              <td class="text-truncate" style="max-width: 180px;" title="{{ contrato.observaciones }}">
+                {{ contrato.observaciones }}
+              </td>
+
               <td class="text-truncate" style="max-width: 220px;">
                 {% if contrato.urldocumento %}
                   <a href="{{ contrato.urldocumento }}" target="_blank">Ver Documento</a>
@@ -88,6 +161,7 @@
                   No disponible
                 {% endif %}
               </td>
+
               <td>
                 <div class="d-flex gap-2">
                   <a href="{% url 'contratosdocentes_update' contrato.id periodo_id %}" class="btn btn-warning btn-sm"
@@ -108,6 +182,7 @@
             </tr>
             {% endfor %}
           </tbody>
+
         </table>
       </div>
     </div>
@@ -131,15 +206,13 @@
           first: "Primera", last: "Última", next: "Siguiente", previous: "Anterior"
         },
       },
-      // Clases de alineación por columna (solo visual; no cambia datos)
       columnDefs: [
-        { targets: [7], className: 'text-center' },     // horas
-        { targets: [8], className: 'text-end' },        // valor hora
-        { targets: [10, 11], className: 'text-center' }, // fechas / plazo
-        { targets: [16], className: 'text-truncate' },  // observaciones
-        { targets: [17], className: 'text-center' }     // acciones
+        { targets: [7], className: 'text-center' },
+        { targets: [8], className: 'text-end' },
+        { targets: [10, 11], className: 'text-center' },
+        { targets: [16], className: 'text-truncate' },
+        { targets: [17], className: 'text-center' }
       ],
-      // Mantenerlo simple; no agrego extensiones para no cambiar librerías cargadas
     });
   });
 
@@ -161,7 +234,6 @@
   }
 </script>
 
-<!-- Estilos finos -->
 <style>
   .sticky-header th {
     position: sticky;

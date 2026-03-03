@@ -71,7 +71,7 @@ class MatriculaDocenteModulo(models.Model):
     class Meta:
         verbose_name = 'Matricula docente a módulo'
         verbose_name_plural = 'Matriculas docentes a módulos'
-        unique_together = ('docente', 'content_type', 'object_id')
+        unique_together = ('programa', 'content_type', 'object_id')
 
     def __str__(self):
         return f"{self.docente.get_full_name()} asignado al módulo {self.modulo}"

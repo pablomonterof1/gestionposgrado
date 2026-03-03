@@ -13,7 +13,7 @@
           Actualizar contrato del Coordinador
         </h3>
         <p class="mb-0 text-muted">
-          <strong>Periodo:</strong> {{ periodoacademico }}
+          <strong>Periodo:</strong> {{ periodoacademico.nombre }}
         </p>
       </div>
       <div>
@@ -25,13 +25,20 @@
 
     <div class="card-body" style="padding: 2rem;">
 
-      {% if messages %}   
+      {% if messages %}
         <div class="mb-3">
           {% for message in messages %}
             <div class="alert alert-{{ message.tags }}">
               {{ message }}
             </div>
           {% endfor %}
+        </div>
+      {% endif %}
+
+      {# ✅ errores generales del form #}
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {{ form.non_field_errors }}
         </div>
       {% endif %}
 
@@ -45,38 +52,42 @@
           </h5>
 
           <div class="row g-3">
+
+            <!-- Coordinador -->
             <div class="col-md-6">
               <label for="selectcoordinador" class="form-label fw-semibold">
                 Coordinador
               </label>
-              <select name="coordinador" class="form-select" id="selectcoordinador" aria-label="Default select example">
-                <option selected disabled>Seleccione un coordinador</option>
-                {{ programadeposgrado.periodoacademico.nombre }} - 
+              <select name="coordinador" class="form-select" id="selectcoordinador">
+                <option disabled>Seleccione un coordinador</option>
                 {% for coordinador in coordinadores_list %}
-                  <option value="{{ coordinador.id }}" {% if contratocoordinador.coordinador == coordinador.user.id %} selected {% endif %}>
-                    {{ coordinador.user.get_full_name }}
+                  <option value="{{ coordinador.id }}"
+                    {% if contratocoordinador.coordinador == coordinador.user.id %} selected {% endif %}>
+                    {{ coordinador.user.get_full_name }} - {{ coordinador.user.perfilusuario.ci }}
                   </option>
                 {% endfor %}
               </select>
             </div>
 
+            <!-- ✅ Programa MIX: lo renderiza el form (con selected correcto) -->
             <div class="col-md-6">
-              <label for="selectprogramadeposgrado" class="form-label fw-semibold">
+              <label for="id_programa_mix" class="form-label fw-semibold">
                 Programa de posgrado
               </label>
-              <select name="programadeposgrado" class="form-select" id="selectprogramadeposgrado" aria-label="Default select example">
-                <option selected disabled>Seleccione un programa de posgrado</option>
-                {% for programadeposgrado in programasdeposgrado_list %}
-                  <option value="{{ programadeposgrado.id }}" {% if contratocoordinador.programadeposgrado == programadeposgrado.id %} selected {% endif %}>
-                    {{ programadeposgrado.maestria.nombre }}
-                  </option>
-                {% endfor %}
-              </select>
+
+              {{ form.programa_mix }}
+
+              {% if form.programa_mix.errors %}
+                <div class="text-danger small mt-1">
+                  {{ form.programa_mix.errors }}
+                </div>
+              {% endif %}
             </div>
+
           </div>
         </div>
 
-        <!-- Bloque 2: Certificación, fechas y honorarios -->
+        <!-- Bloque 2: Certificación, fechas y honorario -->
         <div class="border rounded-3 p-3 mb-4">
           <h5 class="mb-3">
             <i class="fa fa-coins me-2"></i> Certificación, fechas y honorario
@@ -84,45 +95,51 @@
 
           <div class="row g-3">
             <div class="col-md-4">
-              <label for="certificacionpresupuestaria" class="form-label fw-semibold">
-                Certificación presupuestaria
-              </label>
+              <label class="form-label fw-semibold">Certificación presupuestaria</label>
               {{ form.certificacionpresupuestaria }}
+              {% if form.certificacionpresupuestaria.errors %}
+                <div class="text-danger small mt-1">{{ form.certificacionpresupuestaria.errors }}</div>
+              {% endif %}
             </div>
 
             <div class="col-md-4">
-              <label for="fechacertificacionpresupuestaria" class="form-label fw-semibold">
-                Fecha - Certificación presupuestaria
-              </label>
+              <label class="form-label fw-semibold">Fecha - Certificación presupuestaria</label>
               {{ form.fechacertificacionpresupuestaria }}
+              {% if form.fechacertificacionpresupuestaria.errors %}
+                <div class="text-danger small mt-1">{{ form.fechacertificacionpresupuestaria.errors }}</div>
+              {% endif %}
             </div>
 
             <div class="col-md-4">
-              <label for="plazo" class="form-label fw-semibold">
-                Plazo (Opcional)
-              </label>
+              <label class="form-label fw-semibold">Plazo (Opcional)</label>
               {{ form.plazo }}
+              {% if form.plazo.errors %}
+                <div class="text-danger small mt-1">{{ form.plazo.errors }}</div>
+              {% endif %}
             </div>
 
             <div class="col-md-4">
-              <label for="fechainicio" class="form-label fw-semibold">
-                Fecha de inicio (Contrato)
-              </label>
+              <label class="form-label fw-semibold">Fecha de inicio (Contrato)</label>
               {{ form.fechainicio }}
+              {% if form.fechainicio.errors %}
+                <div class="text-danger small mt-1">{{ form.fechainicio.errors }}</div>
+              {% endif %}
             </div>
 
             <div class="col-md-4">
-              <label for="fechafin" class="form-label fw-semibold">
-                Fecha de fin (Contrato)
-              </label>
+              <label class="form-label fw-semibold">Fecha de fin (Contrato)</label>
               {{ form.fechafin }}
+              {% if form.fechafin.errors %}
+                <div class="text-danger small mt-1">{{ form.fechafin.errors }}</div>
+              {% endif %}
             </div>
 
             <div class="col-md-4">
-              <label for="honorario" class="form-label fw-semibold">
-                Honorario
-              </label>
+              <label class="form-label fw-semibold">Honorario</label>
               {{ form.honorario }}
+              {% if form.honorario.errors %}
+                <div class="text-danger small mt-1">{{ form.honorario.errors }}</div>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -135,38 +152,43 @@
 
           <div class="row g-3">
             <div class="col-md-4">
-              <label for="numerocontrato" class="form-label fw-semibold">
-                Número de contrato
-              </label>
+              <label class="form-label fw-semibold">Número de contrato</label>
               {{ form.numerocontrato }}
+              {% if form.numerocontrato.errors %}
+                <div class="text-danger small mt-1">{{ form.numerocontrato.errors }}</div>
+              {% endif %}
             </div>
 
             <div class="col-md-4">
-              <label for="cargo" class="form-label fw-semibold">
-                Cargo
-              </label>
+              <label class="form-label fw-semibold">Cargo</label>
               {{ form.cargo }}
+              {% if form.cargo.errors %}
+                <div class="text-danger small mt-1">{{ form.cargo.errors }}</div>
+              {% endif %}
             </div>
 
             <div class="col-md-4">
-              <label for="noactasseleccion" class="form-label fw-semibold">
-                No. Actas de Selección
-              </label>
+              <label class="form-label fw-semibold">No. Actas de Selección</label>
               {{ form.noactasseleccion }}
+              {% if form.noactasseleccion.errors %}
+                <div class="text-danger small mt-1">{{ form.noactasseleccion.errors }}</div>
+              {% endif %}
             </div>
 
             <div class="col-md-6">
-              <label for="oficioentregadoporth" class="form-label fw-semibold">
-                Oficio entregado por TH
-              </label>
+              <label class="form-label fw-semibold">Oficio entregado por TH</label>
               {{ form.oficioentregadoporth }}
+              {% if form.oficioentregadoporth.errors %}
+                <div class="text-danger small mt-1">{{ form.oficioentregadoporth.errors }}</div>
+              {% endif %}
             </div>
 
             <div class="col-md-6">
-              <label for="modalidadcontractuar" class="form-label fw-semibold">
-                Modalidad Contractuar
-              </label>
+              <label class="form-label fw-semibold">Modalidad Contractuar</label>
               {{ form.modalidadcontractuar }}
+              {% if form.modalidadcontractuar.errors %}
+                <div class="text-danger small mt-1">{{ form.modalidadcontractuar.errors }}</div>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -179,17 +201,19 @@
 
           <div class="row g-3">
             <div class="col-md-12">
-              <label for="observaciones" class="form-label fw-semibold">
-                Observaciones
-              </label>
+              <label class="form-label fw-semibold">Observaciones</label>
               {{ form.observaciones }}
+              {% if form.observaciones.errors %}
+                <div class="text-danger small mt-1">{{ form.observaciones.errors }}</div>
+              {% endif %}
             </div>
 
             <div class="col-md-12">
-              <label for="urldocumento" class="form-label fw-semibold">
-                URL del Documento
-              </label>
+              <label class="form-label fw-semibold">URL del Documento</label>
               {{ form.urldocumento }}
+              {% if form.urldocumento.errors %}
+                <div class="text-danger small mt-1">{{ form.urldocumento.errors }}</div>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -198,7 +222,7 @@
         <div class="d-flex justify-content-end gap-2 mt-3">
           <button type="submit" class="btn btn-primary">
             <i class="fa fa-save me-1"></i> Actualizar
-          </button>   
+          </button>
           <a class="btn btn-outline-danger" href="{% url 'contratocoordinador' periodo_id %}">
             <i class="fa fa-times me-1"></i> Cancelar
           </a>
@@ -214,44 +238,10 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
   $(document).ready(function () {
-    $('#selectcoordinador').select2({
-      placeholder: "Seleccione un coordinador",
-      width: '100%'
-    });
-   
-    $('#selectprogramadeposgrado').select2({
-      placeholder: "Seleccione un programa de posgrado",
-      width: '100%'
-    });
+    $('#selectcoordinador').select2({ placeholder: "Seleccione un coordinador", width: '100%' });
 
-    $('#selectprogramadeposgrado').on('change', function () {
-      let programaId = $(this).val();
-
-      // Limpiar y desactivar el select de módulos mientras se carga
-      $('#selectmodulo').empty()
-        .append('<option selected disabled>Cargando módulos...</option>')
-        .prop('disabled', true);
-
-      $.ajax({
-        url: `/api/modulos/${programaId}/`,
-        type: 'GET',
-        success: function (modulos) {
-          $('#selectmodulo').empty().append('<option selected disabled>Seleccione un módulo</option>');
-          modulos.forEach(modulo => {
-            $('#selectmodulo').append(`<option value="${modulo.id}">${modulo.nombre}</option>`);
-          });
-          $('#selectmodulo').prop('disabled', false);
-        },
-        error: function () {
-          $('#selectmodulo').empty().append('<option selected disabled>Error al cargar</option>');
-        }
-      });
-    });
-
-    $('#selectmodulo').select2({
-      placeholder: "Seleccione un módulo",
-      width: '100%'
-    });
+    // ✅ el id real del campo renderizado por Django
+    $('#id_programa_mix').select2({ placeholder: "Seleccione un programa", width: '100%' });
   });
 </script>
 

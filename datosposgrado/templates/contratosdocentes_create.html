@@ -5,6 +5,7 @@
 <main class="container py-5">
 
   <section class="card border-0 shadow-sm">
+    
     <!-- Encabezado -->
     <div class="card-header bg-light d-flex justify-content-between align-items-center">
       <div>
@@ -41,52 +42,74 @@
       <form action="{% url 'contratosdocentes_create' periodo_id %}" method="POST">
         {% csrf_token %}
 
-        <!-- Bloque 1: Datos básicos -->
+        <!-- Bloque 1 -->
         <div class="border rounded-3 p-3 mb-4 bg-light">
           <h5 class="mb-3">
             <i class="fa fa-user-tie me-2"></i> Datos del docente y programa
           </h5>
 
           <div class="row g-3">
+
+            <!-- Docente -->
             <div class="col-md-6">
-              <label for="selectdocente" class="form-label fw-semibold">
-                Docente
-              </label>
-              <select name="docente" class="form-select" id="selectdocente" aria-label="Seleccione un docente">
+              <label class="form-label fw-semibold">Docente</label>
+              <select name="docente" class="form-select" id="selectdocente">
                 <option selected disabled>Seleccione un docente</option>
                 {% for docente in docentes_list %}
-                  <option value="{{ docente.id }}">{{ docente.user.get_full_name }}</option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <div class="col-md-6">
-              <label for="selectprogramadeposgrado" class="form-label fw-semibold">
-                Programa de posgrado
-              </label>
-              <select name="programadeposgrado" class="form-select" id="selectprogramadeposgrado"
-                      aria-label="Seleccione un programa de posgrado">
-                <option selected disabled>Seleccione un programa de posgrado</option>
-                {% for programadeposgrado in programasdeposgrado_list %}
-                  <option value="{{ programadeposgrado.id }}">
-                    {{ programadeposgrado.periodoacademico.nombre }} - {{ programadeposgrado.maestria.nombre }}
+                  <option value="{{ docente.id }}">
+                    {{ docente.user.get_full_name }} - {{ docente.user.perfilusuario.ci }}
                   </option>
                 {% endfor %}
               </select>
             </div>
 
+            <!-- Programa -->
             <div class="col-md-6">
-              <label for="selectmodulo" class="form-label fw-semibold">
-                Módulo
-              </label>
-              <select name="modulo" class="form-select" id="selectmodulo">
+              <label class="form-label fw-semibold">Programa de posgrado</label>
+              <select name="programa_mix" class="form-select" id="selectprogramadeposgrado">
+                <option selected disabled>Seleccione un programa</option>
+
+                <optgroup label="Maestrías">
+                  {% for p in programas_m %}
+                    <option value="PP-{{ p.id }}">
+                      {{ p.periodo_obj.nombre }} - {{ p.maestria_obj.nombre }}
+                    </option>
+                  {% endfor %}
+                </optgroup>
+
+                <optgroup label="Especialidades Médicas">
+                  {% for p in programas_em %}
+                    <option value="EM-{{ p.id }}">
+                      {{ p.periodo_obj.nombre }} - {{ p.especialidad_obj.nombre }}
+                    </option>
+                  {% endfor %}
+                </optgroup>
+
+              </select>
+            </div>
+
+            <!-- Módulo -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Módulo</label>
+              <!-- ✅ CAMBIO: name="modulo_mix" -->
+              <select name="modulo_mix" class="form-select" id="selectmodulo">
                 <option selected disabled>Seleccione un módulo</option>
               </select>
             </div>
+
+            <!-- Tipo docente (solo EM) -->
+            <div class="col-md-6" id="box_docente_tipo" style="display:none;">
+              <label class="form-label fw-semibold">Tipo de docente</label>
+              <select name="docente_tipo" class="form-select">
+                <option value="1" selected>Docente</option>
+                <option value="2">Docente de práctica asistencial</option>
+              </select>
+            </div>
+
           </div>
         </div>
 
-        <!-- Bloque 2: Valores y certificación -->
+        <!-- Bloque 2 -->
         <div class="border rounded-3 p-3 mb-4">
           <h5 class="mb-3">
             <i class="fa fa-calculator me-2"></i> Valores del contrato
@@ -94,29 +117,23 @@
 
           <div class="row g-3">
             <div class="col-md-4">
-              <label for="horasacademicas" class="form-label fw-semibold">
-                Horas académicas
-              </label>
+              <label class="form-label fw-semibold">Horas académicas</label>
               {{ form.horasacademicas }}
             </div>
 
             <div class="col-md-4">
-              <label for="valorxhora" class="form-label fw-semibold">
-                Valor por hora
-              </label>
+              <label class="form-label fw-semibold">Valor por hora</label>
               {{ form.valorxhora }}
             </div>
 
             <div class="col-md-4">
-              <label for="tipopersonalacademico" class="form-label fw-semibold">
-                Tipo de personal académico
-              </label>
+              <label class="form-label fw-semibold">Tipo de personal académico</label>
               {{ form.tipopersonalacademico }}
             </div>
           </div>
         </div>
 
-        <!-- Bloque 3: Certificación y plazo -->
+        <!-- Bloque 3 -->
         <div class="border rounded-3 p-3 mb-4 bg-light">
           <h5 class="mb-3">
             <i class="fa fa-file-alt me-2"></i> Certificación y plazo
@@ -124,29 +141,23 @@
 
           <div class="row g-3">
             <div class="col-md-5">
-              <label for="certificacionpresupuestaria" class="form-label fw-semibold">
-                Certificación presupuestaria
-              </label>
+              <label class="form-label fw-semibold">Certificación presupuestaria</label>
               {{ form.certificacionpresupuestaria }}
             </div>
 
             <div class="col-md-5">
-              <label for="fechacertificacionpresupuestaria" class="form-label fw-semibold">
-                Fecha - Certificación presupuestaria
-              </label>
+              <label class="form-label fw-semibold">Fecha - Certificación</label>
               {{ form.fechacertificacionpresupuestaria }}
             </div>
 
             <div class="col-md-2">
-              <label for="plazo" class="form-label fw-semibold">
-                Plazo
-              </label>
+              <label class="form-label fw-semibold">Plazo</label>
               {{ form.plazo }}
             </div>
           </div>
         </div>
 
-        <!-- Bloque 4: Identificadores del contrato -->
+        <!-- Bloque 4 -->
         <div class="border rounded-3 p-3 mb-4">
           <h5 class="mb-3">
             <i class="fa fa-hashtag me-2"></i> Identificación del contrato
@@ -154,45 +165,35 @@
 
           <div class="row g-3">
             <div class="col-md-4">
-              <label for="numerocontrato" class="form-label fw-semibold">
-                Número de contrato
-              </label>
+              <label class="form-label fw-semibold">Número de contrato</label>
               {{ form.numerocontrato }}
             </div>
 
             <div class="col-md-4">
-              <label for="numeromemorandotthh" class="form-label fw-semibold">
-                Número de Memorando TTHH
-              </label>
+              <label class="form-label fw-semibold">Número Memorando TTHH</label>
               {{ form.numeromemorandotthh }}
             </div>
 
             <div class="col-md-4">
-              <label for="adenda" class="form-label fw-semibold">
-                Adenda
-              </label>
+              <label class="form-label fw-semibold">Adenda</label>
               {{ form.adenda }}
             </div>
           </div>
         </div>
 
-        <!-- Bloque 5: Observaciones y URL -->
+        <!-- Bloque 5 -->
         <div class="border rounded-3 p-3 mb-4 bg-light">
           <h5 class="mb-3">
             <i class="fa fa-comment-dots me-2"></i> Observaciones y documento
           </h5>
 
           <div class="mb-3">
-            <label for="observaciones" class="form-label fw-semibold">
-              Observaciones
-            </label>
+            <label class="form-label fw-semibold">Observaciones</label>
             {{ form.observaciones }}
           </div>
 
           <div class="mb-3">
-            <label for="urldocumento" class="form-label fw-semibold">
-              URL del Documento
-            </label>
+            <label class="form-label fw-semibold">URL del Documento</label>
             {{ form.urldocumento }}
           </div>
         </div>
@@ -214,48 +215,55 @@
 
 </main>
 
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
-  $(document).ready(function () {
-    $('#selectdocente').select2({
-      placeholder: "Seleccione un docente",
-      width: '100%'
-    });
-    $('#selectprogramadeposgrado').select2({
-      placeholder: "Seleccione un programa de posgrado",
-      width: '100%'
+$(document).ready(function () {
+
+  $('#selectdocente').select2({ width: '100%' });
+  $('#selectprogramadeposgrado').select2({ width: '100%' });
+  $('#selectmodulo').select2({ width: '100%' });
+
+  $('#selectprogramadeposgrado').on('change', function () {
+
+    let value = $(this).val(); // PP-12 o EM-5
+    let parts = value.split('-');
+    let tipo = parts[0];
+    let programaId = parts[1];
+
+    // Mostrar tipo docente solo para EM
+    if (tipo === 'EM') {
+      $('#box_docente_tipo').show();
+    } else {
+      $('#box_docente_tipo').hide();
+      $('select[name="docente_tipo"]').val('1');
+    }
+
+    $('#selectmodulo').empty()
+      .append('<option selected disabled>Cargando módulos...</option>')
+      .prop('disabled', true);
+
+    $.ajax({
+      url: `/api/modulos/${tipo}/${programaId}/`,
+      type: 'GET',
+      success: function (modulos) {
+        $('#selectmodulo').empty().append('<option selected disabled>Seleccione un módulo</option>');
+        modulos.forEach(modulo => {
+          // ✅ IMPORTANTE: ahora value debe ser modulo.mix (ej: "M-33" o "MEM-8")
+          $('#selectmodulo').append(`<option value="${modulo.mix}">${modulo.nombre}</option>`);
+        });
+        $('#selectmodulo').prop('disabled', false);
+      },
+      error: function () {
+        $('#selectmodulo').empty().append('<option selected disabled>Error al cargar</option>');
+      }
     });
 
-    $('#selectprogramadeposgrado').on('change', function () {
-      let programaId = $(this).val();
-
-      // Limpiar y desactivar el select de módulos mientras se carga
-      $('#selectmodulo').empty()
-        .append('<option selected disabled>Cargando módulos...</option>')
-        .prop('disabled', true);
-
-      $.ajax({
-        url: `/api/modulos/${programaId}/`,
-        type: 'GET',
-        success: function (modulos) {
-          $('#selectmodulo').empty().append('<option selected disabled>Seleccione un módulo</option>');
-          modulos.forEach(modulo => {
-            $('#selectmodulo').append(`<option value="${modulo.id}">${modulo.nombre}</option>`);
-          });
-          $('#selectmodulo').prop('disabled', false);
-        },
-        error: function () {
-          $('#selectmodulo').empty().append('<option selected disabled>Error al cargar</option>');
-        }
-      });
-    });
-
-    $('#selectmodulo').select2({
-      placeholder: "Seleccione un módulo",
-      width: '100%'
-    });
   });
+
+});
 </script>
 
 {% endblock %}
