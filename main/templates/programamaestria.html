@@ -45,12 +45,14 @@
                                 Docentes
                             </a>
                         </li>
+                        {% if tiene_permiso_edicion %}
                         <div class="nav-divider"></div>
                         <li class="nav-item">
                             <a class="nav-link fs-5" aria-current="page" href="{% url 'reactivosprograma' programaposgrado.id %}">
                                 RAE
                             </a>
                         </li>
+                        {% endif %}
                         <div class="nav-divider"></div>
                         
 

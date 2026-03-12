@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.contenttypes.models import ContentType
-
+from datetime import datetime
 from .models import ContratosDocentes, ContratoTutor, ContratoCoordinador
 from programasposgrado.models import ProgramaPosgrado, ProgramaPosgradoEM
 
@@ -62,7 +62,10 @@ class ContratosDocentesForm(forms.ModelForm):
             self.fields['observaciones'].required = False
         if 'urldocumento' in self.fields:
             self.fields['urldocumento'].required = False
-
+        if not self.instance.pk:
+            anio = datetime.now().year
+            self.fields['numerocontrato'].initial = 'SP-DATH-UNACH-'
+            self.fields['numeromemorandotthh'].initial = f'UNACH-DATH-{anio}-'
 
 # =========================================================
 # Helpers: convertir "M-12" / "EM-5" -> content_type + object_id
