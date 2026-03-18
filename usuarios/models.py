@@ -24,6 +24,7 @@ class PerfilUsuario(models.Model):
         (5, 'Tutor'),
         (6, 'Técnico'),
         (7, 'Analista - DB Posgrado'),      
+        (8, 'Técnico Contratos'),      
 
     ], blank=True, null=True)
     telefono = models.CharField(max_length=15, blank=True, null=True)
@@ -37,7 +38,8 @@ class PerfilUsuario(models.Model):
     provincia = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.user.get_full_name} - {self.rol} - {self.telefono} - {self.ci}"
+        rol = self.get_rol_display() if self.rol else "Sin rol"
+        return f"{self.user.get_full_name()} - {rol} - {self.telefono} - {self.ci}"
     
 
 class MatriculaUsuario(models.Model):

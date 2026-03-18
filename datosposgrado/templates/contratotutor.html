@@ -15,9 +15,11 @@
       <a href="{% url 'datosposgrado' periodo_id %}" class="btn btn-dark btn-sm" data-bs-toggle="tooltip" title="Volver">
         <i class="fa fa-arrow-left"></i> <span class="d-none d-sm-inline ms-1">Volver</span>
       </a>
+      {% if tiene_permiso_edicion or tiene_permiso_analista %}
       <a class="btn btn-success btn-sm" href="{% url 'contratotutor_create' periodo_id %}">
         <i class="fa fa-plus"></i> <span class="d-none d-sm-inline ms-1">Crear nuevo contrato</span>
       </a>
+      {% endif %}
     </div>
   </div>
 
@@ -72,9 +74,13 @@
 
               <td class="fw-semibold">
                 {% if contrato.tutor_obj and contrato.tutor_obj.perfilusuario %}
+                  {% if tiene_permiso_edicion or tiene_permiso_analista %}
                   <a href="{% url 'usuario_editar_dp' contrato.tutor_obj.perfilusuario.user.id %}?next={{ request.path }}">
-                    {{ contrato.tutor_obj.get_full_name }}
+                  {% endif %}
+                    <p style="text-transform: uppercase;">{{ contrato.tutor_obj.last_name|default:'' }} {{ contrato.tutor_obj.first_name|default:'' }}</p>
+                  {% if tiene_permiso_edicion or tiene_permiso_analista %}
                   </a>
+                  {% endif %}
                 {% else %}
                   -
                 {% endif %}
@@ -147,6 +153,7 @@
               </td>
 
               <td>
+                {% if tiene_permiso_edicion or tiene_permiso_analista %}
                 <div class="d-flex gap-2">
                   <a href="{% url 'contratotutor_update' contrato.id periodo_id %}"
                      class="btn btn-warning btn-sm" data-bs-toggle="tooltip" title="Editar">
@@ -163,6 +170,17 @@
                     </button>
                   </form>
                 </div>
+                {% elif tiene_permiso_tecnico_contratos %}
+                <div class="d-flex">
+                  <a href="{% url 'contratotutor_update' contrato.id periodo_id %}"
+                     class="btn btn-info btn-sm" data-bs-toggle="tooltip" title="Editar">
+                    <i class="fa-solid fa-file-upload"></i> Subir contrato
+                  </a>
+                </div>
+
+                {% else %}
+                ---
+                {% endif %}
               </td>
             </tr>
             {% endfor %}

@@ -6,7 +6,7 @@
 
     <section class="card" style="padding: 1%;">
 
-        {% if tiene_permiso_edicion or tiene_permiso_analista %}
+        {% if tiene_permiso_edicion or tiene_permiso_analista or tiene_permiso_tecnico_contratos %}
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark menuprogposgrado" style="border-radius: 5px;">
             <div class="container-fluid">
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -16,8 +16,8 @@
 
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ">
-                        <div class="nav-divider"></div>
                         {% if tiene_permiso_edicion or tiene_permiso_coordinador or tiene_permiso_analista %}
+                        <div class="nav-divider"></div>
                         <li class="nav-item">
                             <a class="nav-link fs-5" aria-current="page" href="{% url 'periodosacademicosmain' %}"
                                 style="color: white !important;">
@@ -32,7 +32,7 @@
                                 Especialidades médicas
                             </a>
                         </li> -->
-                        {% if tiene_permiso_edicion or tiene_permiso_analista %}
+                        {% if tiene_permiso_edicion or tiene_permiso_analista or tiene_permiso_tecnico_contratos %}
                         <div class="nav-divider"></div>
                         <li class="nav-item">
                             <a class="nav-link fs-5" aria-current="page" href="{% url 'periodosacademicosdp' %}"
@@ -84,7 +84,7 @@
 
         <div class="card text-center">
             <div class="card-header text-white" style="background-color: #0e1424;">
-                Mis cursos
+                Mis programas de posgrado
             </div>
             <div class="card-body">
                 <h5 class="card-title">Programa de Posgrado</h5>

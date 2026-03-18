@@ -9,6 +9,7 @@ def permisos_usuario(request):
         'tiene_permiso_tutor': False,
         'tiene_permiso_tecnico': False,
         'tiene_permiso_analista': False,
+        'tiene_permiso_tecnico_contratos': False,
     }
 
     if user.is_authenticated:
@@ -35,5 +36,7 @@ def permisos_usuario(request):
                 permisos['tiene_permiso_tecnico'] = True
             elif rol == 7:
                 permisos['tiene_permiso_analista'] = True
+            elif rol == 8:
+                permisos['tiene_permiso_tecnico_contratos'] = True
 
     return permisos

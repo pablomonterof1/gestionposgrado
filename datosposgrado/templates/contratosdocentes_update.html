@@ -38,6 +38,7 @@
       <form action="{% url 'contratosdocentes_update' contratodocente.id periodo_id %}" method="POST">
         {% csrf_token %}
 
+        {% if tiene_permiso_edicion or tiene_permiso_analista %}
         <!-- Bloque 1: Docente, Programa, Módulo, Tipo Docente -->
         <div class="border rounded-3 p-3 mb-4 bg-light">
           <h5 class="mb-3">
@@ -188,6 +189,7 @@
           </div>
         </div>
 
+        {% endif %}
         <!-- Bloque 4: Observaciones y documento -->
         <div class="border rounded-3 p-3 mb-4">
           <h5 class="mb-3">
@@ -195,11 +197,12 @@
           </h5>
 
           <div class="row g-3">
+            {% if tiene_permiso_edicion or tiene_permiso_analista %}
             <div class="col-md-12">
               <label class="form-label fw-semibold">Observaciones</label>
               {{ form.observaciones }}
             </div>
-
+            {% endif %}
             <div class="col-md-12">
               <label class="form-label fw-semibold">URL del Documento</label>
               {{ form.urldocumento }}

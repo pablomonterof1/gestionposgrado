@@ -18,14 +18,14 @@ from django.views.decorators.http import require_POST
 
 # Create your views here.
 
-@role_required([4, 7])  # Solo editores y analistas
+@role_required([4, 7, 8])  
 def periodosacademicosdp(request):
     periodosacademicos_list = PeriodosAcademicos.objects.all().order_by('-fecha_inicio')
     return render(request, 'periodosacademicos_dp.html', {
         'periodosacademicos_list': periodosacademicos_list,
     })
 
-@role_required([4, 7])
+@role_required([4, 7, 8])
 def datosposgrado(request, periodo_id):
     periodoacademico = PeriodosAcademicos.objects.get(id=periodo_id)
     return render(request, 'datosposgrado.html', {
@@ -34,7 +34,7 @@ def datosposgrado(request, periodo_id):
     })
 
 
-@role_required([4, 7])
+@role_required([4, 7, 8])
 def contratosdocentes(request, periodo_id):
     # Periodo (solo para encabezado)
     periodoacademico = get_object_or_404(PeriodosAcademicos, id=periodo_id)
@@ -140,7 +140,7 @@ def contratosdocentes(request, periodo_id):
         'periodoacademico': periodoacademico,
     })
 
-@role_required([4, 7])
+@role_required([4, 7, 8])
 def contratotutor(request, periodo_id):
     # 1) ContentTypes
     ct_prog_m = ContentType.objects.get_for_model(ProgramaPosgrado)
@@ -232,7 +232,7 @@ def contratotutor(request, periodo_id):
         'periodoacademico': periodoacademico,
     })
 
-@role_required([4, 7])
+@role_required([4, 7, 8])
 def contratocoordinador(request, periodo_id):
     periodoacademico = get_object_or_404(PeriodosAcademicos, id=periodo_id)
 
@@ -662,12 +662,28 @@ def obtener_modulos_por_programa(request, tipo, programa_id):
 
 
 
-@role_required([4, 7])
+@role_required([4, 7, 8])
 @require_http_methods(["GET", "POST"])
 @transaction.atomic
 def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
     contratodocente = get_object_or_404(ContratosDocentes, id=contratosdocentes_id)
     periodoacademico = get_object_or_404(PeriodosAcademicos, id=periodo_id)
+
+    # ---------------------------
+    # Permisos / roles
+    # 4 = edición
+    # 7 = analista
+    # 8 = técnico contratos (solo URL)
+    # ---------------------------
+    rol = None
+    if hasattr(request.user, "perfilusuario"):
+        rol = request.user.perfilusuario.rol
+
+    tiene_permiso_edicion = request.user.is_superuser or rol == 4
+    tiene_permiso_analista = request.user.is_superuser or rol == 7
+    tiene_permiso_tecnico_contratos = request.user.is_superuser or rol == 8
+
+    puede_editar_todo = tiene_permiso_edicion or tiene_permiso_analista
 
     # ContentTypes
     ct_prog_pp = ContentType.objects.get_for_model(ProgramaPosgrado)
@@ -679,12 +695,32 @@ def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
     # POST
     # ---------------------------
     if request.method == "POST":
+
+        # =========================================================
+        # CASO 1: Rol restringido (solo puede cambiar urldocumento)
+        # =========================================================
+        if not puede_editar_todo:
+            urldocumento = (request.POST.get("urldocumento") or "").strip()
+            contratodocente.urldocumento = urldocumento
+            contratodocente.save(update_fields=["urldocumento"])
+
+            messages.success(request, "URL del documento actualizada con éxito.")
+            return redirect("contratosdocentes", periodo_id=periodo_id)
+
+        # =========================================================
+        # CASO 2: Usuario con permisos completos
+        # =========================================================
         form = ContratosDocentesForm(request.POST, instance=contratodocente)
 
         docente_perfil_id = request.POST.get("docente")
         programa_mix = (request.POST.get("programa_mix") or "").strip()
         modulo_mix = (request.POST.get("modulo_mix") or "").strip()
-        docente_tipo = int(request.POST.get("docente_tipo", 1))
+        docente_tipo_raw = request.POST.get("docente_tipo", 1)
+
+        try:
+            docente_tipo = int(docente_tipo_raw)
+        except (TypeError, ValueError):
+            docente_tipo = 1
 
         if not docente_perfil_id:
             messages.error(request, "Seleccione un docente.")
@@ -701,8 +737,8 @@ def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
         if not form.is_valid():
             messages.error(request, "Por favor corrija los errores del formulario.")
         else:
-            prog_tipo, prog_id = programa_mix.split("-", 1)  # PP / EM
-            mod_tipo, mod_id = modulo_mix.split("-", 1)      # M / MEM
+            prog_tipo, prog_id = programa_mix.split("-", 1)   # PP / EM
+            mod_tipo, mod_id = modulo_mix.split("-", 1)       # M / MEM
 
             try:
                 prog_id = int(prog_id)
@@ -713,22 +749,31 @@ def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
 
             docente_perfil = get_object_or_404(PerfilUsuario, id=docente_perfil_id)
 
-            # ✅ 1) Resolver programa primero
+            # 1) Resolver programa
             if prog_tipo == "PP":
-                programa_obj = get_object_or_404(ProgramaPosgrado, id=prog_id, periodoacademico=periodo_id)
+                programa_obj = get_object_or_404(
+                    ProgramaPosgrado,
+                    id=prog_id,
+                    periodoacademico=periodo_id
+                )
                 programa_ct = ct_prog_pp
-                # PP => siempre docente_tipo 1
-                docente_tipo = 1
+                docente_tipo = 1  # En PP siempre 1
+
             elif prog_tipo == "EM":
-                programa_obj = get_object_or_404(ProgramaPosgradoEM, id=prog_id, periodoacademico=periodo_id)
+                programa_obj = get_object_or_404(
+                    ProgramaPosgradoEM,
+                    id=prog_id,
+                    periodoacademico=periodo_id
+                )
                 programa_ct = ct_prog_em
+
                 if docente_tipo not in (1, 2):
                     docente_tipo = 1
             else:
                 messages.error(request, "Tipo de programa no válido.")
                 return redirect("contratosdocentes_update", contratosdocentes_id=contratosdocentes_id, periodo_id=periodo_id)
 
-            # ✅ 2) Validar tipo de módulo según programa
+            # 2) Validar coherencia módulo/programa
             if prog_tipo == "PP" and mod_tipo != "M":
                 messages.error(request, "El tipo de módulo no corresponde al tipo de programa.")
                 return redirect("contratosdocentes_update", contratosdocentes_id=contratosdocentes_id, periodo_id=periodo_id)
@@ -737,12 +782,16 @@ def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
                 messages.error(request, "El tipo de módulo no corresponde al tipo de programa.")
                 return redirect("contratosdocentes_update", contratosdocentes_id=contratosdocentes_id, periodo_id=periodo_id)
 
-            # ✅ 3) Resolver módulo
+            # 3) Resolver módulo
             if mod_tipo == "M":
                 modulo_obj = get_object_or_404(Modulos, id=mod_id)
                 modulo_ct = ct_mod_m
-                # Validar pertenencia a la maestría del programa
-                ok = Modulos.objects.filter(id=mod_id, maestria=programa_obj.maestria).exists()
+
+                ok = Modulos.objects.filter(
+                    id=mod_id,
+                    maestria=programa_obj.maestria
+                ).exists()
+
                 if not ok:
                     messages.error(request, "El módulo seleccionado no pertenece a la maestría del programa.")
                     return redirect("contratosdocentes_update", contratosdocentes_id=contratosdocentes_id, periodo_id=periodo_id)
@@ -750,8 +799,12 @@ def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
             elif mod_tipo == "MEM":
                 modulo_obj = get_object_or_404(ModulosEM, id=mod_id)
                 modulo_ct = ct_mod_mem
-                # Validar pertenencia a la especialidad del programa
-                ok = ModulosEM.objects.filter(id=mod_id, especialidad=programa_obj.especialidad).exists()
+
+                ok = ModulosEM.objects.filter(
+                    id=mod_id,
+                    especialidad=programa_obj.especialidad
+                ).exists()
+
                 if not ok:
                     messages.error(request, "El módulo seleccionado no pertenece a la especialidad del programa.")
                     return redirect("contratosdocentes_update", contratosdocentes_id=contratosdocentes_id, periodo_id=periodo_id)
@@ -760,7 +813,7 @@ def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
                 messages.error(request, "Tipo de módulo no válido.")
                 return redirect("contratosdocentes_update", contratosdocentes_id=contratosdocentes_id, periodo_id=periodo_id)
 
-            # ✅ 4) Guardar
+            # 4) Guardar
             contrato = form.save(commit=False)
             contrato.docente = docente_perfil.user.id
             contrato.docente_tipo = docente_tipo
@@ -781,7 +834,7 @@ def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
     # ---------------------------
     # Context (GET o POST con errores)
     # ---------------------------
-    docentes_list = PerfilUsuario.objects.filter(rol__in=[2,5]).select_related("user", "user__perfilusuario")
+    docentes_list = PerfilUsuario.objects.filter(rol__in=[2, 5]).select_related("user", "user__perfilusuario")
 
     programas_pp = list(ProgramaPosgrado.objects.filter(periodoacademico=periodo_id))
     programas_em = list(ProgramaPosgradoEM.objects.filter(periodoacademico=periodo_id))
@@ -789,8 +842,14 @@ def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
     pp_maestria_ids = {p.maestria for p in programas_pp if p.maestria}
     em_especialidad_ids = {p.especialidad for p in programas_em if p.especialidad}
 
-    maestrias_map = {m.id: m for m in Maestrias.objects.filter(id__in=pp_maestria_ids).only("id", "nombre")}
-    especialidades_map = {e.id: e for e in EspecialidadesMedicas.objects.filter(id__in=em_especialidad_ids).only("id", "nombre")}
+    maestrias_map = {
+        m.id: m
+        for m in Maestrias.objects.filter(id__in=pp_maestria_ids).only("id", "nombre")
+    }
+    especialidades_map = {
+        e.id: e
+        for e in EspecialidadesMedicas.objects.filter(id__in=em_especialidad_ids).only("id", "nombre")
+    }
 
     for p in programas_pp:
         p.maestria_obj = maestrias_map.get(p.maestria)
@@ -803,7 +862,6 @@ def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
     docente_inicial = PerfilUsuario.objects.filter(user_id=contratodocente.docente).only("id").first()
     initial_docente_id = docente_inicial.id if docente_inicial else None
 
-    # ✅ Iniciales: tipo + id (para evitar concatenaciones raras en template)
     initial_programa_tipo = ""
     initial_programa_id = None
     show_docente_tipo = False
@@ -812,21 +870,33 @@ def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
     if contratodocente.programa_content_type_id == ct_prog_pp.id:
         initial_programa_tipo = "PP"
         initial_programa_id = contratodocente.programa_object_id
+
         prog = next((x for x in programas_pp if x.id == initial_programa_id), None)
         if prog:
             mods = Modulos.objects.filter(maestria=prog.maestria).values("id", "nombre")
-            modulos_list = [{"id": m["id"], "nombre": m["nombre"], "mix": f"M-{m['id']}"} for m in mods]
+            modulos_list = [
+                {"id": m["id"], "nombre": m["nombre"], "mix": f"M-{m['id']}"}
+                for m in mods
+            ]
 
     elif contratodocente.programa_content_type_id == ct_prog_em.id:
         initial_programa_tipo = "EM"
         initial_programa_id = contratodocente.programa_object_id
         show_docente_tipo = True
+
         prog = next((x for x in programas_em if x.id == initial_programa_id), None)
         if prog:
             mods = ModulosEM.objects.filter(especialidad=prog.especialidad).values("id", "nombre")
-            modulos_list = [{"id": m["id"], "nombre": m["nombre"], "mix": f"MEM-{m['id']}"} for m in mods]
+            modulos_list = [
+                {"id": m["id"], "nombre": m["nombre"], "mix": f"MEM-{m['id']}"}
+                for m in mods
+            ]
 
-    initial_programa_mix = f"{initial_programa_tipo}-{initial_programa_id}" if initial_programa_tipo and initial_programa_id else ""
+    initial_programa_mix = (
+        f"{initial_programa_tipo}-{initial_programa_id}"
+        if initial_programa_tipo and initial_programa_id
+        else ""
+    )
 
     initial_modulo_mix = ""
     if contratodocente.modulo_content_type_id == ct_mod_m.id:
@@ -852,15 +922,37 @@ def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
         "modulos_list": modulos_list,
 
         "show_docente_tipo": show_docente_tipo,
+
+        # No es obligatorio si ya usas context processor,
+        # pero no molesta y deja el template consistente.
+        "tiene_permiso_edicion": tiene_permiso_edicion,
+        "tiene_permiso_analista": tiene_permiso_analista,
+        "tiene_permiso_tecnico_contratos": tiene_permiso_tecnico_contratos,
     })
 
 
     
-@role_required([4, 7])
+@role_required([4, 7, 8])
 @transaction.atomic
 def contratotutor_update(request, contratotutor_id, periodo_id):
     contratotutor = get_object_or_404(ContratoTutor, id=contratotutor_id)
     periodoacademico = get_object_or_404(PeriodosAcademicos, id=periodo_id)
+
+    # ---------------------------
+    # Permisos / roles
+    # 4 = edición
+    # 7 = analista
+    # 8 = técnico contratos (solo URL)
+    # ---------------------------
+    rol = None
+    if hasattr(request.user, 'perfilusuario'):
+        rol = request.user.perfilusuario.rol
+
+    tiene_permiso_edicion = request.user.is_superuser or rol == 4
+    tiene_permiso_analista = request.user.is_superuser or rol == 7
+    tiene_permiso_tecnico_contratos = request.user.is_superuser or rol == 8
+
+    puede_editar_todo = tiene_permiso_edicion or tiene_permiso_analista
 
     # choices para que NO marque invalid_choice
     programa_choices, programas_pp, programas_em = build_programa_choices(periodo_id)
@@ -875,6 +967,21 @@ def contratotutor_update(request, contratotutor_id, periodo_id):
             initial_programa_mix = f"EM-{contratotutor.programa_object_id}"
 
     if request.method == 'POST':
+
+        # =========================================================
+        # CASO 1: Rol restringido (solo puede cambiar urldocumento)
+        # =========================================================
+        if not puede_editar_todo:
+            urldocumento = (request.POST.get('urldocumento') or '').strip()
+            contratotutor.urldocumento = urldocumento
+            contratotutor.save(update_fields=['urldocumento'])
+
+            messages.success(request, "URL del documento actualizada con éxito.")
+            return redirect('contratotutor', periodo_id=periodo_id)
+
+        # =========================================================
+        # CASO 2: Usuario con permisos completos
+        # =========================================================
         form = ContratoTutorForm(
             request.POST,
             instance=contratotutor,
@@ -893,7 +1000,6 @@ def contratotutor_update(request, contratotutor_id, periodo_id):
             messages.success(request, "Contrato actualizado con éxito.")
             return redirect('contratotutor', periodo_id=periodo_id)
 
-        # debug útil
         print("=== FORM ERRORS (as_text) ===")
         print(form.errors.as_text())
         print("=== FORM ERRORS (json) ===")
@@ -908,12 +1014,16 @@ def contratotutor_update(request, contratotutor_id, periodo_id):
             programa_choices=programa_choices
         )
 
-    tutor_list = PerfilUsuario.objects.filter(rol__in=[5,2]).select_related('user')
+    tutor_list = PerfilUsuario.objects.filter(rol__in=[5, 2]).select_related('user')
     maestrantes_list = PerfilUsuario.objects.filter(rol=1).select_related('user')
 
     # opcional (solo si usas nombre_programa en template)
-    maestrias_map = {m.id: m for m in Maestrias.objects.filter(id__in=[p.maestria for p in programas_pp])}
-    especialidades_map = {e.id: e for e in EspecialidadesMedicas.objects.filter(id__in=[p.especialidad for p in programas_em])}
+    maestrias_map = {
+        m.id: m for m in Maestrias.objects.filter(id__in=[p.maestria for p in programas_pp])
+    }
+    especialidades_map = {
+        e.id: e for e in EspecialidadesMedicas.objects.filter(id__in=[p.especialidad for p in programas_em])
+    }
 
     for p in programas_pp:
         p.nombre_programa = maestrias_map.get(p.maestria).nombre if maestrias_map.get(p.maestria) else f"ID {p.maestria}"
@@ -930,13 +1040,35 @@ def contratotutor_update(request, contratotutor_id, periodo_id):
         'maestrantes_list': maestrantes_list,
         'programas_pp': programas_pp,
         'programas_em': programas_em,
+
+        # no es indispensable si ya vienen por context processor,
+        # pero ayuda a que el template quede consistente
+        'tiene_permiso_edicion': tiene_permiso_edicion,
+        'tiene_permiso_analista': tiene_permiso_analista,
+        'tiene_permiso_tecnico_contratos': tiene_permiso_tecnico_contratos,
     })
 
-@role_required([4, 7])
+@role_required([4, 7, 8])
 @transaction.atomic
 def contratocoordinador_update(request, contratocoordinador_id, periodo_id):
     contratocoordinador = get_object_or_404(ContratoCoordinador, id=contratocoordinador_id)
     periodoacademico = get_object_or_404(PeriodosAcademicos, id=periodo_id)
+
+    # ---------------------------
+    # Permisos / roles
+    # 4 = edición
+    # 7 = analista
+    # 8 = técnico contratos (solo URL)
+    # ---------------------------
+    rol = None
+    if hasattr(request.user, 'perfilusuario'):
+        rol = request.user.perfilusuario.rol
+
+    tiene_permiso_edicion = request.user.is_superuser or rol == 4
+    tiene_permiso_analista = request.user.is_superuser or rol == 7
+    tiene_permiso_tecnico_contratos = request.user.is_superuser or rol == 8
+
+    puede_editar_todo = tiene_permiso_edicion or tiene_permiso_analista
 
     # ✅ choices para que NO marque invalid_choice
     programa_choices, programas_pp, programas_em = build_programa_choices(periodo_id)
@@ -951,6 +1083,21 @@ def contratocoordinador_update(request, contratocoordinador_id, periodo_id):
             initial_programa_mix = f"EM-{contratocoordinador.programa_object_id}"
 
     if request.method == 'POST':
+
+        # =========================================================
+        # CASO 1: Rol restringido (solo puede cambiar urldocumento)
+        # =========================================================
+        if not puede_editar_todo:
+            urldocumento = (request.POST.get('urldocumento') or '').strip()
+            contratocoordinador.urldocumento = urldocumento
+            contratocoordinador.save(update_fields=['urldocumento'])
+
+            messages.success(request, "URL del documento actualizada con éxito.")
+            return redirect('contratocoordinador', periodo_id=periodo_id)
+
+        # =========================================================
+        # CASO 2: Usuario con permisos completos
+        # =========================================================
         form = ContratoCoordinadorForm(
             request.POST,
             instance=contratocoordinador,
@@ -985,8 +1132,12 @@ def contratocoordinador_update(request, contratocoordinador_id, periodo_id):
     coordinadores_list = PerfilUsuario.objects.filter(rol=3).select_related('user')
 
     # ✅ si el template usa nombre_programa (como tutores), lo seteamos aquí
-    maestrias_map = {m.id: m for m in Maestrias.objects.filter(id__in=[p.maestria for p in programas_pp])}
-    especialidades_map = {e.id: e for e in EspecialidadesMedicas.objects.filter(id__in=[p.especialidad for p in programas_em])}
+    maestrias_map = {
+        m.id: m for m in Maestrias.objects.filter(id__in=[p.maestria for p in programas_pp])
+    }
+    especialidades_map = {
+        e.id: e for e in EspecialidadesMedicas.objects.filter(id__in=[p.especialidad for p in programas_em])
+    }
 
     for p in programas_pp:
         p.nombre_programa = maestrias_map.get(p.maestria).nombre if maestrias_map.get(p.maestria) else f"ID {p.maestria}"
@@ -1002,7 +1153,12 @@ def contratocoordinador_update(request, contratocoordinador_id, periodo_id):
         'coordinadores_list': coordinadores_list,
         'programas_pp': programas_pp,
         'programas_em': programas_em,
-        'initial_programa_mix': initial_programa_mix,  # por si lo quieres usar directo en HTML
+        'initial_programa_mix': initial_programa_mix,
+
+        # aunque ya venga por context processor, ayuda a mantener consistente el template
+        'tiene_permiso_edicion': tiene_permiso_edicion,
+        'tiene_permiso_analista': tiene_permiso_analista,
+        'tiene_permiso_tecnico_contratos': tiene_permiso_tecnico_contratos,
     })
 
 # =========================================================
