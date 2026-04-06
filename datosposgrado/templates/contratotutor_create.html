@@ -18,11 +18,14 @@
       </div>
       <div class="text-end">
         <p class="mb-1 small text-muted">
-          Si el tutor no se encuentra en la lista, debe crear un nuevo registro.
+          Si el tutor o el estudiante no se encuentra en la lista, debe crear un nuevo registro.
         </p>
         <a class="btn btn-sm btn-primary" href="{% url 'tutordp_create' periodo_id %}">
-          <i class="fa fa-user-plus me-1"></i> Crear tutor
+          <i class="fa fa-book-reader me-1"></i> Crear tutor
         </a>
+        <!-- <a class="btn btn-sm btn-info" href="{% url 'estudiantedp_create' periodo_id %}">
+          <i class="fa fa-user me-1"></i> Crear estudiante
+        </a> -->
       </div>
     </div>
 

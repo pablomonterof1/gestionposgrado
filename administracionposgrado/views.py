@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from datetime import timedelta
+
 from .models import (
     ProgramaPosgrado,  # viene re-exportado desde .models (alias a programasposgrado)
     ValorProgramaPosgrado, CoordinadorPrograma, CoordinadorPagos,
@@ -8,7 +10,7 @@ from .models import (
 )
 from .forms import (
     ValorProgramaPosgradoForm, CoordinadorProgramaForm, CoordinadorPagosForm,
-    ContratoDocenteGestionForm, ContratoTutorGestionForm, EstudianteProgramaGestionForm
+    ContratoDocenteGestionForm, ContratoTutorGestionForm, EstudianteProgramaGestionForm, ProgramaPAOForm
 )
 from datosposgrado.models import ContratoCoordinador, ContratosDocentes, ContratoTutor
 from usuarios.models import PerfilUsuario, PerfilAcademicoUsuario
@@ -1222,3 +1224,75 @@ def programa_reporte_pdf(request, programa_id):
     response['Content-Disposition'] = f'inline; filename="reporte_programa_{programa.id}.pdf"'
     pisa.CreatePDF(src=html, dest=response, link_callback=_link_callback)
     return response
+
+def _calcular_paos_desde_programa(programa):
+    """
+    Calcula 3 PAO a partir de:
+    - fechafin del programa
+    - num_semanas_programa
+
+    Regla:
+    inicio_pao_n = fin_anterior + 1 día
+    fin_pao_n = inicio_pao_n + N semanas - 1 día
+    """
+    fechafin = getattr(programa, 'fechafin', None)
+    num_semanas = getattr(programa, 'num_semanas_programa', None)
+
+    if not fechafin or not num_semanas:
+        return None
+
+    def calc_periodo(fecha_inicio_base, semanas):
+        fecha_inicio = fecha_inicio_base + timedelta(days=1)
+        fecha_fin = fecha_inicio + timedelta(weeks=semanas) - timedelta(days=1)
+        return {
+            'inicio': fecha_inicio,
+            'fin': fecha_fin,
+            'semanas': semanas,
+        }
+
+    pao1 = calc_periodo(fechafin, num_semanas)
+    pao2 = calc_periodo(pao1['fin'], num_semanas)
+    pao3 = calc_periodo(pao2['fin'], num_semanas)
+
+    return {
+        'pao1': pao1,
+        'pao2': pao2,
+        'pao3': pao3,
+    }
+
+@login_required
+@role_required([3, 4, 7])
+@transaction.atomic
+def programa_pao_configurar(request, programa_id):
+    programa = _get_programa_or_404(programa_id)
+
+    initial = {
+        'fechainicio': getattr(programa, 'fechainicio', None),
+        'fechafin': getattr(programa, 'fechafin', None),
+        'num_semanas_programa': getattr(programa, 'num_semanas_programa', None),
+    }
+
+    if request.method == 'POST':
+        form = ProgramaPAOForm(request.POST)
+        if form.is_valid():
+            programa.fechainicio = form.cleaned_data['fechainicio']
+            programa.fechafin = form.cleaned_data['fechafin']
+            programa.num_semanas_programa = form.cleaned_data['num_semanas_programa']
+            programa.save(update_fields=['fechainicio', 'fechafin', 'num_semanas_programa'])
+
+            messages.success(request, 'Datos del programa guardados correctamente para el cálculo de PAO.')
+            return redirect('programa_pao_configurar', programa_id=programa.id)
+        else:
+            messages.error(request, 'Corrige los errores del formulario.')
+    else:
+        form = ProgramaPAOForm(initial=initial)
+
+    programa_actualizado = _get_programa_or_404(programa_id)
+    paos = _calcular_paos_desde_programa(programa_actualizado)
+
+    return render(request, 'programa_pao_form.html', {
+        'programa': programa_actualizado,
+        'programa_id': programa_id,
+        'form': form,
+        'paos': paos,
+    })

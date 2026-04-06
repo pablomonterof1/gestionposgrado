@@ -67,6 +67,12 @@
           {% if form.numero_factura.errors %}<div class="text-danger small">{{ form.numero_factura.errors }}</div>{% endif %}
           <div class="form-text">Requerido si "Pago realizado" está en Sí.</div>
         </div>
+        <div class="col-md-8">
+          <label class="form-label" for="{{ form.urlfactura.id_for_label }}">URL Factura</label>
+          {{ form.urlfactura }}
+          {% if form.urlfactura.errors %}<div class="text-danger small">{{ form.urlfactura.errors }}</div>{% endif %}
+
+        </div>
 
         <div class="col-12">
           <label class="form-label" for="{{ form.observaciones.id_for_label }}">Observaciones</label>

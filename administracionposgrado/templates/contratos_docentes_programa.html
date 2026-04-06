@@ -51,6 +51,7 @@
               <th>N° certificación presupuestaria</th>
               <th>Pago realizado</th>
               <th>N. factura</th>
+              <th>URL Factura</th>
               <th>Observaciones</th>
               <th style="width: 110px;">Acciones</th>
             </tr>
@@ -86,6 +87,17 @@
                 {% endif %}
               </td>
               <td class="text-center">{% if g %}{{ g.numero_factura|default:"—" }}{% else %}—{% endif %}</td>
+              {% if g.urlfactura %}
+              <td class="text-center">
+                <a href="{{ g.urlfactura }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                  <i class="fa-solid fa-file-pdf me-1"></i> Ver
+                </a>
+              </td>
+              {% else %}
+              <td class="text-center">
+                <span class="text-muted">—</span>
+              </td>
+              {% endif %}
               <td class="small">{{ g.observaciones|default:"—" }}</td>
               <td class="text-center">
                 {% if g %}

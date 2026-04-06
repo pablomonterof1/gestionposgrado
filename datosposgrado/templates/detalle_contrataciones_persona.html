@@ -1,0 +1,151 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<main class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-1">Detalle de contrataciones</h2>
+      <p class="text-muted mb-0">{{ nombre_completo }}</p>
+    </div>
+    <a href="{% url 'dashboard_contrataciones_general' %}" class="btn btn-outline-secondary">
+      <i class="fa fa-arrow-left me-1"></i> Volver al dashboard
+    </a>
+  </div>
+
+  <section class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div><strong>Persona:</strong> {{ nombre_completo }}</div>
+        </div>
+        <div class="col-md-4">
+          <div><strong>Cédula:</strong> {{ cedula|default:"-" }}</div>
+        </div>
+        <div class="col-md-4">
+          <div><strong>Email:</strong> {{ persona.email|default:"-" }}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-2">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small">Total contratos</div>
+          <div class="fs-3 fw-bold">{{ total_general }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small">Como docente</div>
+          <div class="fs-3 fw-bold">{{ total_docente }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small">Tutorías</div>
+          <div class="fs-3 fw-bold">{{ total_tutoria }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small">Coordinación</div>
+          <div class="fs-3 fw-bold">{{ total_coordinacion }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small">Períodos distintos</div>
+          <div class="fs-3 fw-bold">{{ periodos_distintos }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small">Programas distintos</div>
+          <div class="fs-3 fw-bold">{{ programas_distintos }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="card border-0 shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Historial completo</h5>
+      <div class="fw-semibold">Valor acumulado: $ {{ total_valor }}</div>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-striped align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Tipo</th>
+              <th>Rol</th>
+              <th>No. Contrato</th>
+              <th>Período</th>
+              <th>Programa</th>
+              <th>Tipo programa</th>
+              <th>Módulo</th>
+              <th>Modalidad</th>
+              <th>Cohorte</th>
+              <th>Valor</th>
+              <th>Fecha registro</th>
+              <th>Documento</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in filas %}
+            <tr>
+              <td>{{ item.tipo_contrato }}</td>
+              <td>{{ item.rol_en_contrato }}</td>
+              <td>{{ item.numerocontrato|default:"-" }}</td>
+              <td>{{ item.periodo_nombre|default:"-" }}</td>
+              <td>{{ item.programa_nombre|default:"-" }}</td>
+              <td>{{ item.programa_tipo|default:"-" }}</td>
+              <td>{{ item.modulo_nombre|default:"-" }}</td>
+              <td>{{ item.modalidad_nombre|default:"-" }}</td>
+              <td>{{ item.cohorte|default:"-" }}</td>
+              <td>$ {{ item.valor|default:"0.00" }}</td>
+              <td>{{ item.created|date:"d/m/Y H:i" }}</td>
+              <td class="text-center">
+                {% if item.urldocumento %}
+                  <a href="{{ item.urldocumento }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                    Ver
+                  </a>
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="12" class="text-center text-muted py-4">
+                Esta persona no registra contrataciones.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+{% endblock %}

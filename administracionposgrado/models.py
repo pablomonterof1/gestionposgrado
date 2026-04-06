@@ -197,6 +197,7 @@ class CoordinadorPagos(models.Model):
     )
 
     numero_factura = models.CharField(max_length=100)
+    urlfactura = models.URLField(max_length=500, blank=True, null=True)
     valor_total = models.DecimalField(max_digits=10, decimal_places=2)
     numero_oficio_tramite = models.CharField(max_length=100, blank=True, null=True)
     moneda = models.CharField(max_length=10, default='USD')
@@ -251,6 +252,7 @@ class ContratoDocenteGestion(models.Model):
     fecha_contratacion = models.DateField(blank=True, null=True)
     pago_realizado = models.BooleanField(default=False)
     numero_factura = models.CharField(max_length=100, blank=True, null=True)
+    urlfactura = models.URLField(max_length=500, blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
 
@@ -276,6 +278,7 @@ class ContratoTutorGestion(models.Model):
     defendido = models.BooleanField(default=False, help_text="Defendido el trabajo de titulación")
     pago_realizado = models.BooleanField(default=False)
     numero_factura = models.CharField(max_length=100, blank=True, null=True)
+    urlfactura = models.URLField(max_length=500, blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
 
@@ -306,7 +309,7 @@ class EstudianteProgramaGestion(models.Model):
     programa = GenericForeignKey('programa_content_type', 'programa_object_id')
 
     # Pagos
-    pago_inscripcion = models.BooleanField(default=False)
+    pago_inscripcion = models.BooleanField(default=True)
     pago_matricula = models.BooleanField(default=False)
     pago_primera_colegiatura = models.BooleanField(default=False)
     pago_segunda_colegiatura = models.BooleanField(default=False)

@@ -10,7 +10,7 @@
     </a>
 
     {% if messages %}
-    <div class="mb-3">
+    <div class="mb-0">
         {% for message in messages %}
         <div class="alert alert-{{ message.tags|default:'info' }} mb-2">{{ message }}</div>
         {% endfor %}
@@ -52,6 +52,7 @@
                         <tr>
                             <th>Fecha</th>
                             <th>N° Factura</th>
+                            <th>URL Factura</th>
                             <th>N° Oficio trámite</th>
                             <th class="text-end">Valor</th>
                             <th class="text-end" style="width:140px">Acciones</th>
@@ -62,6 +63,17 @@
                         <tr>
                             <td>{{ p.mes_pago|date:"Y-m" }}</td>
                             <td>{{ p.numero_factura }}</td>
+                            {% if p.urlfactura %}
+                            <td >
+                                <a href="{{ p.urlfactura }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fa-solid fa-file-pdf me-1"></i> Ver
+                                </a>
+                            </td>
+                            {% else %}
+                            <td >
+                                <span class="text-muted">—</span>
+                            </td>
+                            {% endif %}
                             <td>{{ p.numero_oficio_tramite|default:"—" }}</td>
                             <td class="text-end">{{ p.valor_total }} {{ p.moneda }}</td>
                             <td class="text-end">

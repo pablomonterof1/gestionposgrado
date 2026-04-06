@@ -106,6 +106,7 @@ class ProgramaPosgrado(models.Model):
     modalidad = models.BigIntegerField()
     fechainicio = models.DateField(blank=True, null=True)
     fechafin = models.DateField(blank=True, null=True)
+    num_semanas_programa = models.PositiveSmallIntegerField(blank=True, null=True)
     horarioclases = models.TextField(blank=True, null=True)
     ultimoajuste = models.CharField(max_length=200, blank=True, null=True)
     cohorte = models.IntegerField(choices=[
@@ -182,6 +183,9 @@ class ProgramaPosgradoEM(models.Model):
     campoamplio = models.BigIntegerField()
     periodoacademico = models.BigIntegerField() 
     modalidad = models.BigIntegerField()
+    fechainicio = models.DateField(blank=True, null=True)
+    fechafin = models.DateField(blank=True, null=True)
+    num_semanas_programa = models.PositiveSmallIntegerField(blank=True, null=True)
     cohorte = models.IntegerField(choices=[
         (1, 'Primera'),
         (2, 'Segunda'),

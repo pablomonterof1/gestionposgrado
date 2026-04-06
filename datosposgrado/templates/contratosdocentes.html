@@ -175,6 +175,7 @@
                     data-bs-toggle="tooltip" title="Editar">
                     <i class="fa-solid fa-pen-to-square"></i>
                   </a>
+                  {% if tiene_permiso_edicion %}
                   <form id="form-borrar-{{ contrato.id }}"
                     action="{% url 'contratosdocentes_delete' contrato.id periodo_id %}" method="POST"
                     class="form-borrar m-0">
@@ -184,6 +185,7 @@
                       <i class="fa-solid fa-trash"></i>
                     </button>
                   </form>
+                  {% endif %}
                 </div>
                 {% elif tiene_permiso_tecnico_contratos %}
                 <div class="d-flex">

@@ -92,6 +92,14 @@
           {% endif %}
         </div>
 
+        <div class="col-md-12">
+          <label class="form-label" for="{{ form.urlfactura.id_for_label }}">URL de la factura</label>
+          {{ form.urlfactura }}
+          {% if form.urlfactura.errors %}
+            <div class="text-danger small">{{ form.urlfactura.errors }}</div>
+          {% endif %}
+        </div>
+
         <div class="col-12 d-flex gap-2 mt-3">
           <button class="btn btn-primary" type="submit">
             <i class="fa fa-save"></i> Guardar

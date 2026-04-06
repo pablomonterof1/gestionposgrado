@@ -1,3 +1,7 @@
+from collections import Counter, defaultdict
+from decimal import Decimal
+from django.db.models import Value
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import ContratosDocentes, ContratoTutor, ContratoCoordinador
@@ -550,7 +554,7 @@ def contratotutor_create(request, periodo_id):
         form = ContratoTutorForm(programa_choices=programa_choices)
 
     tutor_list = PerfilUsuario.objects.filter(rol__in=[5,2]).select_related('user')
-    maestrantes_list = PerfilUsuario.objects.filter(rol=1).select_related('user')
+    maestrantes_list = PerfilUsuario.objects.select_related('user')
 
     return render(request, 'contratotutor_create.html', {
         'periodo_id': periodo_id,
@@ -1015,7 +1019,7 @@ def contratotutor_update(request, contratotutor_id, periodo_id):
         )
 
     tutor_list = PerfilUsuario.objects.filter(rol__in=[5, 2]).select_related('user')
-    maestrantes_list = PerfilUsuario.objects.filter(rol=1).select_related('user')
+    maestrantes_list = PerfilUsuario.objects.select_related('user')
 
     # opcional (solo si usas nombre_programa en template)
     maestrias_map = {
@@ -1268,3 +1272,553 @@ def contratocoordinador_delete(request, contratocoordinador_id, periodo_id):
     contrato.delete()
     messages.success(request, "Contrato eliminado con éxito.")
     return redirect('contratocoordinador', periodo_id=periodo_id)
+
+##################################################################################
+####################################REPORTES######################################
+##################################################################################
+
+
+#################################HELPERS########################################
+
+def _safe_full_name(user):
+    if not user:
+        return "-"
+    nombre = f"{user.last_name or ''} {user.first_name or ''}".strip()
+    return nombre if nombre else (user.username or f"Usuario {user.id}")
+
+
+
+def _get_user_cedula_map(user_ids):
+    """
+    Devuelve {user_id: ci} usando PerfilUsuario.ci.
+    """
+    if not user_ids:
+        return {}
+
+    qs = PerfilUsuario.objects.filter(
+        user_id__in=user_ids
+    ).values('user_id', 'ci')
+
+    return {
+        r['user_id']: (r.get('ci') or '')
+        for r in qs
+    }
+
+
+def _build_program_catalogs_from_contracts(contratos_doc=None, contratos_tut=None, contratos_coord=None):
+    """
+    Carga en bloque todos los programas/módulos/catálogos usados en los contratos.
+    Evita N+1.
+    """
+    contratos_doc = contratos_doc or []
+    contratos_tut = contratos_tut or []
+    contratos_coord = contratos_coord or []
+
+    ct_prog_pp = ContentType.objects.get_for_model(ProgramaPosgrado)
+    ct_prog_em = ContentType.objects.get_for_model(ProgramaPosgradoEM)
+    ct_mod_m = ContentType.objects.get_for_model(Modulos)
+    ct_mod_em = ContentType.objects.get_for_model(ModulosEM)
+
+    programa_pp_ids = set()
+    programa_em_ids = set()
+    modulo_m_ids = set()
+    modulo_em_ids = set()
+
+    for c in contratos_doc:
+        if c.programa_content_type_id == ct_prog_pp.id and c.programa_object_id:
+            programa_pp_ids.add(c.programa_object_id)
+        elif c.programa_content_type_id == ct_prog_em.id and c.programa_object_id:
+            programa_em_ids.add(c.programa_object_id)
+
+        if c.modulo_content_type_id == ct_mod_m.id and c.modulo_object_id:
+            modulo_m_ids.add(c.modulo_object_id)
+        elif c.modulo_content_type_id == ct_mod_em.id and c.modulo_object_id:
+            modulo_em_ids.add(c.modulo_object_id)
+
+    for c in contratos_tut:
+        if c.programa_content_type_id == ct_prog_pp.id and c.programa_object_id:
+            programa_pp_ids.add(c.programa_object_id)
+        elif c.programa_content_type_id == ct_prog_em.id and c.programa_object_id:
+            programa_em_ids.add(c.programa_object_id)
+
+    for c in contratos_coord:
+        if c.programa_content_type_id == ct_prog_pp.id and c.programa_object_id:
+            programa_pp_ids.add(c.programa_object_id)
+        elif c.programa_content_type_id == ct_prog_em.id and c.programa_object_id:
+            programa_em_ids.add(c.programa_object_id)
+
+    programas_pp = {
+        p.id: p for p in ProgramaPosgrado.objects.filter(id__in=programa_pp_ids)
+    }
+    programas_em = {
+        p.id: p for p in ProgramaPosgradoEM.objects.filter(id__in=programa_em_ids)
+    }
+    modulos_m = {
+        m.id: m for m in Modulos.objects.filter(id__in=modulo_m_ids)
+    }
+    modulos_em = {
+        m.id: m for m in ModulosEM.objects.filter(id__in=modulo_em_ids)
+    }
+
+    maestria_ids = {p.maestria for p in programas_pp.values() if getattr(p, 'maestria', None)}
+    especialidad_ids = {p.especialidad for p in programas_em.values() if getattr(p, 'especialidad', None)}
+    modalidad_ids = {
+        p.modalidad for p in list(programas_pp.values()) + list(programas_em.values())
+        if getattr(p, 'modalidad', None)
+    }
+    campo_ids = {
+        p.campoamplio for p in list(programas_pp.values()) + list(programas_em.values())
+        if getattr(p, 'campoamplio', None)
+    }
+    periodo_ids = {
+        p.periodoacademico for p in list(programas_pp.values()) + list(programas_em.values())
+        if getattr(p, 'periodoacademico', None)
+    }
+
+    maestrias = {m.id: m for m in Maestrias.objects.filter(id__in=maestria_ids)}
+    especialidades = {e.id: e for e in EspecialidadesMedicas.objects.filter(id__in=especialidad_ids)}
+    modalidades = {m.id: m for m in Modalidad.objects.filter(id__in=modalidad_ids)}
+    campos = {c.id: c for c in CampoAmplio.objects.filter(id__in=campo_ids)}
+    periodos = {p.id: p for p in PeriodosAcademicos.objects.filter(id__in=periodo_ids)}
+
+    return {
+        'ct_prog_pp': ct_prog_pp,
+        'ct_prog_em': ct_prog_em,
+        'ct_mod_m': ct_mod_m,
+        'ct_mod_em': ct_mod_em,
+        'programas_pp': programas_pp,
+        'programas_em': programas_em,
+        'modulos_m': modulos_m,
+        'modulos_em': modulos_em,
+        'maestrias': maestrias,
+        'especialidades': especialidades,
+        'modalidades': modalidades,
+        'campos': campos,
+        'periodos': periodos,
+    }
+
+
+def _resolve_programa_data(contrato, catalogs):
+    """
+    Devuelve información homogénea del programa para cualquier tipo de contrato.
+    """
+    ct_prog_pp = catalogs['ct_prog_pp']
+    ct_prog_em = catalogs['ct_prog_em']
+
+    programa = None
+    programa_nombre = "-"
+    modalidad_nombre = "-"
+    campo_nombre = "-"
+    periodo_nombre = "-"
+    cohorte = "-"
+    programa_tipo = "-"
+
+    if contrato.programa_content_type_id == ct_prog_pp.id:
+        programa = catalogs['programas_pp'].get(contrato.programa_object_id)
+        programa_tipo = "Maestría"
+        if programa:
+            maestria = catalogs['maestrias'].get(programa.maestria)
+            modalidad = catalogs['modalidades'].get(programa.modalidad)
+            campo = catalogs['campos'].get(programa.campoamplio)
+            periodo = catalogs['periodos'].get(programa.periodoacademico)
+
+            programa_nombre = maestria.nombre if maestria else f"ID {programa.maestria}"
+            modalidad_nombre = modalidad if modalidad else "-"
+            campo_nombre = campo.nombre if campo else "-"
+            periodo_nombre = periodo.nombre if periodo else "-"
+            cohorte = programa.get_cohorte_display() if hasattr(programa, 'get_cohorte_display') else "-"
+
+    elif contrato.programa_content_type_id == ct_prog_em.id:
+        programa = catalogs['programas_em'].get(contrato.programa_object_id)
+        programa_tipo = "Especialidad Médica"
+        if programa:
+            especialidad = catalogs['especialidades'].get(programa.especialidad)
+            modalidad = catalogs['modalidades'].get(programa.modalidad)
+            campo = catalogs['campos'].get(programa.campoamplio)
+            periodo = catalogs['periodos'].get(programa.periodoacademico)
+
+            programa_nombre = especialidad.nombre if especialidad else f"ID {programa.especialidad}"
+            modalidad_nombre = modalidad if modalidad else "-"
+            campo_nombre = campo.nombre if campo else "-"
+            periodo_nombre = periodo.nombre if periodo else "-"
+            cohorte = programa.get_cohorte_display() if hasattr(programa, 'get_cohorte_display') else "-"
+
+    return {
+        'programa': programa,
+        'programa_nombre': programa_nombre,
+        'programa_tipo': programa_tipo,
+        'modalidad_nombre': modalidad_nombre,
+        'campo_nombre': campo_nombre,
+        'periodo_nombre': periodo_nombre,
+        'cohorte': cohorte,
+    }
+
+
+def _resolve_modulo_data(contrato, catalogs):
+    """
+    Solo aplica a contratos docentes.
+    """
+    ct_mod_m = catalogs['ct_mod_m']
+    ct_mod_em = catalogs['ct_mod_em']
+
+    if getattr(contrato, 'modulo_content_type_id', None) == ct_mod_m.id:
+        mod = catalogs['modulos_m'].get(contrato.modulo_object_id)
+        return mod.nombre if mod else "-"
+
+    if getattr(contrato, 'modulo_content_type_id', None) == ct_mod_em.id:
+        mod = catalogs['modulos_em'].get(contrato.modulo_object_id)
+        return mod.nombre if mod else "-"
+
+    return "-"
+
+
+def _build_person_contract_rows(user_id):
+    """
+    Unifica el historial completo de una persona en una sola lista.
+    """
+    contratos_doc = list(
+        ContratosDocentes.objects.filter(docente=user_id).only(
+            'id', 'docente', 'docente_tipo', 'programa_content_type', 'programa_object_id',
+            'modulo_content_type', 'modulo_object_id', 'horasacademicas', 'valorxhora',
+            'numerocontrato', 'certificacionpresupuestaria', 'fechacertificacionpresupuestaria',
+            'plazo', 'numeromemorandotthh', 'adenda', 'observaciones', 'urldocumento', 'created'
+        )
+    )
+
+    contratos_tut = list(
+        ContratoTutor.objects.filter(
+            Q(tutor=user_id) | Q(maestrante=user_id)
+        ).only(
+            'id', 'tutor', 'maestrante', 'programa_content_type', 'programa_object_id',
+            'plazo', 'certificacionpresupuestaria', 'fechacertificacionpresupuestaria',
+            'valorcontrato', 'numerocontrato', 'numeromemorandotthh',
+            'adenda', 'observaciones', 'urldocumento', 'created'
+        )
+    )
+
+    contratos_coord = list(
+        ContratoCoordinador.objects.filter(coordinador=user_id).only(
+            'id', 'coordinador', 'programa_content_type', 'programa_object_id',
+            'certificacionpresupuestaria', 'fechacertificacionpresupuestaria',
+            'plazo', 'fechainicio', 'fechafin', 'honorario',
+            'numerocontrato', 'cargo', 'noactasseleccion',
+            'oficioentregadoporth', 'modalidadcontractuar',
+            'observaciones', 'urldocumento', 'created'
+        )
+    )
+
+    catalogs = _build_program_catalogs_from_contracts(contratos_doc, contratos_tut, contratos_coord)
+
+    filas = []
+
+    for c in contratos_doc:
+        prog = _resolve_programa_data(c, catalogs)
+        modulo_nombre = _resolve_modulo_data(c, catalogs)
+        total_valor = (c.horasacademicas or 0) * (c.valorxhora or Decimal('0.00'))
+
+        filas.append({
+            'tipo_contrato': 'Docente',
+            'rol_en_contrato': 'Docente',
+            'contrato_id': c.id,
+            'created': c.created,
+            'numerocontrato': c.numerocontrato,
+            'programa_nombre': prog['programa_nombre'],
+            'programa_tipo': prog['programa_tipo'],
+            'periodo_nombre': prog['periodo_nombre'],
+            'modalidad_nombre': prog['modalidad_nombre'],
+            'campo_nombre': prog['campo_nombre'],
+            'cohorte': prog['cohorte'],
+            'modulo_nombre': modulo_nombre,
+            'valor': total_valor,
+            'urldocumento': c.urldocumento,
+            'observaciones': c.observaciones,
+        })
+
+    for c in contratos_tut:
+        prog = _resolve_programa_data(c, catalogs)
+        rol_en_contrato = 'Tutor' if c.tutor == user_id else 'Maestrante'
+
+        filas.append({
+            'tipo_contrato': 'Tutoría',
+            'rol_en_contrato': rol_en_contrato,
+            'contrato_id': c.id,
+            'created': c.created,
+            'numerocontrato': c.numerocontrato,
+            'programa_nombre': prog['programa_nombre'],
+            'programa_tipo': prog['programa_tipo'],
+            'periodo_nombre': prog['periodo_nombre'],
+            'modalidad_nombre': prog['modalidad_nombre'],
+            'campo_nombre': prog['campo_nombre'],
+            'cohorte': prog['cohorte'],
+            'modulo_nombre': '-',
+            'valor': c.valorcontrato,
+            'urldocumento': c.urldocumento,
+            'observaciones': c.observaciones,
+        })
+
+    for c in contratos_coord:
+        prog = _resolve_programa_data(c, catalogs)
+
+        filas.append({
+            'tipo_contrato': 'Coordinación',
+            'rol_en_contrato': 'Coordinador',
+            'contrato_id': c.id,
+            'created': c.created,
+            'numerocontrato': c.numerocontrato,
+            'programa_nombre': prog['programa_nombre'],
+            'programa_tipo': prog['programa_tipo'],
+            'periodo_nombre': prog['periodo_nombre'],
+            'modalidad_nombre': prog['modalidad_nombre'],
+            'campo_nombre': prog['campo_nombre'],
+            'cohorte': prog['cohorte'],
+            'modulo_nombre': '-',
+            'valor': c.honorario,
+            'urldocumento': c.urldocumento,
+            'observaciones': c.observaciones,
+        })
+
+    filas.sort(key=lambda x: x['created'], reverse=True)
+    return filas
+
+
+def _get_global_contract_summary():
+    """
+    Resumen global optimizado sin traer objetos completos.
+    """
+    docentes_ids = list(ContratosDocentes.objects.values_list('docente', flat=True))
+    tutores_ids = list(ContratoTutor.objects.values_list('tutor', flat=True))
+    maestrantes_ids = list(ContratoTutor.objects.values_list('maestrante', flat=True))
+    coordinadores_ids = list(ContratoCoordinador.objects.values_list('coordinador', flat=True))
+
+    contratos_doc_count = len(docentes_ids)
+    contratos_tut_count = ContratoTutor.objects.count()
+    contratos_coord_count = len(coordinadores_ids)
+
+    todos_ids = docentes_ids + tutores_ids + maestrantes_ids + coordinadores_ids
+    user_counter = Counter(todos_ids)
+
+    return {
+        'contratos_docentes': contratos_doc_count,
+        'contratos_tutores': contratos_tut_count,
+        'contratos_coordinadores': contratos_coord_count,
+        'contratos_total': contratos_doc_count + contratos_tut_count + contratos_coord_count,
+        'personas_unicas': len(user_counter),
+        'personas_multiples': sum(1 for _, n in user_counter.items() if n > 1),
+        'top_ids': [uid for uid, _ in user_counter.most_common(15)],
+        'counter': user_counter,
+    }
+
+def _build_role_counters():
+    """
+    Devuelve contadores por usuario para cada tipo de participación.
+    Hace pocas consultas y luego todo queda en memoria.
+    """
+    docentes_ids = list(ContratosDocentes.objects.values_list('docente', flat=True))
+    tutores_ids = list(ContratoTutor.objects.values_list('tutor', flat=True))
+    maestrantes_ids = list(ContratoTutor.objects.values_list('maestrante', flat=True))
+    coordinadores_ids = list(ContratoCoordinador.objects.values_list('coordinador', flat=True))
+
+    return {
+        'docente': Counter(docentes_ids),
+        'tutor': Counter(tutores_ids),
+        'maestrante': Counter(maestrantes_ids),
+        'coordinador': Counter(coordinadores_ids),
+    }
+
+#################################HELPERS########################################
+#################################VIEWS########################################
+
+@role_required([4, 7, 8])
+def dashboard_contrataciones_general(request):
+    q = (request.GET.get('q') or '').strip()
+
+    resumen = _get_global_contract_summary()
+    counter = resumen['counter']
+    top_ids = resumen['top_ids']
+    role_counters = _build_role_counters()
+    doc_counter = role_counters['docente']
+    tut_counter = role_counters['tutor']
+    mae_counter = role_counters['maestrante']
+    coord_counter = role_counters['coordinador']
+
+    # usuarios top
+    users_map = {
+        u.id: u
+        for u in User.objects.filter(id__in=top_ids).select_related('perfilusuario')
+    }
+    cedulas_map = _get_user_cedula_map(top_ids)
+
+    top_personas = []
+    for uid in top_ids:
+        user = users_map.get(uid)
+        if not user:
+            continue
+
+        top_personas.append({
+            'user_id': uid,
+            'nombre': _safe_full_name(user),
+            'cedula': cedulas_map.get(uid, ''),
+            'total': counter.get(uid, 0),
+            'como_docente': doc_counter.get(uid, 0),
+            'como_tutor': tut_counter.get(uid, 0),
+            'como_maestrante': mae_counter.get(uid, 0),
+            'como_coordinador': coord_counter.get(uid, 0),
+        })
+
+    resultados_busqueda = []
+
+    if q:
+        user_ids_posibles = set()
+
+        # búsqueda por nombre / username / email
+        users_qs = User.objects.filter(
+            Q(first_name__icontains=q) |
+            Q(last_name__icontains=q) |
+            Q(username__icontains=q) |
+            Q(email__icontains=q)
+        ).values_list('id', flat=True)
+        user_ids_posibles.update(users_qs)
+
+        # búsqueda por cédula (PerfilUsuario.ci)
+        ids = PerfilUsuario.objects.filter(
+            ci__icontains=q
+        ).values_list('user_id', flat=True)
+
+        user_ids_posibles.update(ids)
+
+        user_ids_posibles = list(user_ids_posibles)
+
+        users_found = {
+            u.id: u for u in User.objects.filter(id__in=user_ids_posibles)
+        }
+        cedulas_found = _get_user_cedula_map(user_ids_posibles)
+
+        for uid in user_ids_posibles:
+            total_doc = doc_counter.get(uid, 0)
+            total_tut = tut_counter.get(uid, 0)
+            total_mae = mae_counter.get(uid, 0)
+            total_coord = coord_counter.get(uid, 0)
+
+            total = total_doc + total_tut + total_mae + total_coord
+            if total == 0:
+                continue
+
+            user = users_found.get(uid)
+            if not user:
+                continue
+
+            resultados_busqueda.append({
+                'user_id': uid,
+                'nombre': _safe_full_name(user),
+                'cedula': cedulas_found.get(uid, ''),
+                'total': total,
+                'como_docente': total_doc,
+                'como_tutor': total_tut,
+                'como_maestrante': total_mae,
+                'como_coordinador': total_coord,
+            })
+
+        resultados_busqueda.sort(key=lambda x: (-x['total'], x['nombre']))
+
+    # contratos recientes
+    doc_recientes = list(
+        ContratosDocentes.objects.order_by('-created').only(
+            'id', 'docente', 'numerocontrato', 'created'
+        )[:8]
+    )
+    tut_recientes = list(
+        ContratoTutor.objects.order_by('-created').only(
+            'id', 'tutor', 'maestrante', 'numerocontrato', 'created'
+        )[:8]
+    )
+    coord_recientes = list(
+        ContratoCoordinador.objects.order_by('-created').only(
+            'id', 'coordinador', 'numerocontrato', 'created'
+        )[:8]
+    )
+
+    recientes_ids = set()
+    for c in doc_recientes:
+        if c.docente:
+            recientes_ids.add(c.docente)
+    for c in tut_recientes:
+        if c.tutor:
+            recientes_ids.add(c.tutor)
+        if c.maestrante:
+            recientes_ids.add(c.maestrante)
+    for c in coord_recientes:
+        if c.coordinador:
+            recientes_ids.add(c.coordinador)
+
+    recientes_users = {u.id: u for u in User.objects.filter(id__in=recientes_ids)}
+
+    recientes = []
+    for c in doc_recientes:
+        recientes.append({
+            'tipo': 'Docente',
+            'persona': _safe_full_name(recientes_users.get(c.docente)),
+            'numerocontrato': c.numerocontrato,
+            'created': c.created,
+        })
+    for c in tut_recientes:
+        recientes.append({
+            'tipo': 'Tutoría',
+            'persona': _safe_full_name(recientes_users.get(c.tutor)),
+            'numerocontrato': c.numerocontrato,
+            'created': c.created,
+        })
+    for c in coord_recientes:
+        recientes.append({
+            'tipo': 'Coordinación',
+            'persona': _safe_full_name(recientes_users.get(c.coordinador)),
+            'numerocontrato': c.numerocontrato,
+            'created': c.created,
+        })
+
+    recientes.sort(key=lambda x: x['created'], reverse=True)
+    recientes = recientes[:12]
+
+    return render(request, 'dashboard_contrataciones_general.html', {
+        'resumen': resumen,
+        'top_personas': top_personas,
+        'resultados_busqueda': resultados_busqueda,
+        'q': q,
+        'recientes': recientes,
+    })
+
+@role_required([4, 7, 8])
+def detalle_contrataciones_persona(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    filas = _build_person_contract_rows(user_id)
+
+    cedulas_map = _get_user_cedula_map([user_id])
+    cedula = cedulas_map.get(user_id, '')
+
+    total_docente = sum(1 for f in filas if f['tipo_contrato'] == 'Docente')
+    total_tutoria = sum(1 for f in filas if f['tipo_contrato'] == 'Tutoría')
+    total_coordinacion = sum(1 for f in filas if f['tipo_contrato'] == 'Coordinación')
+
+    periodos = sorted({f['periodo_nombre'] for f in filas if f['periodo_nombre'] and f['periodo_nombre'] != '-'})
+    programas = sorted({f['programa_nombre'] for f in filas if f['programa_nombre'] and f['programa_nombre'] != '-'})
+
+    total_valor = Decimal('0.00')
+    for f in filas:
+        if f['valor']:
+            total_valor += Decimal(f['valor'])
+
+    return render(request, 'detalle_contrataciones_persona.html', {
+        'persona': user,
+        'nombre_completo': _safe_full_name(user),
+        'cedula': cedula,
+        'filas': filas,
+        'total_general': len(filas),
+        'total_docente': total_docente,
+        'total_tutoria': total_tutoria,
+        'total_coordinacion': total_coordinacion,
+        'periodos_distintos': len(periodos),
+        'programas_distintos': len(programas),
+        'total_valor': total_valor,
+    })
+#################################VIEWS########################################
+
+

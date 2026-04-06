@@ -54,6 +54,7 @@ urlpatterns = [
     path('actualizar-rol/<int:usuario_id>/', user_views.actualizar_rol_usuario, name='actualizar_rol_usuario'),
     path('docentedp/create/<int:periodo_id>', user_views.docentedp_create, name='docentedp_create'),
     path('tutordp/create/<int:periodo_id>', user_views.tutordp_create, name='tutordp_create'),
+    path('estudiantedp/create/<int:periodo_id>', user_views.estudiantedp_create, name='estudiantedp_create'),
     path('coordinadordp/create/<int:periodo_id>', user_views.coordinadordp_create, name='coordinadordp_create'),
     path('password/change/', user_views.CustomPasswordChangeView.as_view(), name='password_change'),
     path('password/change/done/', user_views.CustomPasswordChangeDoneView.as_view(), name='password_change_done'),
@@ -112,6 +113,8 @@ urlpatterns = [
     path('programa/<int:programa_id>/estudiantes/<int:user_id>/editar/', administracionposgrado_views.estudiante_programa_gestion_upsert, name='estudiante_programa_gestion_upsert'),
 
     path("programa/<int:programa_id>/reporte.pdf", administracionposgrado_views.programa_reporte_pdf,  name="programa_reporte_pdf"),
+
+    path('programa/<int:programa_id>/pao/', administracionposgrado_views.programa_pao_configurar, name='programa_pao_configurar'),
 
 
     #Especialidades Medicas
@@ -216,6 +219,9 @@ urlpatterns = [
     path('contratocoordinador/create/<int:periodo_id>', datosposgrado_views.contratocoordinador_create, name='contratocoordinador_create'),
     path('contratocoordinadorupdate/<int:contratocoordinador_id>/<int:periodo_id>', datosposgrado_views.contratocoordinador_update, name='contratocoordinador_update'),
     path('contratocoordinador/<int:contratocoordinador_id>/<int:periodo_id>/delete', datosposgrado_views.contratocoordinador_delete, name='contratocoordinador_delete'),
+    #Reportes
+    path('dashboard/contrataciones/', datosposgrado_views.dashboard_contrataciones_general, name='dashboard_contrataciones_general'),
+    path('dashboard/contrataciones/persona/<int:user_id>/', datosposgrado_views.detalle_contrataciones_persona, name='detalle_contrataciones_persona'),
     #Seleccion de perfiles
     path('seleccionp/<int:periodo_id>/<int:modulo_id>/', seleccionperfiles_views.seleccionp, name='seleccionp'),
     path('periodosacademicosp/', seleccionperfiles_views.periodosacademicosp, name='periodosacademicosp'),    

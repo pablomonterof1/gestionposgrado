@@ -62,10 +62,14 @@ class CoordinadorPagosForm(forms.ModelForm):
 
     class Meta:
         model = CoordinadorPagos
-        fields = ['contrato', 'mes_pago', 'numero_factura', 'valor_total', 'numero_oficio_tramite', 'moneda']
+        fields = ['contrato', 'mes_pago', 'numero_factura', 'urlfactura', 'valor_total', 'numero_oficio_tramite', 'moneda']
         widgets = {
-            'mes_pago': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'mes_pago': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={'class': 'form-control', 'type': 'date'}
+            ),
             'numero_factura': forms.TextInput(attrs={'class': 'form-control'}),
+            'urlfactura': forms.URLInput(attrs={'class': 'form-control'}),
             'valor_total': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),
             'numero_oficio_tramite': forms.TextInput(attrs={'class': 'form-control'}),
             'moneda': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
@@ -77,6 +81,8 @@ class CoordinadorPagosForm(forms.ModelForm):
         contrato_fijo = kwargs.pop('contrato_fijo', None)
 
         super().__init__(*args, **kwargs)
+
+        self.fields['urlfactura'].required = False
 
         if contrato_fijo is not None:
             self.fields['contrato'].queryset = ContratoCoordinador.objects.filter(pk=contrato_fijo)
@@ -101,11 +107,15 @@ class CoordinadorPagosForm(forms.ModelForm):
 class ContratoDocenteGestionForm(forms.ModelForm):
     class Meta:
         model = ContratoDocenteGestion
-        fields = ['fecha_contratacion', 'pago_realizado', 'numero_factura', 'observaciones']
+        fields = ['fecha_contratacion', 'pago_realizado', 'numero_factura', 'urlfactura', 'observaciones']
         widgets = {
-            'fecha_contratacion': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'fecha_contratacion': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={'class': 'form-control', 'type': 'date'}
+            ),
             'pago_realizado': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'numero_factura': forms.TextInput(attrs={'class': 'form-control'}),
+            'urlfactura': forms.URLInput(attrs={'class': 'form-control'}),
             'observaciones': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
         labels = {
@@ -115,17 +125,25 @@ class ContratoDocenteGestionForm(forms.ModelForm):
             'observaciones': 'Observaciones (en caso de no estar pagado)',
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['urlfactura'].required = False
+
 
 
 class ContratoTutorGestionForm(forms.ModelForm):
     class Meta:
         model = ContratoTutorGestion
-        fields = ['fecha_contratacion', 'defendido', 'pago_realizado', 'numero_factura', 'observaciones']
+        fields = ['fecha_contratacion', 'defendido', 'pago_realizado', 'numero_factura', 'urlfactura', 'observaciones']
         widgets = {
-            'fecha_contratacion': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'fecha_contratacion': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={'class': 'form-control', 'type': 'date'}
+            ),
             'defendido': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'pago_realizado': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'numero_factura': forms.TextInput(attrs={'class': 'form-control'}),
+            'urlfactura': forms.URLInput(attrs={'class': 'form-control'}),
             'observaciones': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
         labels = {
@@ -135,6 +153,10 @@ class ContratoTutorGestionForm(forms.ModelForm):
             'numero_factura': 'N° Factura',
             'observaciones': 'Observaciones (si no está pagado)',
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['urlfactura'].required = False
 
 
 class EstudianteProgramaGestionForm(forms.ModelForm):
@@ -185,3 +207,41 @@ class EstudianteProgramaGestionForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Nunca requerido: el modelo ya valida rango y la vista lo normaliza a 0 si aplica
         self.fields['cuotas_pagadas'].required = False
+
+class ProgramaPAOForm(forms.Form):
+    fechainicio = forms.DateField(
+        required=False,
+        widget=forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={'class': 'form-control', 'type': 'date'}
+            ),
+        label='Fecha de inicio del programa'
+    )
+    fechafin = forms.DateField(
+        required=False,
+        widget=forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={'class': 'form-control', 'type': 'date'}
+            ),
+        label='Fecha de fin del programa'
+    )
+    num_semanas_programa = forms.IntegerField(
+        required=False,
+        min_value=1,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+        label='Número de semanas del programa'
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        fechainicio = cleaned_data.get('fechainicio')
+        fechafin = cleaned_data.get('fechafin')
+        num_semanas = cleaned_data.get('num_semanas_programa')
+
+        if fechafin and fechainicio and fechafin < fechainicio:
+            self.add_error('fechafin', 'La fecha de fin no puede ser anterior a la fecha de inicio.')
+
+        if num_semanas is not None and num_semanas <= 0:
+            self.add_error('num_semanas_programa', 'El número de semanas debe ser mayor a cero.')
+
+        return cleaned_data

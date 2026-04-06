@@ -565,6 +565,51 @@ def docentepmmsp_create(request, programa_id,  modulo_id):
 
 
 @login_required
+def estudiantedp_create(request, periodo_id):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre', '').strip()
+        apellido = request.POST.get('apellido', '').strip()
+        cedula = request.POST.get('cedula', '').strip()
+        correo = request.POST.get('correo', '').strip()
+
+        # Validación básica de campos vacíos
+        if not nombre or not apellido or not cedula or not correo:
+            messages.error(request, 'Todos los campos son obligatorios.')
+            return redirect('estudiantedp_create', periodo_id=periodo_id)
+
+        # Validación de formato de correo
+        try:
+            validate_email(correo)
+        except ValidationError:
+            messages.error(request, 'El correo electrónico no es válido.')
+            return redirect('estudiantedp_create', periodo_id=periodo_id)
+
+        # Verificar duplicados
+        if User.objects.filter(username=cedula).exists():
+            messages.error(request, 'Ya existe un usuario con esa cédula.')
+            return redirect('estudiantedp_create', periodo_id=periodo_id)
+
+        if User.objects.filter(email=correo).exists():
+            messages.error(
+                request, 'Ya existe un usuario con ese correo electrónico.')
+            return redirect('estudiantedp_create', periodo_id=periodo_id)
+
+        # Crear el usuario
+        user = User.objects.create_user(
+            username=cedula,
+            password=cedula,
+            first_name=nombre,
+            last_name=apellido,
+            email=correo
+        )
+        PerfilUsuario.objects.create(user=user, rol=1, ci=cedula)
+        messages.success(request, 'Estudiante creado exitosamente.')
+        return redirect('contratotutor_create', periodo_id=periodo_id)
+
+    return render(request, 'estudiantedp_create.html',
+                {'periodo_id': periodo_id})
+
+@login_required
 def estudiantepm_create(request, programa_id):
     if request.method == 'POST':
         nombre = request.POST.get('nombre', '').strip()

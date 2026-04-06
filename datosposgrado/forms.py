@@ -65,7 +65,7 @@ class ContratosDocentesForm(forms.ModelForm):
         if not self.instance.pk:
             anio = datetime.now().year
             self.fields['numerocontrato'].initial = 'SP-DATH-UNACH-'
-            self.fields['numeromemorandotthh'].initial = f'UNACH-DATH-{anio}-'
+            self.fields['numeromemorandotthh'].initial = f'-DATH-UNACH-{anio}'
 
 # =========================================================
 # Helpers: convertir "M-12" / "EM-5" -> content_type + object_id
