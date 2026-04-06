@@ -79,6 +79,14 @@
 
 </main>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $('#maestriaSelect').select2({ placeholder: "Seleccione la maestría", width: '100%' });
+  });
+</script>
+
 <script>
     const campoamplio = document.getElementById('campoamplioSelect');
     const maestria = document.getElementById('maestriaSelect');

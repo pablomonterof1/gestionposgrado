@@ -62,7 +62,7 @@ def contratosdocentes(request, periodo_id):
     # Si no hay programas en el periodo, devolver vacío rápido
     if not prog_m_ids and not prog_em_ids:
         return render(request, 'contratosdocentes.html', {
-            'docentes_list': PerfilUsuario.objects.filter(rol__in=[2,5]).select_related('user'),
+            'docentes_list': PerfilUsuario.objects.filter(rol__in=[2,5,7]).select_related('user'),
             'contratos_por_periordo': [],
             'periodo_id': periodo_id,
             'periodoacademico': periodoacademico,
@@ -135,7 +135,7 @@ def contratosdocentes(request, periodo_id):
             c.modulo_obj = modulos_em.get(c.modulo_object_id)
     
 
-    docentes_list = PerfilUsuario.objects.filter(rol__in=[2,5])
+    docentes_list = PerfilUsuario.objects.filter(rol__in=[2,5,7])
 
     return render(request, 'contratosdocentes.html', {
         'docentes_list': docentes_list,
@@ -226,7 +226,7 @@ def contratotutor(request, periodo_id):
                 c.periodoacademico_obj = periodos_map.get(prog.periodoacademico)
                 c.cohorte_label = prog.get_cohorte_display()
 
-    tutor_list = PerfilUsuario.objects.filter(rol__in=[5,2])
+    tutor_list = PerfilUsuario.objects.filter(rol__in=[5,2,7])
     periodoacademico = get_object_or_404(PeriodosAcademicos, id=periodo_id)
 
     return render(request, 'contratotutor.html', {
@@ -438,7 +438,7 @@ def _build_context_create(periodo_id, form):
     Context del create (GET o POST con errores)
     Optimizado: pocas consultas y sin loops N+1 pesados.
     """
-    docentes_list = PerfilUsuario.objects.filter(rol__in=[2,5]).select_related("user", "user__perfilusuario")
+    docentes_list = PerfilUsuario.objects.filter(rol__in=[2,5,7]).select_related("user", "user__perfilusuario")
 
     programas_m = list(ProgramaPosgrado.objects.filter(periodoacademico=periodo_id))
     programas_em = list(ProgramaPosgradoEM.objects.filter(periodoacademico=periodo_id))
@@ -553,7 +553,7 @@ def contratotutor_create(request, periodo_id):
     else:
         form = ContratoTutorForm(programa_choices=programa_choices)
 
-    tutor_list = PerfilUsuario.objects.filter(rol__in=[5,2]).select_related('user')
+    tutor_list = PerfilUsuario.objects.filter(rol__in=[5,2,7]).select_related('user')
     maestrantes_list = PerfilUsuario.objects.select_related('user')
 
     return render(request, 'contratotutor_create.html', {
@@ -838,7 +838,7 @@ def contratosdocentes_update(request, contratosdocentes_id, periodo_id):
     # ---------------------------
     # Context (GET o POST con errores)
     # ---------------------------
-    docentes_list = PerfilUsuario.objects.filter(rol__in=[2, 5]).select_related("user", "user__perfilusuario")
+    docentes_list = PerfilUsuario.objects.filter(rol__in=[2, 5, 7]).select_related("user", "user__perfilusuario")
 
     programas_pp = list(ProgramaPosgrado.objects.filter(periodoacademico=periodo_id))
     programas_em = list(ProgramaPosgradoEM.objects.filter(periodoacademico=periodo_id))
@@ -1018,7 +1018,7 @@ def contratotutor_update(request, contratotutor_id, periodo_id):
             programa_choices=programa_choices
         )
 
-    tutor_list = PerfilUsuario.objects.filter(rol__in=[5, 2]).select_related('user')
+    tutor_list = PerfilUsuario.objects.filter(rol__in=[5, 2, 7]).select_related('user')
     maestrantes_list = PerfilUsuario.objects.select_related('user')
 
     # opcional (solo si usas nombre_programa en template)

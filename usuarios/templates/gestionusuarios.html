@@ -34,6 +34,7 @@
                     <tr>
                         <th scope="col">Nombre</th>
                         <th scope="col">Correo</th>
+                        <th scope="col">Cédula</th>
                         <th scope="col">Rol</th>
                         <th scope="col"></th>
                         <th scope="col">Editar</th>
@@ -45,6 +46,11 @@
                     <tr>
                         <td>{{ usuario.first_name }} {{ usuario.last_name }}</td>
                         <td>{{ usuario.email }}</td>
+                        {% if usuario.perfilusuario.ci %}
+                        <td>{{ usuario.perfilusuario.ci }}</td>
+                        {% else %}
+                        <td>Sin cédula</td>
+                        {% endif %}
                         {% if usuario.perfilusuario.rol %}
                         <td> {{ usuario.perfilusuario.get_rol_display }}</td>
                         {% else %}
@@ -61,8 +67,8 @@
                                     <option value="1" {% if usuario.PerfilUsuario.rol == 1 %}selected{% endif %}>Estudiante</option>
                                     <option value="2" {% if usuario.PerfilUsuario.rol == 2 %}selected{% endif %}>Docente</option>
                                     <option value="3" {% if usuario.PerfilUsuario.rol == 3 %}selected{% endif %}>Coordinador</option>
-                                    <option value="4" {% if usuario.PerfilUsuario.rol == 4 %}selected{% endif %}>Editor
-                                    </option>
+                                    <option value="4" {% if usuario.PerfilUsuario.rol == 4 %}selected{% endif %}>Editor</option>
+                                    <option value="5" {% if usuario.PerfilUsuario.rol == 5 %}selected{% endif %}>Tutor</option>
                                 </select>
                             </form>
 

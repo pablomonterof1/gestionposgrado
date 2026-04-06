@@ -97,7 +97,7 @@
                 <option selected disabled>Seleccione un maestrante</option>
                 {% for maestrante in maestrantes_list %}
                   <option value="{{ maestrante.id }}">
-                    {{ maestrante.user.get_full_name }}
+                    {{ maestrante.user.get_full_name }} - {{ maestrante.user.perfilusuario.ci }}
                   </option>
                 {% endfor %}
               </select>
