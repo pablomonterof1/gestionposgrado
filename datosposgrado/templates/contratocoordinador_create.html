@@ -76,7 +76,7 @@
                 {% for c in coordinadores_list %}
                   <option value="{{ c.id }}"
                     {% if request.POST.coordinador == c.id|stringformat:"s" %}selected{% endif %}>
-                    {{ c.user.get_full_name }} - {{ c.user.perfilusuario.ci }}
+                    {{ c.user.last_name }} {{ c.user.first_name }} - {{ c.user.perfilusuario.ci }}
                   </option>
                 {% endfor %}
               </select>

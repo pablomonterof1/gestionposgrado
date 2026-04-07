@@ -57,7 +57,7 @@
                 <option selected disabled>Seleccione un docente</option>
                 {% for docente in docentes_list %}
                   <option value="{{ docente.id }}">
-                    {{ docente.user.get_full_name }} - {{ docente.user.perfilusuario.ci }}
+                    {{ docente.user.last_name }} {{ docente.user.first_name }} - {{ docente.user.perfilusuario.ci }}
                   </option>
                 {% endfor %}
               </select>

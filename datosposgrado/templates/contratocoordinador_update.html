@@ -64,7 +64,7 @@
                 {% for coordinador in coordinadores_list %}
                   <option value="{{ coordinador.id }}"
                     {% if contratocoordinador.coordinador == coordinador.user.id %} selected {% endif %}>
-                    {{ coordinador.user.get_full_name }} - {{ coordinador.user.perfilusuario.ci }}
+                    {{ coordinador.user.last_name }} {{ coordinador.user.first_name }} - {{ coordinador.user.perfilusuario.ci }}
                   </option>
                 {% endfor %}
               </select>

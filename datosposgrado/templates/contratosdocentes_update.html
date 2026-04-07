@@ -57,7 +57,7 @@
                 {% for docente in docentes_list %}
                   <option value="{{ docente.id }}"
                     {% if initial_docente_id == docente.id %} selected {% endif %}>
-                    {{ docente.user.get_full_name }} - {{ docente.user.perfilusuario.ci }}
+                    {{ docente.user.last_name }} {{ docente.user.first_name }} - {{ docente.user.perfilusuario.ci }}
                   </option>
                 {% endfor %}
               </select>

@@ -58,7 +58,7 @@
               <select name="tutor" class="form-select" id="selecttutor" aria-label="Seleccione un Tutor, por favor">
                 <option selected disabled>Seleccione un Tutor, por favor</option>
                 {% for tutor in tutor_list %}
-                  <option value="{{ tutor.id }}">{{ tutor.user.get_full_name }} - {{ tutor.user.perfilusuario.ci }}</option>
+                  <option value="{{ tutor.id }}">{{ tutor.user.last_name }} {{ tutor.user.first_name }} - {{ tutor.user.perfilusuario.ci }}</option>
                 {% endfor %}
               </select>
             </div>
@@ -97,7 +97,7 @@
                 <option selected disabled>Seleccione un maestrante</option>
                 {% for maestrante in maestrantes_list %}
                   <option value="{{ maestrante.id }}">
-                    {{ maestrante.user.get_full_name }} - {{ maestrante.user.perfilusuario.ci }}
+                    {{ maestrante.user.last_name }} {{ maestrante.user.first_name }} - {{ maestrante.user.perfilusuario.ci }}
                   </option>
                 {% endfor %}
               </select>

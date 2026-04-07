@@ -54,7 +54,7 @@
                 <option disabled>Seleccione un tutor</option>
                 {% for tutor in tutor_list %}
                   <option value="{{ tutor.id }}" {% if contratotutor.tutor == tutor.user.id %}selected{% endif %}>
-                    {{ tutor.user.get_full_name }} - {{ tutor.user.perfilusuario.ci }}
+                    {{ tutor.user.last_name }} {{ tutor.user.first_name }} - {{ tutor.user.perfilusuario.ci }}
                   </option>
                 {% endfor %}
               </select>
@@ -81,7 +81,7 @@
                 <option disabled>Seleccione un maestrante</option>
                 {% for m in maestrantes_list %}
                   <option value="{{ m.id }}" {% if contratotutor.maestrante == m.user.id %}selected{% endif %}>
-                    {{ m.user.get_full_name }} - {{ m.user.perfilusuario.ci }}
+                    {{ m.user.last_name }} {{ m.user.first_name }} - {{ m.user.perfilusuario.ci }}
                   </option>
                 {% endfor %}
               </select>
