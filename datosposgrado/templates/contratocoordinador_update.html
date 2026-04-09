@@ -95,7 +95,7 @@
           </h5>
 
           <div class="row g-3">
-            <div class="col-md-4">
+            <div class="col-md-6">
               <label class="form-label fw-semibold">Certificación presupuestaria</label>
               {{ form.certificacionpresupuestaria }}
               {% if form.certificacionpresupuestaria.errors %}
@@ -103,7 +103,7 @@
               {% endif %}
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-6">
               <label class="form-label fw-semibold">Fecha - Certificación presupuestaria</label>
               {{ form.fechacertificacionpresupuestaria }}
               {% if form.fechacertificacionpresupuestaria.errors %}
@@ -111,15 +111,15 @@
               {% endif %}
             </div>
 
-            <div class="col-md-4">
+            <!-- <div class="col-md-4">
               <label class="form-label fw-semibold">Plazo (Opcional)</label>
               {{ form.plazo }}
               {% if form.plazo.errors %}
                 <div class="text-danger small mt-1">{{ form.plazo.errors }}</div>
               {% endif %}
-            </div>
+            </div> -->
 
-            <div class="col-md-4">
+            <div class="col-md-6">
               <label class="form-label fw-semibold">Fecha de inicio (Contrato)</label>
               {{ form.fechainicio }}
               {% if form.fechainicio.errors %}
@@ -127,7 +127,7 @@
               {% endif %}
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-6">
               <label class="form-label fw-semibold">Fecha de fin (Contrato)</label>
               {{ form.fechafin }}
               {% if form.fechafin.errors %}
@@ -135,13 +135,7 @@
               {% endif %}
             </div>
 
-            <div class="col-md-4">
-              <label class="form-label fw-semibold">Honorario</label>
-              {{ form.honorario }}
-              {% if form.honorario.errors %}
-                <div class="text-danger small mt-1">{{ form.honorario.errors }}</div>
-              {% endif %}
-            </div>
+
           </div>
         </div>
 
@@ -152,6 +146,15 @@
           </h5>
 
           <div class="row g-3">
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Honorario</label>
+              {{ form.honorario }}
+              {% if form.honorario.errors %}
+                <div class="text-danger small mt-1">{{ form.honorario.errors }}</div>
+              {% endif %}
+            </div>
+
             <div class="col-md-4">
               <label class="form-label fw-semibold">Número de contrato</label>
               {{ form.numerocontrato }}
@@ -176,7 +179,7 @@
               {% endif %}
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-4">
               <label class="form-label fw-semibold">Oficio entregado por TH</label>
               {{ form.oficioentregadoporth }}
               {% if form.oficioentregadoporth.errors %}
@@ -184,7 +187,7 @@
               {% endif %}
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-4">
               <label class="form-label fw-semibold">Modalidad Contractual</label>
               {{ form.modalidadcontractuar }}
               {% if form.modalidadcontractuar.errors %}

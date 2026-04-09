@@ -272,6 +272,9 @@ class ContratoCoordinadorForm(forms.ModelForm):
             self.fields['programa_mix'].choices = programa_choices
         else:
             self.fields['programa_mix'].choices = [('', 'Seleccione un programa')]
+        if not self.instance.pk:
+            self.fields['cargo'].initial = 'Coordinador de Programa de Posgrado'
+            self.fields['modalidadcontractuar'].initial = 'Servicios profesionales'
 
 
     def clean(self):

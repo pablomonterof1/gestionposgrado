@@ -307,7 +307,7 @@ def contratocoordinador(request, periodo_id):
                 c.periodoacademico_obj = periodos_map.get(prog.periodoacademico)
                 c.cohorte_display = prog.get_cohorte_display()
 
-    coordinadores_list = PerfilUsuario.objects.filter(rol=3).select_related('user')
+    coordinadores_list = PerfilUsuario.objects.select_related('user')
 
     return render(request, 'contratocoordinador.html', {
         'periodo_id': periodo_id,
@@ -613,7 +613,7 @@ def contratocoordinador_create(request, periodo_id):
     else:
         form = ContratoCoordinadorForm(programa_choices=programa_choices)
 
-    coordinadores_list = PerfilUsuario.objects.filter(rol=3).select_related('user')
+    coordinadores_list = PerfilUsuario.objects.select_related('user')
 
     # Opcional: para mostrar nombres en el template (igual que tutores)
     maestrias_map = {m.id: m for m in Maestrias.objects.filter(id__in=[p.maestria for p in programas_pp])}
@@ -1136,7 +1136,7 @@ def contratocoordinador_update(request, contratocoordinador_id, periodo_id):
             programa_choices=programa_choices
         )
 
-    coordinadores_list = PerfilUsuario.objects.filter(rol=3).select_related('user')
+    coordinadores_list = PerfilUsuario.objects.select_related('user')
 
     # ✅ si el template usa nombre_programa (como tutores), lo seteamos aquí
     maestrias_map = {
