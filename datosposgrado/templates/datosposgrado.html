@@ -4,28 +4,29 @@
 <main class="container py-5">
 
   <!-- Encabezado -->
-  <div class="d-flex align-items-center justify-content-between mb-4">
-    <div>
-      <h2 class="fw-bold mb-1">Base de datos de Posgrado — UNACH</h2>
-      <div class="text-muted">
-        <strong>Periodo:</strong> {{ periodoacademico.nombre }}
+   <div class="programa-header">
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+          <h2 class="fw-bold mb-1">Base de datos de Posgrado — UNACH</h2>
+          <div class="programa-metaam mt-3">
+            <span style="font-size: 1.3em;"><strong>Periodo:</strong> {{ periodoacademico.nombre }}</span>
+          </div>
+        </div>
+
+        <!-- Botón volver -->
+        <a href="{% url 'periodosacademicosdp' %}"
+          class="btn btn-outline-light shadow-sm"
+          data-bs-toggle="tooltip" title="Volver">
+          <i class="fa fa-arrow-left"></i>
+          <span class="ms-1 d-none d-sm-inline">Volver</span>
+        </a>
       </div>
     </div>
-
-    <!-- Botón volver -->
-    <a href="{% url 'periodosacademicosdp' %}"
-       class="btn btn-outline-dark shadow-sm"
-       data-bs-toggle="tooltip" title="Volver">
-      <i class="fa fa-arrow-left"></i>
-      <span class="ms-1 d-none d-sm-inline">Volver</span>
-    </a>
-  </div>
-
   <!-- Tarjetas -->
   <section class="row g-4">
     <!-- Contratos docentes -->
     <div class="col-12 col-md-6 col-lg-4">
-      <div class="card border-0 shadow-sm h-100 card-hover">
+      <div class="card border-0 h-100 card-hover" style="box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;">
         <div class="card-body d-flex flex-column">
           <div class="d-flex align-items-center gap-3 mb-2">
             <span class="badge rounded-pill text-bg-primary p-3" aria-hidden="true">
@@ -48,7 +49,7 @@
 
     <!-- Contratos tutores -->
     <div class="col-12 col-md-6 col-lg-4">
-      <div class="card border-0 shadow-sm h-100 card-hover">
+      <div class="card border-0 h-100 card-hover" style="box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;">
         <div class="card-body d-flex flex-column">
           <div class="d-flex align-items-center gap-3 mb-2">
             <span class="badge rounded-pill text-bg-success p-3" aria-hidden="true">
@@ -71,7 +72,7 @@
 
     <!-- Contratos coordinadores -->
     <div class="col-12 col-md-6 col-lg-4">
-      <div class="card border-0 shadow-sm h-100 card-hover">
+      <div class="card border-0 h-100 card-hover" style="box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;">
         <div class="card-body d-flex flex-column">
           <div class="d-flex align-items-center gap-3 mb-2">
             <span class="badge rounded-pill text-bg-warning p-3" aria-hidden="true">
@@ -92,6 +93,155 @@
       </div>
     </div>
   </section>
+
+  <hr class="my-5">
+
+<section class="mb-4">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div>
+      <h4 class="fw-bold mb-1">Resumen del período</h4>
+      <p class="text-muted mb-0">Contratos acumulados del período seleccionado</p>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="card border-0 shadow-sm h-100 resumen-kpi">
+        <div class="card-body">
+          <small class="text-muted">Contratos docentes</small>
+          <h2 class="fw-bold text-primary mb-0">{{ resumen_periodo.total_docentes }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="card border-0 shadow-sm h-100 resumen-kpi">
+        <div class="card-body">
+          <small class="text-muted">Contratos tutores</small>
+          <h2 class="fw-bold text-success mb-0">{{ resumen_periodo.total_tutores }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="card border-0 shadow-sm h-100 resumen-kpi">
+        <div class="card-body">
+          <small class="text-muted">Contratos coordinadores</small>
+          <h2 class="fw-bold text-warning mb-0">{{ resumen_periodo.total_coordinadores }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="card border-0 shadow-sm h-100 resumen-kpi">
+        <div class="card-body">
+          <small class="text-muted">Total general</small>
+          <h2 class="fw-bold text-dark mb-0">{{ resumen_periodo.total_general }}</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="mb-4">
+  <div class="row g-3">
+    <div class="col-12 col-md-6 col-xl-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <small class="text-muted">Programas con contratos</small>
+          <h4 class="fw-bold mb-0">{{ resumen_periodo.programas_con_contratos }}</h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <small class="text-danger">Programas sin contratos</small>
+          <h4 class="fw-bold mb-0">{{ resumen_periodo.programas_sin_contratos }}</h4>
+        </div>
+      </div>
+    </div>
+
+    <!-- <div class="col-12 col-xl-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <small class="text-muted">Programa con más contratos</small>
+          {% if resumen_periodo.programa_top %}
+            <h6 class="fw-bold mb-1">{{ resumen_periodo.programa_top.nombre_programa }}</h6>
+            <span class="badge text-bg-dark">{{ resumen_periodo.programa_top.total }} contratos</span>
+          {% else %}
+            <h6 class="fw-bold mb-0">Sin datos</h6>
+          {% endif %}
+        </div>
+      </div>
+    </div> -->
+  </div>
+</section>
+<section class="mb-5">
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-0 pt-4 pb-0">
+      <h4 class="fw-bold mb-1">Resumen por programa de posgrado</h4>
+      <p class="text-muted mb-3">Cantidad de contratos por programa dentro del período</p>
+    </div>
+
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Programa</th>
+              <th>Tipo</th>
+              <th>Modalidad</th>
+              <th>Cohorte</th>
+              <th class="text-center">Docentes</th>
+              <th class="text-center">Tutores</th>
+              <th class="text-center">Coordinadores</th>
+              <th class="text-center">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in resumen_programas %}
+            <tr>
+              <td class="fw-semibold">{{ item.nombre_programa }}</td>
+              <td>{{ item.tipo_programa }}</td>
+              <td>{{ item.modalidad }}</td>
+              <td>{{ item.cohorte }}</td>
+              <td class="text-center">
+                <span class="badge text-bg-primary">{{ item.docentes }}</span>
+              </td>
+              <td class="text-center">
+                <span class="badge text-bg-success">{{ item.tutores }}</span>
+              </td>
+              <td class="text-center">
+                <span class="badge text-bg-warning text-dark">{{ item.coordinadores }}</span>
+              </td>
+              <td class="text-center">
+                <span class="badge text-bg-dark">{{ item.total }}</span>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="8" class="text-center text-muted py-4">
+                No existen programas o contratos registrados para este período.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+
+          <tfoot class="table-light fw-bold">
+            <tr>
+              <td colspan="4" class="text-end">Totales del período:</td>
+              <td class="text-center">{{ resumen_periodo.total_docentes }}</td>
+              <td class="text-center">{{ resumen_periodo.total_tutores }}</td>
+              <td class="text-center">{{ resumen_periodo.total_coordinadores }}</td>
+              <td class="text-center">{{ resumen_periodo.total_general }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
 </main>
 
 <style>

@@ -4,15 +4,16 @@
 <main class="py-5" style="max-width: 95%; margin: auto;">
 
   <!-- Encabezado -->
+  <div class="programa-header"> 
   <div class="d-flex align-items-center justify-content-between mb-3">
     <div>
-      <h2 class="fw-bold mb-1">Lista de contratos de coordinadores</h2>
-      <div class="text-muted" style="font-size: 1.3em;">
-        Periodo: <strong>{{ periodoacademico.nombre }}</strong>
+      <h3 class="fw-bold mb-1">Lista de contratos de coordinadores</h3>
+      <div class="programa-metaam mt-3">
+        <span style="font-size: 1.2em;">Periodo: <strong>{{ periodoacademico.nombre }}</strong></span>
       </div>
     </div>
     <div class="d-flex gap-2">
-      <a href="{% url 'datosposgrado' periodo_id %}" class="btn btn-dark btn-sm" data-bs-toggle="tooltip" title="Volver">
+      <a href="{% url 'datosposgrado' periodo_id %}" class="btn btn-light btn-sm" data-bs-toggle="tooltip" title="Volver">
         <i class="fa fa-arrow-left"></i> <span class="d-none d-sm-inline ms-1">Volver</span>
       </a>
       {% if tiene_permiso_edicion or tiene_permiso_analista %}
@@ -21,6 +22,7 @@
       </a>
       {% endif %}
     </div>
+  </div>
   </div>
 
   {% if messages %}

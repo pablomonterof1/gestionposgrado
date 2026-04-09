@@ -2,199 +2,269 @@
 
 {% block content %}
 
-<main class="container py-5">
+<main class="container py-4">
 
-    <section class="card" style="padding: 2%;">
+    <div class="programa-header">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <h1 class="display-6">{{ maestrianombre }}</h1>
+                <div class="programa-meta mt-3">
+                    <span><b>Periodo:</b> {{ periodoacademiconombre }}</span>
+                    <span><b>Modalidad:</b> {{ modalidadnombre }}</span>
+                    <span><b>Cohorte:</b> {{ programaposgrado.get_cohorte_display }}</span>
+                </div>
+            </div>
 
-        <h1 class="display-5">{{maestrianombre}}</h1>
-        <p class="lead">
+            <div>
+                <a href="{% url 'programasdemaestria' programaposgrado.periodoacademico %}" class="btn btn-light">
+                    <i class="fa fa-arrow-left me-1"></i> Volver
+                </a>
+            </div>
+        </div>
+    </div>
 
-            <b>Periodo académico:</b> {{periodoacademiconombre}}
-            <br>
-            <b>Modalidad:</b> {{modalidadnombre}}
-        </p>
+    <div class="menu-programa-wrap">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <h5 class="mb-0 fw-bold" style="color:#0e1424;">Dashboard del programa</h5>
+            <span class="badge-soft-warning">Resumen general</span>
+        </div>
 
-        <div class="mb-3">
-
-            <a href="{% url 'programasdemaestria' programaposgrado.periodoacademico %}" class="btn btn-outline-dark mb-3"
-                data-bs-toggle="tooltip" title="Volver">
-                <i class="fa fa-arrow-left"></i>
+        <div class="menu-programa">
+            <a class="menu-item" href="{% url 'informacionprogramaposgrado' programaposgrado.id %}">
+                <i class="fa fa-circle-info me-2"></i>Información general
             </a>
+            <a class="menu-item" href="{% url 'usuariosmatriculadosprogramam' programaposgrado.id %}">
+                <i class="fa fa-users me-2"></i>Estudiantes
+            </a>
+            <a class="menu-item" href="{% url 'docentesmatriculadosmodulom' programaposgrado.id %}">
+                <i class="fa fa-chalkboard-user me-2"></i>Docentes
+            </a>
+            {% if tiene_permiso_edicion %}
+            <a class="menu-item" href="{% url 'reactivosprograma' programaposgrado.id %}">
+                <i class="fa fa-list-check me-2"></i>RAE
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <h5 class="section-title">Indicadores principales</h5>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6 col-xl-2">
+            <div class="dashboard-kpi">
+                <span class="kpi-label">Estudiantes</span>
+                <p class="kpi-value">{{ total_estudiantes|default:"0" }}</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-2">
+            <div class="dashboard-kpi">
+                <span class="kpi-label">Docentes</span>
+                <p class="kpi-value">{{ total_docentes|default:"0" }}</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-2">
+            <div class="dashboard-kpi">
+                <span class="kpi-label">Módulos</span>
+                <p class="kpi-value">{{ total_modulos|default:"0" }}</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-2">
+            <div class="dashboard-kpi">
+                <span class="kpi-label">Reactivos validados</span>
+                <p class="kpi-value">{{ reactivos_validados|default:"0" }}</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-2">
+            <div class="dashboard-kpi">
+                <span class="kpi-label">Evaluaciones activas</span>
+                <p class="kpi-value">{{ evaluaciones_activas|default:"0" }}</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-2">
+            <div class="dashboard-kpi">
+                <span class="kpi-label">Coordinador actual</span>
+                <p class="kpi-text">{{ coordinador_actual|default:"No registrado" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-lg-6">
+            <div class="dashboard-panel">
+                <div class="panel-title">Resumen del programa</div>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="info-box">
+                            <small>Cohorte</small>
+                            <strong>{{ programaposgrado.get_cohorte_display }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-box">
+                            <small>Campo amplio</small>
+                            <strong>{{ campoamplionombre|default:"No definido" }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-box">
+                            <small>Fecha de inicio</small>
+                            <strong>
+                                {% if programaposgrado.fechainicio %}
+                                    {{ programaposgrado.fechainicio|date:"d/m/Y" }}
+                                {% else %}
+                                    No definida
+                                {% endif %}
+                            </strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-box">
+                            <small>Fecha de fin</small>
+                            <strong>
+                                {% if programaposgrado.fechafin %}
+                                    {{ programaposgrado.fechafin|date:"d/m/Y" }}
+                                {% else %}
+                                    No definida
+                                {% endif %}
+                            </strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-box">
+                            <small>Semanas del programa</small>
+                            <strong>{{ programaposgrado.num_semanas_programa|default:"No definido" }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-box">
+                            <small>Horario</small>
+                            <strong>{{ programaposgrado.horarioclases|default:"No definido" }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark menuprogposgrado" style="border-radius: 5px;">
-            <div class="container-fluid">
-
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ">
-                        <div class="nav-divider"></div>
-                         <li class="nav-item">
-                            <a class="nav-link fs-5" aria-current="page" href="{% url 'informacionprogramaposgrado' programaposgrado.id %}">
-                                Informarmación general
-                            </a>
-                        </li>
-                        <div class="nav-divider"></div>
-                        <li class="nav-item">
-                            <a class="nav-link fs-5" aria-current="page" href="{% url 'usuariosmatriculadosprogramam' programaposgrado.id %}">
-                                Estudiantes
-                            </a>
-                        </li>
-                        <div class="nav-divider"></div>
-                        <li class="nav-item">
-                            <a class="nav-link fs-5" aria-current="page" href="{% url 'docentesmatriculadosmodulom' programaposgrado.id %}">
-                                Docentes
-                            </a>
-                        </li>
-                        {% if tiene_permiso_edicion %}
-                        <div class="nav-divider"></div>
-                        <li class="nav-item">
-                            <a class="nav-link fs-5" aria-current="page" href="{% url 'reactivosprograma' programaposgrado.id %}">
-                                RAE
-                            </a>
-                        </li>
-                        {% endif %}
-                        <div class="nav-divider"></div>
-                        
-
-                    </ul>
-                </div>
+        <div class="col-lg-6">
+            <div class="dashboard-panel">
+                <div class="panel-title">Estado académico</div>
+                <ul class="dashboard-list">
+                    <li>
+                        <span class="label">Módulos con docente asignado</span>
+                        <span class="value">{{ modulos_con_docente|default:"0" }}</span>
+                    </li>
+                    <li>
+                        <span class="label">Módulos sin docente asignado</span>
+                        <span class="value">{{ modulos_sin_docente|default:"0" }}</span>
+                    </li>
+                    <li>
+                        <span class="label">Reactivos totales</span>
+                        <span class="value">{{ total_reactivos|default:"0" }}</span>
+                    </li>
+                    <li>
+                        <span class="label">Reactivos validados</span>
+                        <span class="value">{{ reactivos_validados|default:"0" }}</span>
+                    </li>
+                    <li>
+                        <span class="label">Simulacros creados</span>
+                        <span class="value">{{ total_simulacros|default:"0" }}</span>
+                    </li>
+                    <li>
+                        <span class="label">Evaluaciones finales creadas</span>
+                        <span class="value">{{ total_finales|default:"0" }}</span>
+                    </li>
+                </ul>
             </div>
-        </nav>
-
-        <br>
-        <hr style="border: 2px solid #cc9933;">
-        <div style="text-align: center;">
-            <p class="fs-3 ">
-                Evaluación del entorno de aprendizaje de los Programas de Posgrado
-            </p>
-
-        </div>
-        <div id="contenidoPrograma" class="row">
-            <!--------------------------------------------- Programa académico -------------------------------->
-            <div class="col-sm-4 my-3">
-                <div class="card h-100 text-white bg-dark">
-                    <div class="card-header" style="background-color: #cc9933;">Programa académico</div>
-                    <div class="card-body">
-                        <h4>Admisión</h4>
-                    </div>
-                    <div class="card-footer text-end">
-
-                        <a id="btnAdmision" class="btn btn-info"
-                            href="{% url 'admision' programaposgrado.id %}">Ingresar</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-4 my-3">
-                <div class="card h-100 text-white bg-dark">
-                    <div class="card-header" style="background-color: #cc9933;">Programa académico</div>
-                    <div class="card-body">
-                        <h4>Diseño curricular e implementación</h4>
-                    </div>
-                    <div class="card-footer text-end">
-                        <a id="btnDisenoCurricular" class="btn btn-info"
-                            href="{% url 'disenocurricular' programaposgrado.id %}">Ingresar</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-4 my-3">
-                <div class="card h-100 text-white bg-dark">
-                    <div class="card-header" style="background-color: #cc9933;">Programa académico</div>
-                    <div class="card-body">
-                        <h4>Titulación</h4>
-                    </div>
-                    <div class="card-footer text-end">
-                        <a id="btnTitulacion" class="btn btn-info"
-                            href="{% url 'titulacion' programaposgrado.id %}">Ingresar</a>
-                    </div>
-                </div>
-            </div>
-
-            <hr style="border: 2px solid #0e1424;">
-            <!--------------------------------------------- Cuerpo académico -------------------------------->
-            <div class="col-sm-4 my-3">
-                <div class="card h-100 text-white bg-dark">
-                    <div class="card-header" style="background-color: #cc9933;">Cuerpo académico</div>
-                    <div class="card-body">
-                        <h4>Composición</h4>
-                    </div>
-                    <div class="card-footer text-end">
-
-                        <a id="btnAdmision" class="btn btn-info"
-                            href="{% url 'composicionca' programaposgrado.id %}">Ingresar</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-4 my-3">
-                <div class="card h-100 text-white bg-dark">
-                    <div class="card-header" style="background-color: #cc9933;">Cuerpo académico</div>
-                    <div class="card-body">
-                        <h4>Gestión académica</h4>
-                    </div>
-                    <div class="card-footer text-end">
-                        <a id="btnDisenoCurricular" class="btn btn-info" href="#">Ingresar</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-4 my-3">
-                <div class="card h-100 text-white bg-dark">
-                    <div class="card-header" style="background-color: #cc9933;">Cuerpo académico</div>
-                    <div class="card-body">
-                        <h4>Evaluación y satisfacción del profesor</h4>
-                    </div>
-                    <div class="card-footer text-end">
-                        <a id="btnTitulacion" class="btn btn-info" href="#">Ingresar</a>
-                    </div>
-                </div>
-            </div>
-
-            <hr style="border: 2px solid #0e1424;">
-
-            <!--------------------------------------------- Estudiantes y graduados-------------------------------->
-            <div class="col-sm-4 my-3">
-                <div class="card h-100 text-white bg-dark">
-                    <div class="card-header" style="background-color: #cc9933;">Estudiantes y graduados</div>
-                    <div class="card-body">
-                        <h4>Gestión</h4>
-                    </div>
-                    <div class="card-footer text-end">
-
-                        <a id="btnAdmision" class="btn btn-info" href="#">Ingresar</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-4 my-3">
-                <div class="card h-100 text-white bg-dark">
-                    <div class="card-header" style="background-color: #cc9933;">Estudiantes y graduados</div>
-                    <div class="card-body">
-                        <h4>Acompañamiento</h4>
-                    </div>
-                    <div class="card-footer text-end">
-                        <a id="btnDisenoCurricular" class="btn btn-info" href="#">Ingresar</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-4 my-3">
-                <div class="card h-100 text-white bg-dark">
-                    <div class="card-header" style="background-color: #cc9933;">Estudiantes y graduados</div>
-                    <div class="card-body">
-                        <h4>Resultados</h4>
-                    </div>
-                    <div class="card-footer text-end">
-                        <a id="btnTitulacion" class="btn btn-info" href="#">Ingresar</a>
-                    </div>
-                </div>
-            </div>
-
-            <hr style="border: 2px solid #0e1424;">
         </div>
 
-    </section>
+        <div class="col-lg-6">
+            <div class="dashboard-panel">
+                <div class="panel-title">Gestión administrativa</div>
+                <ul class="dashboard-list">
+                    <li>
+                        <span class="label">Valor inscripción</span>
+                        <span class="value">{{ valor_inscripcion|default:"No registrado" }}</span>
+                    </li>
+                    <li>
+                        <span class="label">Valor matrícula</span>
+                        <span class="value">{{ valor_matricula|default:"No registrado" }}</span>
+                    </li>
+                    <li>
+                        <span class="label">Plan de pago</span>
+                        <span class="value">{{ plan_pago|default:"No registrado" }}</span>
+                    </li>
+                    <li>
+                        <span class="label">Estudiantes con matrícula pagada</span>
+                        <span class="value">{{ estudiantes_matricula_pagada|default:"0" }}</span>
+                    </li>
+                    <li>
+                        <span class="label">En proceso de titulación</span>
+                        <span class="value">{{ estudiantes_titulacion|default:"0" }}</span>
+                    </li>
+                    <li>
+                        <span class="label">Títulos entregados</span>
+                        <span class="value">{{ titulos_entregados|default:"0" }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="dashboard-panel">
+                <div class="panel-title">Pendientes del programa</div>
+                <ul class="dashboard-list">
+                    <li>
+                        <span class="label">Reactivos pendientes de validar</span>
+                        <span class="value">{{ reactivos_pendientes|default:"0" }}</span>
+                    </li>
+                    <li>
+                        <span class="label">Docentes pendientes de pago</span>
+                        <span class="value">{{ docentes_pendientes_pago|default:"0" }}</span>
+                    </li>
+                    <li>
+                        <span class="label">Tutores pendientes de pago</span>
+                        <span class="value">{{ tutores_pendientes_pago|default:"0" }}</span>
+                    </li>
+                    <li>
+                        <span class="label">Estudiantes sin avance de titulación</span>
+                        <span class="value">{{ estudiantes_sin_avance|default:"0" }}</span>
+                    </li>
+                    <li>
+                        <span class="label">Módulos sin docente</span>
+                        <span class="value">{{ modulos_sin_docente|default:"0" }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="dashboard-panel">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                    <div class="panel-title mb-0 border-0 p-0">Accesos rápidos</div>
+                    <span class="badge-soft-success">Navegación del programa</span>
+                </div>
+                <div class="quick-actions">
+                    <a href="{% url 'informacionprogramaposgrado' programaposgrado.id %}" class="btn btn-outline-dark">
+                        <i class="fa fa-circle-info me-2"></i>Información general
+                    </a>
+                    <a href="{% url 'usuariosmatriculadosprogramam' programaposgrado.id %}" class="btn btn-outline-dark">
+                        <i class="fa fa-users me-2"></i>Estudiantes
+                    </a>
+                    <a href="{% url 'docentesmatriculadosmodulom' programaposgrado.id %}" class="btn btn-outline-dark">
+                        <i class="fa fa-chalkboard-user me-2"></i>Docentes
+                    </a>
+                    {% if tiene_permiso_edicion %}
+                    <a href="{% url 'reactivosprograma' programaposgrado.id %}" class="btn btn-outline-dark">
+                        <i class="fa fa-list-check me-2"></i>RAE
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
 
 </main>
-
-
-
-
-
 
 {% endblock %}

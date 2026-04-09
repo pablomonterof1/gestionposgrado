@@ -32,9 +32,12 @@ def periodosacademicosdp(request):
 @role_required([4, 7, 8])
 def datosposgrado(request, periodo_id):
     periodoacademico = PeriodosAcademicos.objects.get(id=periodo_id)
+    resumen = _build_resumen_contratos_periodo(periodo_id)
     return render(request, 'datosposgrado.html', {
         'periodo_id': periodo_id,
         'periodoacademico': periodoacademico,
+        'resumen_periodo': resumen['resumen_periodo'],
+        'resumen_programas': resumen['resumen_programas'],
     })
 
 
@@ -1820,5 +1823,170 @@ def detalle_contrataciones_persona(request, user_id):
         'total_valor': total_valor,
     })
 #################################VIEWS########################################
+#################################RESUMENPORPERIODO########################################
+def _build_resumen_contratos_periodo(periodo_id):
+    """
+    Resumen visual de contratos por período:
+    - totales generales
+    - detalle por programa
+    No cambia lógica del sistema, solo arma datos para dashboard.
+    """
+
+    ct_pp = ContentType.objects.get_for_model(ProgramaPosgrado)
+    ct_em = ContentType.objects.get_for_model(ProgramaPosgradoEM)
+
+    # =========================
+    # Programas del período
+    # =========================
+    programas_pp = list(ProgramaPosgrado.objects.filter(periodoacademico=periodo_id))
+    programas_em = list(ProgramaPosgradoEM.objects.filter(periodoacademico=periodo_id))
+
+    pp_ids = [p.id for p in programas_pp]
+    em_ids = [p.id for p in programas_em]
+
+    # =========================
+    # Catálogos para nombres
+    # =========================
+    maestrias_map = {
+        m.id: m for m in Maestrias.objects.filter(id__in=[p.maestria for p in programas_pp])
+    }
+    especialidades_map = {
+        e.id: e for e in EspecialidadesMedicas.objects.filter(id__in=[p.especialidad for p in programas_em])
+    }
+    modalidades_map = {
+        m.id: m for m in Modalidad.objects.filter(
+            id__in=list({p.modalidad for p in programas_pp if p.modalidad} | {p.modalidad for p in programas_em if p.modalidad})
+        )
+    }
+
+    # =========================
+    # Inicializar resumen por programa
+    # =========================
+    resumen_programas = {}
+
+    for p in programas_pp:
+        maestria_obj = maestrias_map.get(p.maestria)
+        modalidad_obj = modalidades_map.get(p.modalidad)
+
+        key = f"PP-{p.id}"
+        resumen_programas[key] = {
+            'programa_id': p.id,
+            'programa_mix': key,
+            'tipo_programa': 'Maestría',
+            'nombre_programa': maestria_obj.nombre if maestria_obj else f'ID {p.maestria}',
+            'modalidad': modalidad_obj.modalidad if modalidad_obj else '-',
+            'cohorte': p.get_cohorte_display() if hasattr(p, 'get_cohorte_display') else '-',
+            'docentes': 0,
+            'tutores': 0,
+            'coordinadores': 0,
+            'total': 0,
+        }
+
+    for p in programas_em:
+        especialidad_obj = especialidades_map.get(p.especialidad)
+        modalidad_obj = modalidades_map.get(p.modalidad)
+
+        key = f"EM-{p.id}"
+        resumen_programas[key] = {
+            'programa_id': p.id,
+            'programa_mix': key,
+            'tipo_programa': 'Especialidad Médica',
+            'nombre_programa': especialidad_obj.nombre if especialidad_obj else f'ID {p.especialidad}',
+            'modalidad': modalidad_obj.modalidad if modalidad_obj else '-',
+            'cohorte': p.get_cohorte_display() if hasattr(p, 'get_cohorte_display') else '-',
+            'docentes': 0,
+            'tutores': 0,
+            'coordinadores': 0,
+            'total': 0,
+        }
+
+    # =========================
+    # Contratos del período
+    # =========================
+    contratos_docentes = list(
+        ContratosDocentes.objects.filter(
+            Q(programa_content_type=ct_pp, programa_object_id__in=pp_ids) |
+            Q(programa_content_type=ct_em, programa_object_id__in=em_ids)
+        ).only('programa_content_type_id', 'programa_object_id')
+    )
+
+    contratos_tutores = list(
+        ContratoTutor.objects.filter(
+            Q(programa_content_type=ct_pp, programa_object_id__in=pp_ids) |
+            Q(programa_content_type=ct_em, programa_object_id__in=em_ids)
+        ).only('programa_content_type_id', 'programa_object_id')
+    )
+
+    contratos_coordinadores = list(
+        ContratoCoordinador.objects.filter(
+            Q(programa_content_type=ct_pp, programa_object_id__in=pp_ids) |
+            Q(programa_content_type=ct_em, programa_object_id__in=em_ids)
+        ).only('programa_content_type_id', 'programa_object_id')
+    )
+
+    # =========================
+    # Acumular docentes
+    # =========================
+    for c in contratos_docentes:
+        pref = 'PP' if c.programa_content_type_id == ct_pp.id else 'EM'
+        key = f'{pref}-{c.programa_object_id}'
+        if key in resumen_programas:
+            resumen_programas[key]['docentes'] += 1
+
+    # =========================
+    # Acumular tutores
+    # =========================
+    for c in contratos_tutores:
+        pref = 'PP' if c.programa_content_type_id == ct_pp.id else 'EM'
+        key = f'{pref}-{c.programa_object_id}'
+        if key in resumen_programas:
+            resumen_programas[key]['tutores'] += 1
+
+    # =========================
+    # Acumular coordinadores
+    # =========================
+    for c in contratos_coordinadores:
+        pref = 'PP' if c.programa_content_type_id == ct_pp.id else 'EM'
+        key = f'{pref}-{c.programa_object_id}'
+        if key in resumen_programas:
+            resumen_programas[key]['coordinadores'] += 1
+
+    # =========================
+    # Totales por programa
+    # =========================
+    for item in resumen_programas.values():
+        item['total'] = item['docentes'] + item['tutores'] + item['coordinadores']
+
+    resumen_programas_list = sorted(
+        resumen_programas.values(),
+        key=lambda x: (-x['total'], x['nombre_programa'])
+    )
+
+    # =========================
+    # Totales generales
+    # =========================
+    total_docentes = len(contratos_docentes)
+    total_tutores = len(contratos_tutores)
+    total_coordinadores = len(contratos_coordinadores)
+    total_general = total_docentes + total_tutores + total_coordinadores
+
+    programas_con_contratos = sum(1 for p in resumen_programas_list if p['total'] > 0)
+    programas_sin_contratos = sum(1 for p in resumen_programas_list if p['total'] == 0)
+
+    programa_top = resumen_programas_list[0] if resumen_programas_list else None
+
+    return {
+        'resumen_periodo': {
+            'total_docentes': total_docentes,
+            'total_tutores': total_tutores,
+            'total_coordinadores': total_coordinadores,
+            'total_general': total_general,
+            'programas_con_contratos': programas_con_contratos,
+            'programas_sin_contratos': programas_sin_contratos,
+            'programa_top': programa_top,
+        },
+        'resumen_programas': resumen_programas_list,
+    }
+#################################RESUMENPORPERIODO########################################
 
 
