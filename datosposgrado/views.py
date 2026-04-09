@@ -19,6 +19,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.http import require_POST
+from django.template.loader import get_template
+from django.http import HttpResponse
+from xhtml2pdf import pisa
 
 # Create your views here.
 
@@ -1988,5 +1991,29 @@ def _build_resumen_contratos_periodo(periodo_id):
         'resumen_programas': resumen_programas_list,
     }
 #################################RESUMENPORPERIODO########################################
+#################################PDFRESUMENPORPERIODO########################################
+def exportar_resumen_periodo_pdf(request, periodo_id):
+    periodoacademico = PeriodosAcademicos.objects.get(id=periodo_id)
 
+    resumen = _build_resumen_contratos_periodo(periodo_id)
 
+    template = get_template('resumen_periodo_pdf.html')
+
+    context = {
+        'periodoacademico': periodoacademico,
+        'resumen_periodo': resumen['resumen_periodo'],
+        'resumen_programas': resumen['resumen_programas'],
+    }
+
+    html = template.render(context)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="resumen_periodo_{periodoacademico.nombre}.pdf"'
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+
+    if pisa_status.err:
+        return HttpResponse('Error al generar PDF', status=500)
+
+    return response
+#################################PDFRESUMENPORPERIODO########################################

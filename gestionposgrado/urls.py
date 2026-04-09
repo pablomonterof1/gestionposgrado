@@ -202,6 +202,7 @@ urlpatterns = [
     #DATOSPOSGRADO
     path('periodosacademicosdp/', datosposgrado_views.periodosacademicosdp, name='periodosacademicosdp'),
     path('datosposgrado/<int:periodo_id>/', datosposgrado_views.datosposgrado, name='datosposgrado'),
+    path('resumen-pdf/<int:periodo_id>/', datosposgrado_views.exportar_resumen_periodo_pdf,  name='exportar_resumen_periodo_pdf'),
     #Contratos docentes
     path('contratosdocentes/<int:periodo_id>/', datosposgrado_views.contratosdocentes, name='contratosdocentes'),
     path('contratosdocentes/create/<int:periodo_id>', datosposgrado_views.contratosdocentes_create, name='contratosdocentes_create'),
