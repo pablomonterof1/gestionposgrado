@@ -420,6 +420,7 @@ def contratosdocentes_create(request, periodo_id):
 
         obj.docente = docente.user.id
         obj.docente_tipo = docente_tipo
+        obj.creado_por = request.user
 
         obj.programa_content_type = ContentType.objects.get_for_model(ProgramaModel)
         obj.programa_object_id = programa_obj.id
@@ -543,6 +544,7 @@ def contratotutor_create(request, periodo_id):
             obj = form.save(commit=False)
             obj.tutor = tutor_perfil.user.id
             obj.maestrante = maestrante_perfil.user.id
+            obj.creado_por = request.user
             obj.save()
 
             messages.success(request, "Contrato de tutor creado correctamente.")
@@ -598,7 +600,7 @@ def contratocoordinador_create(request, periodo_id):
 
             # ✅ tu modelo guarda coordinador como IntegerField (User.id)
             obj.coordinador = coordinador_perfil.user.id
-
+            obj.creado_por = request.user
             # ✅ programa_content_type + programa_object_id ya quedan seteados en el clean() del form
             obj.save()
 

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db.models import Q
+from django.conf import settings
 
 
 # -----------------------------
@@ -64,6 +65,14 @@ class ContratosDocentes(models.Model):
     urldocumento = models.URLField(max_length=500, blank=True, null=True)
 
     created = models.DateTimeField(auto_now_add=True)
+    creado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='contratos_docentes_creados',
+        editable=False
+    )
 
     class Meta:
         ordering = ['-created']
@@ -121,6 +130,14 @@ class ContratoTutor(models.Model):
     urldocumento = models.URLField(max_length=500, blank=True, null=True)
 
     created = models.DateTimeField(auto_now_add=True)
+    creado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='contratos_tutor_creados',
+        editable=False
+    )
 
     class Meta:
         ordering = ['-created']
@@ -173,6 +190,14 @@ class ContratoCoordinador(models.Model):
     urldocumento = models.URLField(max_length=500, blank=True, null=True)
 
     created = models.DateTimeField(auto_now_add=True)
+    creado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='contratos_coordinador_creados',
+        editable=False
+    )
 
     class Meta:
         ordering = ['-created']
