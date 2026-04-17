@@ -1,83 +1,90 @@
 {% extends 'layouts/base.html' %}
 {% block content %}
 
-<main class="container py-5 ">
-    <section class="card" style="padding: 2%;">
-        <h3 class="display-6"> Reactivos </h3>
-        <br>
+<main class="container py-4">
 
-        <p class="lead">
-            <b>Programa:</b> {{maestrianombre}}
-            <br>
-            <b>Periodo académico:</b> {{periodoacademiconombre}}
-
-        </p>
-
-        <div class="mb-3">
-
-            <a class="btn btn-sm btn-secondary" href="{% url 'programamaestria' programaposgrado.id %}"> <i class="fa fa-arrow-left"></i> Volver</a>
-        </div>
-
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark menuprogposgrado" style="border-radius: 5px;">
-            <div class="container-fluid">
-
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ">
-                        <div class="nav-divider"></div>
-                        <li class="nav-item">
-                            <a class="nav-link fs-5" aria-current="page"
-                                href="{% url 'rae_programaposgrado' programaposgrado.id %}"
-                                style="color: white !important;">
-                                Reactivos - RAE
-                            </a>
-                        </li>
-                        <div class="nav-divider"></div>
-                    </ul>
+    <!-- Cabecera -->
+    <div class="programa-header">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <h1 class="display-6">Reactivos RAE</h1>
+                <div class="programa-meta mt-3">
+                    <span style="font-size: 1.2rem;" ><b>Programa:</b> {{ maestrianombre }}</span>
+                    <span style="font-size: 1.2rem;" ><b>Periodo:</b> {{ periodoacademiconombre }}</span>
                 </div>
             </div>
-        </nav>
 
-        <br>
-        <p class="lead">
-            <b>
-                Seleccione un modulo para ver los reactivos disponibles:
-            </b>
-        </p>
+            <div>
+                <a class="btn btn-light" href="{% url 'programamaestria' programaposgrado.id %}">
+                    <i class="fa fa-arrow-left me-1"></i> Volver
+                </a>
+            </div>
+        </div>
+    </div>
 
-        <div class="row">
+    <!-- Menú -->
+    <div class="menu-programa-wrap">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <h5 class="mb-0 fw-bold" style="color:#0e1424;">Gestión de reactivos</h5>
+            <span class="badge-soft-warning">RAE</span>
+        </div>
 
+        <div class="menu-programa">
+            <a class="menu-item active"
+               href="{% url 'rae_programaposgrado' programaposgrado.id %}">
+                <i class="fa fa-list-check me-2"></i>Reactivos - RAE
+            </a>
+        </div>
+    </div>
 
+    <!-- Contenido -->
+    <div class="dashboard-panel">
+        <div class="mb-4">
+            <div class="section-title">Módulos del programa</div>
+            <p class="text-muted mb-0">
+                Seleccione un módulo para visualizar los reactivos disponibles.
+            </p>
+        </div>
 
-
+        <div class="row g-4">
             {% for modulo in modulos_list %}
-            <div class="card mb-3" style="width: 18rem;">
-                <div class="card-body">
-                    <h5 class="card-title">{{ modulo.nombre }}</h5>
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card modulo-card">
+                    <div class="card-body">
+                        <div class="modulo-badge">
+                            <i class="fa fa-book-open"></i>
+                        </div>
 
-                </div>
-                <div class="card-footer" style="text-align: right;">
-                    <a href="{% url 'reactivosmodulo' programaposgrado.id modulo.id %}" class="btn btn-sm btn-info">Ver
-                        reactivos</a>
+                        <h5 class="card-title">{{ modulo.nombre }}</h5>
+                        
+                    </div>
+
+                    <div class="card-footer">
+                        <a href="{% url 'reactivosmodulo' programaposgrado.id modulo.id %}"
+                           class="btn btn-info btn-sm btn-reactivos">
+                            Ver reactivos
+                        </a>
+                    </div>
                 </div>
             </div>
-            &nbsp;
-            &nbsp;
-
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-light border text-center mb-0">
+                    No existen módulos registrados para este programa.
+                </div>
+            </div>
             {% endfor %}
-
-
-        </div>
-        <br>
-        <div style="text-align: center;">
-
-            <a href="{% url 'reactivos_programaposgrado' programaposgrado.id %}" class="btn btn-primary">Ver todos los
-                reactivos del programa</a>
         </div>
 
-
-
-
-    </section>
+        <div class="footer-action-box">
+            <h5>Consulta completa del programa</h5>
+            <p>También puede revisar todos los reactivos registrados en este programa de posgrado.</p>
+            <a href="{% url 'reactivos_programaposgrado' programaposgrado.id %}"
+               class="btn btn-primary px-4">
+                <i class="fa fa-layer-group me-2"></i>Ver todos los reactivos del programa
+            </a>
+        </div>
+    </div>
 
 </main>
 

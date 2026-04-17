@@ -2,36 +2,59 @@
 
 {% block content %}
 
+<main class="container py-4">
 
-<main class="container py-5">
-    <section class="card" style="padding: 2%;">
-        <h3 class="display-6"> Estudiantes matriculados en el programa de maestría</h3>
-        <br>
+    <!-- Cabecera -->
+    <div class="programa-header">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <h1 class="display-6">Estudiantes matriculados en el programa de maestría</h1>
+                <div class="programa-meta mt-3">
+                    <span><b>Programa:</b> {{ programa }}</span>
+                </div>
+            </div>
 
-        <p class="lead">
-            <b>Programa:</b> {{maestria.nombre}}
-        </p>
-
-        <div class="mb-3">
-            <a class="btn btn-sm btn-danger" href="{% url 'programamaestria' programa.id %}">Regresar</a>
+            <div>
+                <a class="btn btn-light" href="{% url 'programamaestria' programa.id %}">
+                    <i class="fa fa-arrow-left me-1"></i> Regresar
+                </a>
+            </div>
         </div>
+    </div>
 
-        {% if messages %}
+    {% if messages %}
         {% for message in messages %}
         <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
             {{ message }}
         </div>
         {% endfor %}
-        {% endif %}
+    {% endif %}
 
-        <div class="mb-3" style="text-align: right;">
-            <a class="btn btn-info" href="{% url 'usuariosmatricularprogramam' programa.id %}">Matricular
-                estudiantes</a>
+    <div class="dashboard-panel mb-4">
+        <div class="section-title">Gestión de estudiantes matriculados</div>
+        <div class="matriculados-actions-wrap">
+            <p class="matriculados-info-text">
+                Revise los estudiantes actualmente matriculados en el programa y gestione sus matrículas.
+            </p>
 
+            <div>
+                <a class="btn btn-info" href="{% url 'usuariosmatricularprogramam' programa.id %}">
+                    <i class="fa fa-user-plus me-1"></i> Matricular estudiantes
+                </a>
+            </div>
         </div>
+    </div>
+
+    <div class="matriculados-table-wrap">
+        <div class="matriculados-table-header">
+            <div class="matriculados-table-title">Listado de estudiantes matriculados</div>
+            <p class="matriculados-table-subtitle">
+                Consulte la fecha de matrícula, último acceso y gestione la baja de estudiantes del programa.
+            </p>
+        </div>
+
         <div class="table-responsive">
-            
-            <table id="usuariosmatriculados" class="table table-striped table-bordered">
+            <table id="usuariosmatriculados" class="table table-striped table-bordered matriculados-table">
                 <thead>
                     <tr>
                         <th scope="col">#</th>
@@ -46,29 +69,36 @@
                 <tbody>
                     {% for estudiante in usuarios_matriculados_list %}
                     <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ estudiante.usuario.get_full_name }}</td>
+                        <td class="text-center">{{ forloop.counter }}</td>
+                        <td class="nombre-cell">{{ estudiante.usuario.get_full_name }}</td>
                         <td>{{ estudiante.usuario.email }}</td>
                         <td>{{ estudiante.usuario.perfilusuario.ci }}</td>
-                        <td>{{ estudiante.fecha_matricula|date:"Y-m-d" }}</td>
-                        <td>{{ estudiante.usuario.last_login|date:"Y-m-d H:i" }}</td>
-                        <td style="text-align: center;">
+                        <td class="text-center">{{ estudiante.fecha_matricula|date:"Y-m-d" }}</td>
+                        <td class="text-center">{{ estudiante.usuario.last_login|date:"Y-m-d H:i" }}</td>
+                        <td class="delete-cell">
                             <form method="POST"
-                                action="{% url 'borarusuariosmatriculadosprogramam' programa.id estudiante.usuario.id %}">
+                                  action="{% url 'borarusuariosmatriculadosprogramam' programa.id estudiante.usuario.id %}">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-danger btn-sm" title="Dar de baja"><i class="fa-solid fa-trash"></i></button>
+                                <button type="submit"
+                                        class="btn btn-danger btn-sm"
+                                        title="Dar de baja">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
                             </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="matriculados-empty">
+                            No existen estudiantes matriculados en este programa.
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-
         </div>
+    </div>
 
-
-
-    </section>
 </main>
 
 <script>

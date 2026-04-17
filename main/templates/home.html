@@ -2,107 +2,133 @@
 
 {% block content %}
 
-<main class="container" style="padding: 1%">
+<main class="container py-4">
 
-    <section class="card" style="padding: 1%;">
+    {% if tiene_permiso_edicion or tiene_permiso_analista or tiene_permiso_tecnico_contratos %}
+    <div class="menu-programa-wrap mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <h5 class="mb-0 fw-bold" style="color:#0e1424;">Módulos del sistema</h5>
+            <span class="badge-soft-warning">Accesos principales</span>
+        </div>
 
-        {% if tiene_permiso_edicion or tiene_permiso_analista or tiene_permiso_tecnico_contratos %}
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark menuprogposgrado" style="border-radius: 5px;">
-            <div class="container-fluid">
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+        <div class="menu-programa">
+            {% if tiene_permiso_edicion or tiene_permiso_coordinador or tiene_permiso_analista %}
+            <a class="menu-item" href="{% url 'periodosacademicosmain' %}">
+                <i class="fa fa-graduation-cap me-2"></i>Programas de maestría
+            </a>
+            {% endif %}
 
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ">
-                        {% if tiene_permiso_edicion or tiene_permiso_coordinador or tiene_permiso_analista %}
-                        <div class="nav-divider"></div>
-                        <li class="nav-item">
-                            <a class="nav-link fs-5" aria-current="page" href="{% url 'periodosacademicosmain' %}"
-                                style="color: white !important;">
-                                Programas de maestría
-                            </a>
-                        </li>
-                        {% endif %}
-                        <!-- <div class="nav-divider"></div> -->
-                        <!-- <li class="nav-item">
-                            <a class="nav-link fs-5" aria-current="page" href="{% url 'especialidadesmedicaspos' %}"
-                                style="color: white !important;">
-                                Especialidades médicas
-                            </a>
-                        </li> -->
-                        {% if tiene_permiso_edicion or tiene_permiso_analista or tiene_permiso_tecnico_contratos %}
-                        <div class="nav-divider"></div>
-                        <li class="nav-item">
-                            <a class="nav-link fs-5" aria-current="page" href="{% url 'periodosacademicosdp' %}"
-                                style="color: white !important;">
-                                Base de datos Posgrado
-                            </a>
-                        </li>
-                        {% endif %}
-                        {% if tiene_permiso_edicion or tiene_permiso_tecnico %}
-                        <div class="nav-divider"></div>
-                        <li class="nav-item">
-                            <a class="nav-link fs-5" aria-current="page" href="{% url 'perfeccionamientodocente' %}"
-                                style="color: white !important;">
-                                Perfeccionamiento Docente
-                            </a>
-                        </li>
-                        {% endif %}
-                        <!-- <div class="nav-divider"></div>
-                        <li class="nav-item">
-                            <a class="nav-link fs-5" aria-current="page" href="{% url 'periodosacademicosp' %}"
-                                style="color: white !important;">
-                                Seleccion de perfiles
-                            </a>
-                        </li> -->
+            <!--
+            <a class="menu-item" href="{% url 'especialidadesmedicaspos' %}">
+                <i class="fa fa-stethoscope me-2"></i>Especialidades médicas
+            </a>
+            -->
 
+            {% if tiene_permiso_edicion or tiene_permiso_analista or tiene_permiso_tecnico_contratos %}
+            <a class="menu-item" href="{% url 'periodosacademicosdp' %}">
+                <i class="fa fa-database me-2"></i>Base de datos Posgrado
+            </a>
+            {% endif %}
 
-                        <div class="nav-divider"></div>
+            {% if tiene_permiso_edicion or tiene_permiso_tecnico %}
+            <a class="menu-item" href="{% url 'perfeccionamientodocente' %}">
+                <i class="fa fa-user-graduate me-2"></i>Perfeccionamiento Docente
+            </a>
+            {% endif %}
 
+            <!--
+            <a class="menu-item" href="{% url 'periodosacademicosp' %}">
+                <i class="fa fa-id-badge me-2"></i>Selección de perfiles
+            </a>
+            -->
+        </div>
+    </div>
+    {% endif %}
 
-                    </ul>
+    <div class="dashboard-panel mb-4">
+        <div class="home-hero-text">
+            <img src="../static/Unach3.jpg" alt="Logo UNACH" class="home-hero-logo">
+
+            <h2 class="home-hero-title2">
+                Sistema de gestión
+            </h2>
+            <h1 class="home-hero-title">
+                <b>Dirección de Posgrado</b>
+            </h1>
+
+            <p class="home-hero-description">
+                En esta plataforma encontrarás información esencial sobre el programa de posgrado que estás cursando,
+                incluyendo módulos e información relevante. Además, aquí podrás rendir la Evaluación RAE cuando esté
+                habilitada, de acuerdo con las fechas establecidas en el cronograma.
+            </p>
+        </div>
+    </div>
+
+    <div class="row g-4 home-access-grid">
+        <div class="col-12 col-lg-8">
+            <div class="card home-quick-card">
+                <div class="card-header">
+                    Mis programas de posgrado
                 </div>
-            </div>
-        </nav>
-        {% endif %}
-        <hr style="border: 1px solid #000;">
-        <div style="text-align: center;">
-            <img src="../static/Unach3.png" alt="Descripción de la imagen"
-                style="width: 20%; height: auto; border-radius: 10px;">
-            <h1 class="display-5" style="font-size: 2em;">Sistema de gestión <br> <b>Dirección de Posgrado</b> </h1>
-        </div>
-        <br>
-        <p style="text-align: justify;">
-            En esta plataforma encontrarás información esencial sobre el programa de posgrado que estás cursando,
-            incluyendo módulos e información relevante. Además, aquí podrás rendir la Evaluación RAE cuando esté
-            habilitada, de acuerdo con las fechas establecidas en el cronograma.
-        </p>
-
-        <hr style="border: 1px solid #000;">
-
-        <div class="card text-center">
-            <div class="card-header text-white" style="background-color: #0e1424;">
-                Mis programas de posgrado
-            </div>
-            <div class="card-body">
-                <h5 class="card-title">Programa de Posgrado</h5>
-                <p class="card-text">en el que te encuentras matriculado/a.</p>
-                <a href="{% url 'miscursos' %}" class="btn btn-info">Ingresar</a>
-
-            </div>
-            <div class="card-footer " style="background-color: #0e1424;">
+                <div class="card-body">
+                    <div class="home-access-icon">
+                        <i class="fa fa-book-open"></i>
+                    </div>
+                    <h5 class="card-title">Programa de Posgrado</h5>
+                    <p class="card-text">
+                        Acceda al programa de posgrado en el que se encuentra matriculado/a.
+                    </p>
+                    <a href="{% url 'miscursos' %}" class="btn btn-info px-4">
+                        Ingresar
+                    </a>
+                </div>
+                <div class="card-footer"></div>
             </div>
         </div>
 
+        <div class="col-12 col-lg-4">
+            <div class="card h-100">
+                {% if user.is_authenticated %}
+                <div class="card-body text-center d-flex flex-column justify-content-center">
+
+                    <div class="home-access-icon mx-auto">
+                        <i class="fa fa-user"></i>
+                    </div>
+
+                    <h5 class="card-title">Mi perfil</h5>
+
+                    <p class="card-text mb-2">
+                        <strong>Usuario:</strong> {{ request.user.get_full_name }}
+                    </p>
+
+                    {% if request.user.perfilusuario.rol %}
+                    <p class="card-text mb-2">
+                        <strong>Rol:</strong> {{ request.user.perfilusuario.get_rol_display }}
+                    </p>
+                    {% endif %}
+
+                    <a href="{% url 'perfil' %}" class="btn btn-warning btn-sm w-auto mx-auto px-4">
+                        Ver 
+                    </a>
+
+                </div>
+                {% else %}
+                <div class="card-body text-center d-flex flex-column justify-content-center">
+                    <div class="home-access-icon mx-auto">
+                        <i class="fa fa-user"></i>
+                    </div>
+                    <br>
+                    <a href="{% url 'signin' %}" class="btn btn-warning btn-sm w-auto mx-auto px-4">
+                        Iniciar sesión 
+                    </a>
 
 
-
-    </section>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 
 </main>
-
-
 
 {% endblock %}

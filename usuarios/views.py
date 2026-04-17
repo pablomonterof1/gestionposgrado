@@ -18,6 +18,7 @@ from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.db.models import Q
 
 # Create your views here.
 
@@ -828,46 +829,63 @@ def UsuariosMatricularProgramaM(request, programa_id):
     programa = get_object_or_404(ProgramaPosgrado, id=programa_id)
     maestria = get_object_or_404(Maestrias, id=programa.maestria)
 
-    if request.method == 'POST':
-        user_id = request.POST.get('usuario')  # Solo un usuario
-        user = get_object_or_404(User, id=user_id)
-        print(user_id)
+    programa_ct = ContentType.objects.get_for_model(ProgramaPosgrado)
 
-        # Verifica si ya está matriculado
+    if request.method == 'POST':
+        user_id = request.POST.get('usuario')
+        user = get_object_or_404(User, id=user_id)
+
         exists = MatriculaUsuario.objects.filter(
-            usuario=user,
-            content_type=ContentType.objects.get_for_model(ProgramaPosgrado),
+            usuario_id=user.id,
+            content_type=programa_ct,
             object_id=programa_id
         ).exists()
 
         if not exists:
             MatriculaUsuario.objects.create(
                 usuario=user,
-                content_type=ContentType.objects.get_for_model(
-                    ProgramaPosgrado),
+                content_type=programa_ct,
                 object_id=programa_id,
                 rol_en_programa='Estudiante'
             )
-            messages.success(
-                request, f'{user.get_full_name()} matriculado exitosamente.')
+            messages.success(request, f'{user.get_full_name()} matriculado exitosamente.')
         else:
-            messages.warning(
-                request, f'{user.get_full_name()} ya estaba matriculado.')
+            messages.warning(request, f'{user.get_full_name()} ya estaba matriculado.')
 
         return redirect('usuariosmatricularprogramam', programa_id=programa_id)
 
-    # Mostrar usuarios no matriculados aún
-    usuarios = User.objects.filter(is_active=True).exclude(
-        matriculausuario__content_type=ContentType.objects.get_for_model(
-            ProgramaPosgrado),
-        matriculausuario__object_id=programa_id
+    q = (request.GET.get('q') or '').strip()
+
+    usuarios_matriculados_ids = MatriculaUsuario.objects.filter(
+        content_type=programa_ct,
+        object_id=programa_id
+    ).values_list('usuario_id', flat=True)
+
+    usuarios = (
+        User.objects
+        .filter(is_active=True)
+        .exclude(id__in=usuarios_matriculados_ids)
+        .select_related('perfilusuario')
+        .only('id', 'first_name', 'last_name', 'username', 'email', 'perfilusuario__ci')
+        .order_by('last_name', 'first_name', 'username')
     )
 
+    if q:
+        usuarios = usuarios.filter(
+            Q(first_name__icontains=q) |
+            Q(last_name__icontains=q) |
+            Q(username__icontains=q) |
+            Q(email__icontains=q) |
+            Q(perfilusuario__ci__icontains=q)
+        )[:100]
+    else:
+        usuarios = usuarios[:100]
 
     return render(request, 'usuariosmatricular_programam.html', {
         'usuarios': usuarios,
         'programa': programa,
-        'maestria': maestria
+        'maestria': maestria,
+        'q': q,
     })
 
 @login_required

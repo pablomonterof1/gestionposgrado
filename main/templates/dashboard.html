@@ -2,32 +2,50 @@
 
 {% block content %}
 
+<main class="container py-4">
 
-
-<main class="container py-5">
-    <section class="card card-body">
-
-        <h5 class="display-6">Programas de maestría - Posgrado UNACH</h5>
-
-        <p class="lead">Seleccione un programa de posgrado</p>
-
-        <div class="mb-3">
-
-            <a href="{% url 'periodosacademicosmain' %}"
-                class="btn btn-outline-dark " data-bs-toggle="tooltip" title="Volver">
-                <i class="fa fa-arrow-left"></i>
-            </a>
-        </div>
-
-        <div class="table-responsive" style="padding: 2%;">
-
-            <div style="text-align: right;">
-
-                <input class="inputbuscar" type="text" id="buscador" placeholder="Buscar en la tabla... 🔎"
-                    aria-label="Search ">
+    <!-- Cabecera -->
+    <div class="programa-header">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <h1 class="display-6">Programas de maestría - Posgrado UNACH</h1>
+                <div class="programa-meta mt-3">
+                    <span><b>Acción:</b> Seleccione un programa de posgrado</span>
+                </div>
             </div>
 
-            <table id="tablamaestriasp" class="table table-striped table-hover">
+            <div>
+                <a href="{% url 'periodosacademicosmain' %}"
+                   class="btn btn-light"
+                   data-bs-toggle="tooltip"
+                   title="Volver">
+                    <i class="fa fa-arrow-left me-1"></i> Volver
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="programas-table-wrap">
+        <div class="programas-table-header">
+            <div>
+                <div class="programas-table-title">Listado de programas de posgrado</div>
+                <p class="programas-table-subtitle">
+                    Consulte los programas disponibles y acceda a su información general.
+                </p>
+            </div>
+
+            <div class="programas-search-box">
+                <input
+                    class="form-control programas-search-input"
+                    type="text"
+                    id="buscador"
+                    placeholder="Buscar en la tabla... 🔎"
+                    aria-label="Buscar en la tabla">
+            </div>
+        </div>
+
+        <div class="table-responsive p-3">
+            <table id="tablamaestriasp" class="table table-striped table-hover programas-table">
                 <thead>
                     <tr>
                         <th>Periodo Académico</th>
@@ -40,24 +58,32 @@
                     {% for programa in programasdeposgrado_list %}
                     <tr>
                         <td>{{ programa.periodoacademico }}</td>
-                        <td>{{ programa.maestria }}</td>
+                        <td class="programa-name-cell">{{ programa.maestria }}</td>
                         <td>{{ programa.modalidad }}</td>
-                        <td>
-                            <a class="btn btn-warning  " data-bs-toggle="tooltip" title="Ver información"
-                                href="{% url 'programamaestria' programa.id %}"><i class="fa fa-folder-open"></i></a>
-
+                        <td class="programa-action-cell">
+                            <a class="btn btn-warning btn-sm"
+                               data-bs-toggle="tooltip"
+                               title="Ver información"
+                               href="{% url 'programamaestria' programa.id %}">
+                                <i class="fa fa-folder-open"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="programas-empty">
+                            No existen programas de posgrado disponibles.
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-
         </div>
-    </section>
+    </div>
+
 </main>
 
 <script>
-
     const buscador = document.getElementById('buscador');
     const tabla = document.getElementById('tablamaestriasp').getElementsByTagName('tbody')[0];
 
@@ -80,9 +106,6 @@
             filas[i].style.display = coincide ? '' : 'none';
         }
     });
-
-
 </script>
-
 
 {% endblock %}
