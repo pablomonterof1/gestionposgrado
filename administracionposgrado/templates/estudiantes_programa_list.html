@@ -1,15 +1,26 @@
 {% extends 'layouts/base.html' %}
 {% block content %}
-<main class=" py-5" style="margin: 0 5%;">
 
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h2 class="mb-0">Estudiantes — <span class="text-primary">{{ programa }}</span></h2>
+<main class="container-fluid py-4" style="padding-left: 5%; padding-right: 5%;">
+
+  <!-- Cabecera -->
+  <div class="programa-header mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+      <div>
+        <h1 class="display-6">Estudiantes</h1>
+        <div class="programa-meta mt-3">
+          <span><b>Programa:</b> {{ programa }}</span>
+          <span><b>Gestión:</b> pagos y titulación</span>
+        </div>
+      </div>
+
+      <div>
+        <a href="{% url 'informacionprogramaposgrado' programa.id %}" class="btn btn-light">
+          <i class="fa fa-arrow-left me-1"></i> Volver
+        </a>
+      </div>
+    </div>
   </div>
-
-  <a href="{% url 'informacionprogramaposgrado' programa.id %}" class="btn btn-secondary">
-    <i class="fa fa-arrow-left"></i> Volver
-  </a>
-  <br><br>
 
   {% if messages %}
     <div class="mb-3">
@@ -21,171 +32,215 @@
 
   <!-- Valores del programa (informativos, iguales para todos) -->
   {% if valores_programa %}
-  <div class="card border-0 shadow-sm mb-3">
-    <div class="card-body py-3">
-      <div class="row g-3 align-items-center">
-        <div class="col-auto">
-          <strong>Valores del programa ({{ valores_programa.moneda }}):</strong>
-        </div>
+  <div class="adminpos-values-panel">
+    <div class="adminpos-values-title">Valores del programa</div>
 
-        <div class="col-auto">Inscripción:
-          <span class="badge text-bg-secondary">{{ valores_programa.inscripcion }}</span>
-        </div>
-
-        <div class="col-auto">Matrícula:
-          <span class="badge text-bg-secondary">{{ valores_programa.matricula }}</span>
-        </div>
-
-        {% if plan_pago == '2_COLEGIATURAS' %}
-          <div class="col-auto">1ª colegiatura:
-            <span class="badge text-bg-secondary">{{ valores_programa.cole1 }}</span>
-          </div>
-          <div class="col-auto">2ª colegiatura:
-            <span class="badge text-bg-secondary">{{ valores_programa.cole2 }}</span>
-          </div>
-          <div class="col-auto ms-auto">
-            <strong>Total programa:</strong>
-            <span class="badge text-bg-primary">{{ total_programa }}</span>
-          </div>
-        {% else %}
-          <div class="col-auto">Cuota (x10):
-            <span class="badge text-bg-secondary">{{ valores_programa.cuota_mensual }}</span>
-          </div>
-          <div class="col-auto ms-auto">
-            <strong>Total programa:</strong>
-            <span class="badge text-bg-primary">{{ total_programa }}</span>
-          </div>
-        {% endif %}
+    <div class="adminpos-values-row">
+      <div>
+        <strong>Moneda:</strong>
+        <span class="badge text-bg-secondary">{{ valores_programa.moneda }}</span>
       </div>
-      <div class="mt-2">
-        <small class="text-muted">Plan: {% if plan_pago == '10_CUOTAS' %}10 cuotas{% else %}2 colegiaturas{% endif %}</small>
+
+      <div>Inscripción:
+        <span class="badge text-bg-secondary">{{ valores_programa.inscripcion }}</span>
       </div>
+
+      <div>Matrícula:
+        <span class="badge text-bg-secondary">{{ valores_programa.matricula }}</span>
+      </div>
+
+      {% if plan_pago == '2_COLEGIATURAS' %}
+        <div>1ª colegiatura:
+          <span class="badge text-bg-secondary">{{ valores_programa.cole1 }}</span>
+        </div>
+        <div>2ª colegiatura:
+          <span class="badge text-bg-secondary">{{ valores_programa.cole2 }}</span>
+        </div>
+        <div class="ms-auto">
+          <strong>Total programa:</strong>
+          <span class="badge text-bg-primary">{{ total_programa }}</span>
+        </div>
+      {% else %}
+        <div>Cuota (x10):
+          <span class="badge text-bg-secondary">{{ valores_programa.cuota_mensual }}</span>
+        </div>
+        <div class="ms-auto">
+          <strong>Total programa:</strong>
+          <span class="badge text-bg-primary">{{ total_programa }}</span>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="mt-2">
+      <small class="text-muted">
+        Plan: {% if plan_pago == '10_CUOTAS' %}10 cuotas{% else %}2 colegiaturas{% endif %}
+      </small>
     </div>
   </div>
   {% endif %}
 
   {% if filas and filas|length %}
-  <div class="card border-0 shadow-sm">
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table table-sm table-striped table-bordered align-middle mb-0">
-          <thead class="table-primary ">
-            <tr class="text-center">
-              <th>Apellidos y nombres</th>
-              <th>N. cédula</th>
-              <th>Correo</th>
-              <th>N. celular</th>
+  <div class="adminpos-table-wrap">
+    <div class="adminpos-table-header">
+      <div class="adminpos-table-title">Listado de estudiantes del programa</div>
+      <p class="adminpos-table-subtitle">
+        Use el buscador de la tabla para filtrar por estudiante, cédula, correo, estado de pago o titulación.
+      </p>
+    </div>
 
-              <th class="text-center">Inscripción</th>
-              <th class="text-center">Matrícula</th>
+    <div class=" p-3">
+      <table id="tablaEstudiantesAdminPosgrado" class="table table-sm table-striped table-bordered align-middle adminpos-table">
+        <thead>
+          <tr class="text-center">
+            <th>Apellidos y nombres</th>
+            <th>N. cédula</th>
+            <th>Correo</th>
+            <th>N. celular</th>
 
-              {% if plan_pago == '2_COLEGIATURAS' %}
-                <th class="text-center">1ª colegiatura</th>
-                <th class="text-center">2ª colegiatura</th>
+            <th class="text-center">Inscripción</th>
+            <th class="text-center">Matrícula</th>
+
+            {% if plan_pago == '2_COLEGIATURAS' %}
+              <th class="text-center">1ª colegiatura</th>
+              <th class="text-center">2ª colegiatura</th>
+            {% else %}
+              <th class="text-center">Cuotas pagadas (0–10)</th>
+            {% endif %}
+
+            <th class="text-end">TOTAL pagado</th>
+            <th>Modalidad titulación</th>
+            <th>Fecha - Aprobación tema</th>
+            <th>Tutor asignado (resolución)</th>
+            <th>Tutor contratado</th>
+            <th>Avance</th>
+            <th>Sustentación oral (fecha)</th>
+            <th>Aprobación complexivo (fecha)</th>
+            <th style="white-space: nowrap;">Estado de título</th>
+            <th style="width:75px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f in filas %}
+          {% with u=f.usuario p=f.perfil g=f.gestion %}
+          <tr id="est-{{ u.id }}">
+            <td class="name-cell">{{ u.get_full_name|default:u.username }}</td>
+            <td>{% if p and p.ci %}{{ p.ci }}{% else %}—{% endif %}</td>
+            <td class="text-break">{{ u.email|default:"—" }}</td>
+            <td>{{ p.telefono|default:"—" }}</td>
+
+            <!-- Inscripción -->
+            <td class="text-center">
+              {% if g and g.pago_inscripcion %}
+                <span class="badge text-bg-success">Sí</span>
               {% else %}
-                <th class="text-center">Cuotas pagadas (0–10)</th>
+                <span class="badge text-bg-warning text-dark">No</span>
               {% endif %}
+            </td>
 
-              <th class="text-end">TOTAL pagado</th>
-              <th>Modalidad titulación</th>
-              <th>Rúbrica aprobada</th>
-              <th>Tutor asignado (resolución + fecha)</th>
-              <th>Tutor contratado</th>
-              <th>Avance</th>
-              <th>Sustentación oral</th>
-              <th>Aprobación complexivo</th>
-              <th>Estado de título</th>
-              <th style="width:120px;">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for f in filas %}
-            {% with u=f.usuario p=f.perfil g=f.gestion %}
-            <tr id="est-{{ u.id }}">
-              <td class="fw-semibold">{{ u.get_full_name|default:u.username }}</td>
-              <td>{% if p and p.ci %}{{ p.ci }}{% else %}—{% endif %}</td>
-              <td class="text-break">{{ u.email|default:"—" }}</td>
-              <td>{{ p.telefono|default:"—" }}</td>
+            <!-- Matrícula -->
+            <td class="text-center">
+              {% if g and g.pago_matricula %}
+                <span class="badge text-bg-success">Sí</span>
+              {% else %}
+                <span class="badge text-bg-warning text-dark">No</span>
+              {% endif %}
+            </td>
 
-              <!-- Inscripción -->
+            {% if plan_pago == '2_COLEGIATURAS' %}
               <td class="text-center">
-                {% if g and g.pago_inscripcion %}
+                {% if g and g.pago_primera_colegiatura %}
                   <span class="badge text-bg-success">Sí</span>
                 {% else %}
                   <span class="badge text-bg-warning text-dark">No</span>
                 {% endif %}
               </td>
-
-              <!-- Matrícula -->
               <td class="text-center">
-                {% if g and g.pago_matricula %}
+                {% if g and g.pago_segunda_colegiatura %}
                   <span class="badge text-bg-success">Sí</span>
                 {% else %}
                   <span class="badge text-bg-warning text-dark">No</span>
                 {% endif %}
               </td>
-
-              {% if plan_pago == '2_COLEGIATURAS' %}
-                <td class="text-center">
-                  {% if g and g.pago_primera_colegiatura %}
-                    <span class="badge text-bg-success">Sí</span>
-                  {% else %}
-                    <span class="badge text-bg-warning text-dark">No</span>
-                  {% endif %}
-                </td>
-                <td class="text-center">
-                  {% if g and g.pago_segunda_colegiatura %}
-                    <span class="badge text-bg-success">Sí</span>
-                  {% else %}
-                    <span class="badge text-bg-warning text-dark">No</span>
-                  {% endif %}
-                </td>
-              {% else %}
-                <td class="text-center">
-                  {% if g %}{{ g.cuotas_pagadas|default:"0" }}{% else %}0{% endif %}/10
-                </td>
-              {% endif %}
-
-              <!-- TOTAL pagado por estudiante -->
-              <td class="text-end fw-bold">
-                {% if f.total_pagado is not None %}$ {{ f.total_pagado }}{% else %}—{% endif %}
+            {% else %}
+              <td class="text-center">
+                {% if g %}{{ g.cuotas_pagadas|default:"0" }}{% else %}0{% endif %}/10
               </td>
+            {% endif %}
 
-              <td>{% if g and g.modalidad %}{{ g.modalidad.modalidadtitulacion }}{% else %}—{% endif %}</td>
-              <td class="text-center">{% if g and g.fecha_rubrica_aprobada %}{{ g.fecha_rubrica_aprobada }}{% else %}—{% endif %}</td>
+            <!-- TOTAL pagado por estudiante -->
+            <td class="text-end fw-bold">
+              {% if f.total_pagado is not None %}$ {{ f.total_pagado }}{% else %}—{% endif %}
+            </td>
 
-              <td>
-                {% if g %}
-                  {% if g.tutor_resolucion or g.tutor_resolucion_fecha %}
-                    {{ g.tutor_resolucion|default:"" }}{% if g.tutor_resolucion and g.tutor_resolucion_fecha %} — {% endif %}{{ g.tutor_resolucion_fecha|default:"" }}
-                  {% else %}—{% endif %}
+            <td>{% if g and g.modalidad %}{{ g.modalidad.modalidadtitulacion }}{% else %}—{% endif %}</td>
+            <td class="text-center">{% if g and g.fecha_rubrica_aprobada %}{{ g.fecha_rubrica_aprobada }}{% else %}—{% endif %}</td>
+
+            <td>
+              {% if g %}
+                {% if g.tutor_resolucion  %}
+                  <a href="{{ g.tutor_resolucion }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                    <i class="fa fa-link"></i> Ver Resolución
+                  </a>
                 {% else %}—{% endif %}
-              </td>
+              {% else %}—{% endif %}
+            </td>
 
-              <td class="text-center">
-                {% if g %}{% if g.tutor_contratado %}<span class="badge text-bg-success">Sí</span>{% else %}<span class="badge text-bg-warning text-dark">No</span>{% endif %}{% else %}—{% endif %}
-              </td>
+            <td class="text-center">
+              {% if g %}{% if g.tutor_contratado %}<span class="badge text-bg-success">Sí</span>{% else %}<span class="badge text-bg-warning text-dark">No</span>{% endif %}{% else %}—{% endif %}
+            </td>
 
-              <td>{% if g and g.avance_porcentaje is not None %}{{ g.get_avance_porcentaje_display }}{% else %}—{% endif %}</td>
-              <td class="text-center">{% if g and g.fecha_sustentacion_oral %}{{ g.fecha_sustentacion_oral }}{% else %}—{% endif %}</td>
-              <td class="text-center">{% if g and g.fecha_aprob_complexivo %}{{ g.fecha_aprob_complexivo }}{% else %}—{% endif %}</td>
-              <td>{% if g and g.estado_titulo %}{{ g.get_estado_titulo_display }}{% else %}—{% endif %}</td>
+            <td>{% if g and g.avance_porcentaje is not None %}{{ g.get_avance_porcentaje_display }}{% else %}—{% endif %}</td>
+            <td class="text-center">{% if g and g.fecha_sustentacion_oral %}{{ g.fecha_sustentacion_oral }}{% else %}—{% endif %}</td>
+            <td class="text-center">{% if g and g.fecha_aprob_complexivo %}{{ g.fecha_aprob_complexivo }}{% else %}—{% endif %}</td>
+            <td>{% if g and g.estado_titulo %}{{ g.get_estado_titulo_display }}{% else %}—{% endif %}</td>
 
-              <td class="text-end">
-                <a class="btn btn-xs btn-outline-primary" href="{% url 'estudiante_programa_gestion_upsert' programa.id u.id %}">
-                  <i class="fa fa-pen"></i> Editar
-                </a>
-              </td>
-            </tr>
-            {% endwith %}
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+            <td class="text-end action-cell">
+              <a class="btn btn-sm btn-outline-primary" href="{% url 'estudiante_programa_gestion_upsert' programa.id u.id %}">
+                <i class="fa fa-pen"></i> Editar
+              </a>
+            </td>
+          </tr>
+          {% endwith %}
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
   {% else %}
-    <div class="alert alert-info">No hay estudiantes matriculados en este programa.</div>
+    <div class="alert alert-info adminpos-empty">No hay estudiantes matriculados en este programa.</div>
   {% endif %}
 </main>
+
+<script>
+  $(document).ready(function () {
+    const tabla = $('#tablaEstudiantesAdminPosgrado').DataTable({
+      pageLength: 10,
+      lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
+      scrollX: true,
+      autoWidth: true,
+      language: {
+        lengthMenu: "Mostrar _MENU_ registros por página",
+        zeroRecords: "No se encontraron resultados",
+        info: "Mostrando página _PAGE_ de _PAGES_",
+        infoEmpty: "No hay registros disponibles",
+        infoFiltered: "(filtrado de _MAX_ registros totales)",
+        search: "Buscar en tabla:",
+        paginate: {
+          first: "Primera",
+          last: "Última",
+          next: "Siguiente",
+          previous: "Anterior"
+        }
+      },
+      initComplete: function () {
+        this.api().columns.adjust();
+      }
+    });
+
+    setTimeout(function () {
+      tabla.columns.adjust();
+    }, 500);
+  });
+</script>
+
 {% endblock %}

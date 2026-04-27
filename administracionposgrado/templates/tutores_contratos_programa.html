@@ -1,119 +1,238 @@
 {% extends 'layouts/base.html' %}
 {% block content %}
-<main class=" py-5" style="padding: 5%;">
 
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h2 class="mb-0">Contratos de Tutores — <span class="text-primary">{{ programa }}</span></h2>
+<main class="container-fluid py-4" style="padding-left: 4%; padding-right: 4%;">
 
+  <!-- Cabecera -->
+  <div class="programa-header mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+      <div>
+        <h3 class="display-6">Contratos de Tutores</h3>
+        <div class="programa-meta mt-3">
+          <span><b>Programa:</b> {{ programa }}</span>
+        </div>
+      </div>
+
+      <div>
+        <a href="{% url 'informacionprogramaposgrado' programa.id %}" class="btn btn-light">
+          <i class="fa fa-arrow-left me-1"></i> Volver
+        </a>
+      </div>
+    </div>
   </div>
-    <a href="{% url 'informacionprogramaposgrado' programa.id %}" class="btn btn-secondary">
-      <i class="fa fa-arrow-left"></i> Volver
-    </a>
-    <br><br>
+
   {% if messages %}
     <div class="mb-3">
       {% for message in messages %}
-        <div class="alert alert-{{ message.tags|default:'info' }} mb-2">{{ message }}</div>
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm" role="alert">
+          <i class="fa fa-info-circle me-2"></i>{{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
       {% endfor %}
     </div>
   {% endif %}
 
   {% if filas and filas|length > 0 %}
-    <div class="alert alert-info d-flex justify-content-between">
-      <span><strong>Total contratado:</strong> $ {{ total_contratado }}</span>
-      <span><strong>Total pagado:</strong> $ {{ total_pagado }}</span>
-      <span><strong>Pendiente:</strong> $ {{ total_pendiente }}</span>
-    </div>
 
-    <div class="card border-0 shadow-sm">
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-sm table-striped table-bordered align-middle mb-0">
-            <thead class="table-primary ">
-              <tr>
-                <th>Tutor</th>
-                <th>RUC</th>
-                <th>Teléfono</th>
-                <th>Correo</th>
-                <th>Estudiante</th>
-                <th>Valor contrato</th>
-                <th>Certificación presup.</th>
-                <th>Fecha certificación</th>
-                <th>Plazo</th>
-                <th>N. contrato</th>
-                <th>N. memo TTHH</th>
-                <th>Defendido</th>
-                <th>Pago realizado</th>
-                <th>N. factura</th>
-                <th>URL Factura</th>
-                <th>Observaciones</th>
-                <th style="width:140px;">Acciones</th>
-              </tr>
-            </thead>
-            <tbody >
-              {% for f in filas %}
-              {% with c=f.contrato tut=f.tutor_user pt=f.tutor_perfil est=f.estudiante_user g=f.gestion %}
-              <tr id="contrato-{{ c.id }}">
-                <td>{% if tut %}{{ tut.get_full_name|default:tut.username }}{% else %}ID {{ c.tutor }}{% endif %}</td>
-                <td>{% if pt and pt.ci %}{{ pt.ci }}001{% else %}—{% endif %}</td>
-                <td>{{ pt.telefono|default:"—" }}</td>
-                <td>{{ tut.email|default:"—" }}</td>
-                <td>{% if est %}{{ est.get_full_name|default:est.username }}{% else %}ID {{ c.maestrante }}{% endif %}</td>
-                <td class="text-end">$ {{ f.valor_total }}</td>
-                <td class="text-truncate" style="max-width:200px" title="{{ c.certificacionpresupuestaria }}">{{ c.certificacionpresupuestaria }}</td>
-                <td class="text-center">{{ c.fechacertificacionpresupuestaria }}</td>
-                <td class="text-center">{{ c.plazo }}</td>
-                <td>{{ c.numerocontrato }}</td>
-                <td>{{ c.numeromemorandotthh }}</td>
-                <td class="text-center">
-                  {% if g %}{% if g.defendido %}<span class="badge text-bg-success">Sí</span>{% else %}<span class="badge text-bg-warning text-dark">No</span>{% endif %}{% else %}—{% endif %}
-                </td>
-                <td class="text-center">
-                  {% if g %}{% if g.pago_realizado %}<span class="badge text-bg-success">Sí</span>{% else %}<span class="badge text-bg-warning text-dark">No</span>{% endif %}{% else %}—{% endif %}
-                </td>
-                <td class="text-center">{% if g %}{{ g.numero_factura|default:"—" }}{% else %}—{% endif %}</td>
-                  <td class="text-center">
-                    {% if g and g.urlfactura %}
-                      <a href="{{ g.urlfactura }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                        <i class="fa-solid fa-file-pdf me-1"></i> Ver
-                      </a>
-                    {% else %}
-                      <span class="text-muted">—</span>
-                    {% endif %}
-                  </td>
-                <td class="small">{% if g %}{{ g.observaciones|default:"" }}{% else %}—{% endif %}</td>
-                <td class="text-end">
-                  {% if g %}
-                    <a class="btn btn-sm btn-outline-secondary" href="{% url 'contratotutor_gestion_update' programa.id c.id %}">
-                      <i class="fa fa-pen"></i> Editar
-                    </a>
-                  {% else %}
-                    <a class="btn btn-sm btn-primary" href="{% url 'contratotutor_gestion_create' programa.id c.id %}">
-                      <i class="fa fa-plus"></i> Agregar
-                    </a>
-                  {% endif %}
-                </td>
-              </tr>
-              {% endwith %}
-              {% endfor %}
-            </tbody>
-            <tfoot class="table-light fw-bold">
-              <tr>
-                <td colspan="4" class="text-end">TOTAL CONTRATADO:</td>
-                <td class="text-end">$ {{ total_contratado }}</td>
-                <td colspan="2" class="text-end">TOTAL PAGADO:</td>
-                <td colspan="3">$ {{ total_pagado }}</td>
-                <td colspan="3" class="text-end">PENDIENTE:</td>
-                <td colspan="2" class="text-danger">$ {{ total_pendiente }}</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+  <!-- Resumen superior -->
+  <div class="adminpos-docentes-summary">
+    <div class="row g-3">
+      <div class="col-12 col-md-4">
+        <div class="summary-label">TOTAL CONTRATADO</div>
+        <div class="summary-value">$ {{ total_contratado }}</div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="summary-label">TOTAL PAGADO</div>
+        <div class="summary-value text-success">$ {{ total_pagado }}</div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="summary-label">PENDIENTE</div>
+        <div class="summary-value text-danger">$ {{ total_pendiente }}</div>
       </div>
     </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="adminpos-docentes-table-wrap">
+    <div class="adminpos-docentes-table-header">
+      <div class="adminpos-docentes-table-title">Listado de contratos de tutores</div>
+      <p class="adminpos-docentes-table-subtitle">
+        <span><b>Gestión:</b> contratos y pagos de tutores</span>
+      </p>
+    </div>
+
+    <div class="table-responsive p-3">
+      <table id="tablaContratosTutoresGestion" class="table table-sm table-striped table-bordered align-middle adminpos-docentes-table">
+        <thead>
+          <tr>
+            <th>Tutor</th>
+            <th>RUC</th>
+            <th>Teléfono</th>
+            <th>Correo</th>
+            <th>Estudiante</th>
+            <th>Valor contrato</th>
+            <th>Certificación presup.</th>
+            <th>Fecha certificación</th>
+            <th>Plazo</th>
+            <th>N. contrato</th>
+            <th>N. memo TTHH</th>
+            <th>Defendido</th>
+            <th>Pago realizado</th>
+            <th>N. factura</th>
+            <th>URL Factura</th>
+            <th>Observaciones</th>
+            <th style="width:140px;">Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for f in filas %}
+          {% with c=f.contrato tut=f.tutor_user pt=f.tutor_perfil est=f.estudiante_user g=f.gestion %}
+          <tr id="contrato-{{ c.id }}">
+            <td class="name-cell">
+              {% if tut %}
+                {{ tut.get_full_name|default:tut.username }}
+              {% else %}
+                <span class="text-muted">ID {{ c.tutor }}</span>
+              {% endif %}
+            </td>
+
+            <td>{% if pt and pt.ci %}{{ pt.ci }}001{% else %}—{% endif %}</td>
+            <td>{{ pt.telefono|default:"—" }}</td>
+            <td class="text-break">{{ tut.email|default:"—" }}</td>
+
+            <td class="name-cell">
+              {% if est %}
+                {{ est.get_full_name|default:est.username }}
+              {% else %}
+                <span class="text-muted">ID {{ c.maestrante }}</span>
+              {% endif %}
+            </td>
+
+            <td class="text-end fw-bold">$ {{ f.valor_total }}</td>
+
+            <td class="text-truncate" style="max-width:200px" title="{{ c.certificacionpresupuestaria }}">
+              {{ c.certificacionpresupuestaria }}
+            </td>
+
+            <td class="text-center">{{ c.fechacertificacionpresupuestaria }}</td>
+            <td class="text-center">{{ c.plazo }}</td>
+            <td>{{ c.numerocontrato }}</td>
+            <td>{{ c.numeromemorandotthh }}</td>
+
+            <td class="text-center">
+              {% if g %}
+                {% if g.defendido %}
+                  <span class="badge rounded-pill text-bg-success px-3 py-2">Sí</span>
+                {% else %}
+                  <span class="badge rounded-pill text-bg-warning px-3 py-2 text-dark">No</span>
+                {% endif %}
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+
+            <td class="text-center">
+              {% if g %}
+                {% if g.pago_realizado %}
+                  <span class="badge rounded-pill text-bg-success px-3 py-2">Sí</span>
+                {% else %}
+                  <span class="badge rounded-pill text-bg-warning px-3 py-2 text-dark">No</span>
+                {% endif %}
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+
+            <td class="text-center">
+              {% if g %}
+                {{ g.numero_factura|default:"—" }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+
+            <td class="text-center">
+              {% if g and g.urlfactura %}
+                <a href="{{ g.urlfactura }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                  <i class="fa-solid fa-file-pdf me-1"></i> Ver
+                </a>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+
+            <td class="small">
+              {% if g %}
+                {{ g.observaciones|default:"—" }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+
+            <td class="action-cell">
+              {% if g %}
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{% url 'contratotutor_gestion_update' programa.id c.id %}">
+                  <i class="fa fa-pen"></i> Editar
+                </a>
+              {% else %}
+                <a class="btn btn-sm btn-primary"
+                   href="{% url 'contratotutor_gestion_create' programa.id c.id %}">
+                  <i class="fa fa-plus"></i> Agregar
+                </a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endwith %}
+          {% endfor %}
+        </tbody>
+
+        <tfoot>
+          <tr>
+            <td colspan="5" class="text-end">TOTAL CONTRATADO:</td>
+            <td class="text-end">$ {{ total_contratado }}</td>
+            <td colspan="6" class="text-end">TOTAL PAGADO:</td>
+            <td colspan="2" class="text-end">$ {{ total_pagado }}</td>
+            <td colspan="2" class="text-end">PENDIENTE:</td>
+            <td class="text-end text-danger">$ {{ total_pendiente }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
 
   {% else %}
-    <div class="alert alert-info">No hay contratos de tutores para este programa.</div>
+    <div class="alert alert-info shadow-sm adminpos-docentes-empty">
+      <i class="fa fa-info-circle me-2"></i> No hay contratos de tutores para este programa.
+    </div>
   {% endif %}
+
 </main>
+
+<script>
+  $(document).ready(function () {
+    $('#tablaContratosTutoresGestion').DataTable({
+      pageLength: 10,
+      lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
+      ordering: true,
+      searching: true,
+      language: {
+        lengthMenu: "Mostrar _MENU_ registros por página",
+        zeroRecords: "No se encontraron resultados",
+        info: "Mostrando página _PAGE_ de _PAGES_",
+        infoEmpty: "No hay registros disponibles",
+        infoFiltered: "(filtrado de _MAX_ registros totales)",
+        search: "Buscar en tabla:",
+        paginate: {
+          first: "Primera",
+          last: "Última",
+          next: "Siguiente",
+          previous: "Anterior"
+        }
+      }
+    });
+  });
+</script>
+
 {% endblock %}

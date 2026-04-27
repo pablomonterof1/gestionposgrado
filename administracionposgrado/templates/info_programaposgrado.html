@@ -1,10 +1,7 @@
 {% extends 'layouts/base.html' %}
 
 {% block content %}
-<main class="container py-5">
-
-<section class="card" style="padding: 1%;">
-  
+<main class="container py-4">
 
   <!-- Botón atrás flotante -->
   <a href="{% url 'programamaestria' programa_id %}" class="btn btn-secondary position-fixed bottom-0 start-0 m-3 shadow" aria-label="Volver">
@@ -12,24 +9,29 @@
   </a>
 
   <!-- Encabezado -->
-  <section class="mb-4">
-    <div class="d-flex align-items-center justify-content-between">
+  <div class="programa-header mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
       <div>
-        <h2 class="mb-1">
+        <h3 class="display-6">
           Información del Programa
-          {% if programa %}<span class="text-primary">{{ programa }}</span>{% endif %}
-        </h2>
-        <p class="text-muted mb-0">Administra valores, contratos y pagos de coordinadores, docentes, tutores y estudiantes.</p>
+        </h3>
+        
       </div>
+
       <!-- Acciones generales -->
       <div class="d-flex gap-2">
         <!-- Reporte general -->
-        <a href="{% url 'programa_reporte_pdf' programa_id %}" class="btn btn-outline-primary">
-          <i class="fa fa-file-excel"></i> Reporte general
+        <a href="{% url 'programa_reporte_pdf' programa_id %}" class="btn btn-lg btn-light">
+          <i class="fa fa-file me-1"></i> Reporte general
         </a>
       </div>
+      <div class="programa-meta mt-3">
+          {% if programa %}
+            <span><b>Programa:</b> {{ programa }}</span>
+          {% endif %}
+        </div>
     </div>
-  </section>
+  </div>
 
   <!-- Mensajes Django -->
   {% if messages %}
@@ -43,312 +45,315 @@
   {% endif %}
 
   <!-- Tarjetas principales -->
-  <section class="row g-4">
+  <section class="dashboard-panel mb-4">
+    <div class="section-title">Módulos de administración del programa</div>
+    <p class="text-muted mb-4">
+      Administra valores, contratos, pagos, estudiantes y fechas académicas del programa.
+    </p>
 
-    <!-- Valor del Programa -->
-    <div class="col-12 col-md-6 col-lg-4" >
-      <div class="card border-1 shadow h-100" >
-        <div class="card-body d-flex flex-column">
-          <div class="d-flex align-items-center gap-3 mb-3">
-            <span class="badge rounded-pill text-bg-primary p-3">
-              <i class="fa fa-dollar-sign fa-lg"></i>
-            </span>
-            <div>
-              <h5 class="card-title mb-0">Valor del Programa</h5>
-              <small class="text-muted">Inscripción, matrícula y colegiaturas</small>
+    <div class="row g-4">
+
+      <!-- Valor del Programa -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card adminpos-card">
+          <div class="card-body d-flex flex-column">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <span class="adminpos-icon">
+                <i class="fa fa-dollar-sign"></i>
+              </span>
+              <div>
+                <h5 class="card-title mb-0">Valor del Programa</h5>
+                <small class="text-muted">Inscripción, matrícula y colegiaturas</small>
+              </div>
+            </div>
+            <p class="text-muted small mb-4">Define y actualiza los montos del programa (USD).</p>
+            <div class="mt-auto d-flex gap-2">
+              <a href="{% url 'valorprogramaposgrado_detail' programa_id %}" class="btn btn-outline-primary btn-sm">
+                <i class="fa fa-eye"></i> Ver/<i class="fa fa-pencil"></i> Editar
+              </a>
             </div>
           </div>
-          <p class="text-muted small mb-4">Define y actualiza los montos del programa (USD).</p>
-          <div class="mt-auto d-flex gap-2">
-            <a href="{% url 'valorprogramaposgrado_detail' programa_id %}" class="btn btn-outline-primary btn-sm">
-              <i class="fa fa-eye"></i> Ver/<i class="fa fa-pencil"></i> Editar
-            </a>
-            
-          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Coordinador: Contrato y Pagos -->
-    <div class="col-12 col-md-6 col-lg-4">
-      <div class="card border-1 shadow h-100">
-        <div class="card-body d-flex flex-column">
-          <div class="d-flex align-items-center gap-3 mb-3">
-            <span class="badge rounded-pill text-bg-success p-3">
-              <i class="fa fa-user-tie fa-lg"></i>
-            </span>
-            <div>
-              <h5 class="card-title mb-0">Coordinador</h5>
-              <small class="text-muted">Fechas y pagos</small>
+      <!-- Coordinador: Contrato y Pagos -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card adminpos-card">
+          <div class="card-body d-flex flex-column">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <span class="adminpos-icon">
+                <i class="fa fa-user-tie"></i>
+              </span>
+              <div>
+                <h5 class="card-title mb-0">Coordinador</h5>
+                <small class="text-muted">Fechas y pagos</small>
+              </div>
+            </div>
+            <p class="text-muted small mb-4">Crea el contrato del coordinador y registra sus pagos.</p>
+            <div class="mt-auto d-flex flex-wrap gap-2">
+              <a href="{% url 'contratos_coordinadores_programa' programa_id %}" class="btn btn-outline-primary btn-sm">
+                <i class="fa fa-eye"></i> Información coordinador
+              </a>
+              <a href="{% url 'pagos_coordinadores_programa' programa_id %}" class="btn btn-outline-success btn-sm">
+                <i class="fa fa-money-bill-wave"></i> Pagos
+              </a>
             </div>
           </div>
-          <p class="text-muted small mb-4">Crea el contrato del coordinador y registra sus pagos.</p>
-          <div class="mt-auto d-flex flex-wrap gap-2">
-            <a href="{% url 'contratos_coordinadores_programa' programa_id %}" class="btn btn-outline-primary btn-sm">
-              <i class="fa fa-eye"></i> Información coordinador
-            </a>
-            <a href="{% url 'pagos_coordinadores_programa' programa_id %}" class="btn btn-outline-success btn-sm">
-              <i class="fa fa-money-bill-wave"></i> Pagos
-            </a>
-          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Docentes: Contratos, Valor por clase y Pagos -->
-    <div class="col-12 col-md-6 col-lg-4">
-      <div class="card border-1 shadow h-100">
-        <div class="card-body d-flex flex-column">
-          <div class="d-flex align-items-center gap-3 mb-3">
-            <span class="badge rounded-pill text-bg-warning p-3">
-              <i class="fa fa-chalkboard-teacher fa-lg"></i>
-            </span>
-            <div>
-              <h5 class="card-title mb-0">Docentes</h5>
-              <small class="text-muted">Contratos y pagos</small>
+      <!-- Docentes: Contratos, Valor por clase y Pagos -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card adminpos-card">
+          <div class="card-body d-flex flex-column">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <span class="adminpos-icon">
+                <i class="fa fa-chalkboard-teacher"></i>
+              </span>
+              <div>
+                <h5 class="card-title mb-0">Docentes</h5>
+                <small class="text-muted">Contratos y pagos</small>
+              </div>
+            </div>
+            <p class="text-muted small mb-4">Registra pagos de los docentes.</p>
+            <div class="mt-auto d-flex flex-wrap gap-2">
+              <a href="{% url 'docentes_contratos_programa' programa_id %}" class="btn btn-outline-success btn-sm">
+                <i class="fa fa-money-bill-wave"></i> Pagos
+              </a>
             </div>
           </div>
-          <p class="text-muted small mb-4">Registra pagos de los docentes.</p>
-          <div class="mt-auto d-flex flex-wrap gap-2">
-            <a href="{% url 'docentes_contratos_programa' programa_id %}" class="btn btn-outline-success btn-sm">
-              <i class="fa fa-money-bill-wave"></i> Pagos
-            </a>
-          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Tutores: Contratos y Pagos -->
-    <div class="col-12 col-md-6 col-lg-4">
-      <div class="card border-1 shadow h-100">
-        <div class="card-body d-flex flex-column">
-          <div class="d-flex align-items-center gap-3 mb-3">
-            <span class="badge rounded-pill text-bg-info p-3">
-              <i class="fa fa-user-graduate fa-lg"></i>
-            </span>
-            <div>
-              <h5 class="card-title mb-0">Tutores</h5>
-              <small class="text-muted">Contratos y pagos</small>
+      <!-- Tutores: Contratos y Pagos -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card adminpos-card">
+          <div class="card-body d-flex flex-column">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <span class="adminpos-icon">
+                <i class="fa fa-user-graduate"></i>
+              </span>
+              <div>
+                <h5 class="card-title mb-0">Tutores</h5>
+                <small class="text-muted">Contratos y pagos</small>
+              </div>
+            </div>
+            <p class="text-muted small mb-4">Registra pagos de los tutores.</p>
+            <div class="mt-auto d-flex flex-wrap gap-2">
+              <a href="{% url 'tutores_contratos_programa' programa_id %}" class="btn btn-outline-success btn-sm">
+                <i class="fa fa-money-bill-wave"></i> Pagos
+              </a>
             </div>
           </div>
-          <p class="text-muted small mb-4">Registra pagos de los tutores.</p>
-          <div class="mt-auto d-flex flex-wrap gap-2">
-            
-            <a href="{% url 'tutores_contratos_programa' programa_id %}" class="btn btn-outline-success btn-sm">
-              <i class="fa fa-money-bill-wave"></i> Pagos
-            </a>
-          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Estudiantes: Estado de Pagos -->
-    <div class="col-12 col-md-6 col-lg-4">
-      <div class="card border-1 shadow h-100">
-        <div class="card-body d-flex flex-column">
-          <div class="d-flex align-items-center gap-3 mb-3">
-            <span class="badge rounded-pill text-bg-secondary p-3">
-              <i class="fa fa-users fa-lg"></i>
-            </span>
-            <div>
-              <h5 class="card-title mb-0">Estudiantes</h5>
-              <small class="text-muted">Pagos y estado</small>
+      <!-- Estudiantes: Estado de Pagos -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card adminpos-card">
+          <div class="card-body d-flex flex-column">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <span class="adminpos-icon">
+                <i class="fa fa-users"></i>
+              </span>
+              <div>
+                <h5 class="card-title mb-0">Estudiantes</h5>
+                <small class="text-muted">Pagos y estado</small>
+              </div>
+            </div>
+            <p class="text-muted small mb-4">Consulta y registra los pagos de los estudiantes del programa.</p>
+            <div class="mt-auto d-flex flex-wrap gap-2">
+              <a href="{% url 'estudiantes_programa_list' programa_id %}" class="btn btn-outline-primary btn-sm">
+                <i class="fa fa-clipboard-list"></i> Información
+              </a>
             </div>
           </div>
-          <p class="text-muted small mb-4">Consulta y registra los pagos de los estudiantes del programa.</p>
-          <div class="mt-auto d-flex flex-wrap gap-2">
-            <a href="{% url 'estudiantes_programa_list' programa_id %}" class="btn btn-outline-primary btn-sm">
-              <i class="fa fa-clipboard-list"></i> Información
-            </a>
-            
+        </div>
+      </div>
+
+      <!-- PAO -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card adminpos-card">
+          <div class="card-body d-flex flex-column">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <span class="adminpos-icon">
+                <i class="fa fa-calendar-alt"></i>
+              </span>
+              <div>
+                <h5 class="card-title mb-0">Cálculo PAO</h5>
+                <small class="text-muted">Fechas y periodos académicos ordinarios</small>
+              </div>
+            </div>
+            <p class="text-muted small mb-4">
+              Registra las fechas del programa y calcula automáticamente los 3 PAO.
+            </p>
+            <div class="mt-auto d-flex flex-wrap gap-2">
+              <a href="{% url 'programa_pao_configurar' programa_id %}" class="btn btn-outline-dark btn-sm">
+                <i class="fa fa-calendar"></i> Configurar PAO
+              </a>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- PAO -->
-<div class="col-12 col-md-6 col-lg-4">
-  <div class="card border-1 shadow h-100">
-    <div class="card-body d-flex flex-column">
-      <div class="d-flex align-items-center gap-3 mb-3">
-        <span class="badge rounded-pill text-bg-dark p-3">
-          <i class="fa fa-calendar-alt fa-lg"></i>
-        </span>
-        <div>
-          <h5 class="card-title mb-0">Cálculo PAO</h5>
-          <small class="text-muted">Fechas y periodos académicos ordinarios</small>
-        </div>
-      </div>
-      <p class="text-muted small mb-4">
-        Registra las fechas del programa y calcula automáticamente los 3 PAO.
-      </p>
-      <div class="mt-auto d-flex flex-wrap gap-2">
-        <a href="{% url 'programa_pao_configurar' programa_id %}" class="btn btn-outline-dark btn-sm">
-          <i class="fa fa-calendar"></i> Configurar PAO
-        </a>
-      </div>
     </div>
-  </div>
-</div>
-
   </section>
-<section class="card border-0 shadow-sm mt-4">
-  <div class="card-header text-bg-warning d-flex align-items-center justify-content-between">
-    <div>
-      <h5 class="m-0">Resumen financiero del programa</h5>
-      <small class="opacity-75">
-        Moneda: {{ fin.moneda|default:"USD" }} ·
-        Plan: {% if fin.plan_pago == '10_CUOTAS' %}10 cuotas{% else %}2 colegiaturas{% endif %}
-        {% if fin.plan_pago == '10_CUOTAS' and fin.cuota_mensual %}
-          · Cuota: {{ fin.cuota_mensual }} {{ fin.moneda }}
-        {% endif %}
-        {% if fin.plan_pago == '10_CUOTAS' and fin.valor_total_programa %}
-          · Total programa: {{ fin.valor_total_programa }} {{ fin.moneda }}
-        {% endif %}
-      </small>
+
+  <section class="adminpos-finance-panel mt-4">
+    <div class="adminpos-finance-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div>
+        <h5 class="m-0">Resumen financiero del programa</h5>
+        <small class="opacity-75">
+          Moneda: {{ fin.moneda|default:"USD" }} ·
+          Plan: {% if fin.plan_pago == '10_CUOTAS' %}10 cuotas{% else %}2 colegiaturas{% endif %}
+          {% if fin.plan_pago == '10_CUOTAS' and fin.cuota_mensual %}
+            · Cuota: {{ fin.cuota_mensual }} {{ fin.moneda }}
+          {% endif %}
+          {% if fin.plan_pago == '10_CUOTAS' and fin.valor_total_programa %}
+            · Total programa: {{ fin.valor_total_programa }} {{ fin.moneda }}
+          {% endif %}
+        </small>
+      </div>
+      <button class="btn btn-sm btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#desgloseFinanciero">
+        Ver desglose
+      </button>
     </div>
-    <button class="btn btn-sm btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#desgloseFinanciero">
-      Ver desglose
-    </button>
-  </div>
 
-  <div class="card-body">
-    <div class="row g-3">
-      <div class="col-12 col-lg-5">
-        <div class="border rounded-3 p-3 h-100 bg-light">
-          <div class="d-flex justify-content-between align-items-center">
-            <div class="fw-semibold">TOTAL INGRESOS</div>
-            <i class="fa fa-arrow-down text-success"></i>
-          </div>
-          <div class="display-6 mt-2 mb-0">
-            $ {{ fin.total_ingresos|default:"0.00" }}
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-lg-5">
-        <div class="border rounded-3 p-3 h-100 bg-light">
-          <div class="d-flex justify-content-between align-items-center">
-            <div class="fw-semibold">TOTAL EGRESOS</div>
-            <i class="fa fa-arrow-up text-danger"></i>
-          </div>
-          <div class="display-6 mt-2 mb-0">
-            $ {{ fin.total_egresos|default:"0.00" }}
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-lg-2">
-        <div class="border rounded-3 p-3 h-100 text-center"
-             style="background: #fffbe6;">
-          <div class="fw-semibold">SALDO</div>
-          <div class="fs-2 mt-2 mb-0 {% if fin.saldo >= 0 %}text-success{% else %}text-danger{% endif %}">
-            $ {{ fin.saldo|default:"0.00" }}
-          </div>
-        </div>
-      </div>
-    </div>
-    <div id="desgloseFinanciero" class="collapse mt-4">
+    <div class="card-body">
       <div class="row g-3">
-        <div class="col-12 col-lg-6">
-          <div class="card h-100">
-            <div class="card-header bg-transparent fw-semibold">
-              Ingresos (estudiantes)
+        <div class="col-12 col-lg-5">
+          <div class="adminpos-finance-kpi">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="label">TOTAL INGRESOS</div>
+              <i class="fa fa-arrow-down text-success"></i>
             </div>
-            <div class="card-body p-0">
-              {% if fin.plan_pago == '2_COLEGIATURAS' %}
-                <table class="table table-sm table-bordered m-0">
-                  <tbody>
-                    <tr>
-                      <th class="w-50">Inscripción</th>
-                      <td class="text-end">$ {{ fin.ingresos_inscripcion|default:"0.00" }}</td>
-                    </tr>
-                    <tr>
-                      <th>Matrícula</th>
-                      <td class="text-end">$ {{ fin.ingresos_matricula|default:"0.00" }}</td>
-                    </tr>
-                    <tr>
-                      <th>1ra Colegiatura</th>
-                      <td class="text-end">$ {{ fin.ingresos_colegiatura1|default:"0.00" }}</td>
-                    </tr>
-                    <tr>
-                      <th>2da Colegiatura</th>
-                      <td class="text-end">$ {{ fin.ingresos_colegiatura2|default:"0.00" }}</td>
-                    </tr>
-                    <tr class="table-light">
-                      <th>Total</th>
-                      <td class="text-end fw-bold">$ {{ fin.total_ingresos|default:"0.00" }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              {% else %}
-                <table class="table table-sm table-bordered m-0">
-                  <tbody>
-                    <tr>
-                      <th class="w-50">Inscripción</th>
-                      <td class="text-end">$ {{ fin.ingresos_inscripcion|default:"0.00" }}</td>
-                    </tr>
-                    <tr>
-                      <th>Matrícula</th>
-                      <td class="text-end">$ {{ fin.ingresos_matricula|default:"0.00" }}</td>
-                    </tr>
-                    <tr>
-                      <th>Cuotas (x10)</th>
-                      <td class="text-end">
-                        $ {{ fin.ingresos_cuotas10|default:"0.00" }}
-                        <small class="text-muted ms-2">
-                          {% if fin.total_cuotas_pagadas %}{{ fin.total_cuotas_pagadas }} cuotas pagadas{% else %}0 cuotas pagadas{% endif %}
-                        </small>
-                      </td>
-                    </tr>
-                    <tr class="table-light">
-                      <th>Total</th>
-                      <td class="text-end fw-bold">$ {{ fin.total_ingresos|default:"0.00" }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              {% endif %}
+            <div class="display-6 mt-2 mb-0 value">
+              $ {{ fin.total_ingresos|default:"0.00" }}
             </div>
           </div>
         </div>
 
-        <!-- Egresos (sin cambios) -->
-        <div class="col-12 col-lg-6">
-          <div class="card h-100">
-            <div class="card-header bg-transparent fw-semibold">
-              Egresos (coordinadores, docentes, tutores)
+        <div class="col-12 col-lg-5">
+          <div class="adminpos-finance-kpi">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="label">TOTAL EGRESOS</div>
+              <i class="fa fa-arrow-up text-danger"></i>
             </div>
-            <div class="card-body p-0">
-              <table class="table table-sm table-bordered m-0">
-                <tbody>
-                  <tr>
-                    <th class="w-50">Coordinadores</th>
-                    <td class="text-end">$ {{ fin.egresos_coordinadores|default:"0.00" }}</td>
-                  </tr>
-                  <tr>
-                    <th>Docentes</th>
-                    <td class="text-end">$ {{ fin.egresos_docentes|default:"0.00" }}</td>
-                  </tr>
-                  <tr>
-                    <th>Tutores</th>
-                    <td class="text-end">$ {{ fin.egresos_tutores|default:"0.00" }}</td>
-                  </tr>
-                  <tr class="table-light">
-                    <th>Total</th>
-                    <td class="text-end fw-bold">$ {{ fin.total_egresos|default:"0.00" }}</td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="display-6 mt-2 mb-0 value">
+              $ {{ fin.total_egresos|default:"0.00" }}
             </div>
           </div>
         </div>
 
+        <div class="col-12 col-lg-2">
+          <div class="adminpos-finance-kpi text-center" style="background: #fffbe6;">
+            <div class="label">SALDO</div>
+            <div class="fs-2 mt-2 mb-0 {% if fin.saldo >= 0 %}text-success{% else %}text-danger{% endif %}">
+              $ {{ fin.saldo|default:"0.00" }}
+            </div>
+          </div>
+        </div>
       </div>
+
+      <div id="desgloseFinanciero" class="collapse mt-4">
+        <div class="row g-3">
+          <div class="col-12 col-lg-6">
+            <div class="card h-100">
+              <div class="card-header bg-transparent fw-semibold">
+                Ingresos (estudiantes)
+              </div>
+              <div class="card-body p-0">
+                {% if fin.plan_pago == '2_COLEGIATURAS' %}
+                  <table class="table table-sm table-bordered m-0">
+                    <tbody>
+                      <tr>
+                        <th class="w-50">Inscripción</th>
+                        <td class="text-end">$ {{ fin.ingresos_inscripcion|default:"0.00" }}</td>
+                      </tr>
+                      <tr>
+                        <th>Matrícula</th>
+                        <td class="text-end">$ {{ fin.ingresos_matricula|default:"0.00" }}</td>
+                      </tr>
+                      <tr>
+                        <th>1ra Colegiatura</th>
+                        <td class="text-end">$ {{ fin.ingresos_colegiatura1|default:"0.00" }}</td>
+                      </tr>
+                      <tr>
+                        <th>2da Colegiatura</th>
+                        <td class="text-end">$ {{ fin.ingresos_colegiatura2|default:"0.00" }}</td>
+                      </tr>
+                      <tr class="table-light">
+                        <th>Total</th>
+                        <td class="text-end fw-bold">$ {{ fin.total_ingresos|default:"0.00" }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                {% else %}
+                  <table class="table table-sm table-bordered m-0">
+                    <tbody>
+                      <tr>
+                        <th class="w-50">Inscripción</th>
+                        <td class="text-end">$ {{ fin.ingresos_inscripcion|default:"0.00" }}</td>
+                      </tr>
+                      <tr>
+                        <th>Matrícula</th>
+                        <td class="text-end">$ {{ fin.ingresos_matricula|default:"0.00" }}</td>
+                      </tr>
+                      <tr>
+                        <th>Cuotas (x10)</th>
+                        <td class="text-end">
+                          $ {{ fin.ingresos_cuotas10|default:"0.00" }}
+                          <small class="text-muted ms-2">
+                            {% if fin.total_cuotas_pagadas %}{{ fin.total_cuotas_pagadas }} cuotas pagadas{% else %}0 cuotas pagadas{% endif %}
+                          </small>
+                        </td>
+                      </tr>
+                      <tr class="table-light">
+                        <th>Total</th>
+                        <td class="text-end fw-bold">$ {{ fin.total_ingresos|default:"0.00" }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Egresos (sin cambios) -->
+          <div class="col-12 col-lg-6">
+            <div class="card h-100">
+              <div class="card-header bg-transparent fw-semibold">
+                Egresos (coordinadores, docentes, tutores)
+              </div>
+              <div class="card-body p-0">
+                <table class="table table-sm table-bordered m-0">
+                  <tbody>
+                    <tr>
+                      <th class="w-50">Coordinadores</th>
+                      <td class="text-end">$ {{ fin.egresos_coordinadores|default:"0.00" }}</td>
+                    </tr>
+                    <tr>
+                      <th>Docentes</th>
+                      <td class="text-end">$ {{ fin.egresos_docentes|default:"0.00" }}</td>
+                    </tr>
+                    <tr>
+                      <th>Tutores</th>
+                      <td class="text-end">$ {{ fin.egresos_tutores|default:"0.00" }}</td>
+                    </tr>
+                    <tr class="table-light">
+                      <th>Total</th>
+                      <td class="text-end fw-bold">$ {{ fin.total_egresos|default:"0.00" }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
-
-
-  </div>
-</section>
   </section>
 </main>
 

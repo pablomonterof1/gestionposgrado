@@ -326,7 +326,7 @@ class EstudianteProgramaGestion(models.Model):
     modalidad = models.ForeignKey(ModalidadDeTitulacion, on_delete=models.SET_NULL, blank=True, null=True)
     fecha_rubrica_aprobada = models.DateField(blank=True, null=True)
 
-    tutor_resolucion = models.CharField(max_length=100, blank=True, null=True)
+    tutor_resolucion = models.URLField(max_length=500, blank=True, null=True)
     tutor_resolucion_fecha = models.DateField(blank=True, null=True)
     tutor_contratado = models.BooleanField(default=False)
 

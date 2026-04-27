@@ -1,11 +1,13 @@
 {% extends 'layouts/base.html' %}
 {% block content %}
-<main class="container py-5">
+<main class="container py-4" >
+  <div class="programa-header mb-4">
   <div class="d-flex align-items-center justify-content-between mb-3">
-    <h4 class="mb-0">Editar datos — <span class="text-primary">{{ user_obj.get_full_name|default:user_obj.username }}</span></h4>
+    <h4 class="mb-0">Editar datos — <span class="text-warning">{{ user_obj.get_full_name|default:user_obj.username }}</span></h4>
     <a href="{% url 'estudiantes_programa_list' programa.id %}" class="btn btn-secondary">
       <i class="fa fa-arrow-left"></i> Volver
     </a>
+  </div>
   </div>
 
   {% if messages %}
@@ -71,31 +73,36 @@
 
         <h6 class="text-primary mt-2">Proceso de Titulación</h6>
 
-        <div class="col-md-4">
+        <div class="col-md-6">
           <label class="form-label">Modalidad de titulación</label>
           {{ form.modalidad }}
         </div>
 
-        <div class="col-md-4">
-          <label class="form-label">Rúbrica aprobada (fecha)</label>
+        <div class="col-md-6">
+          <label class="form-label">Fecha de aprobación del tema</label>
           {{ form.fecha_rubrica_aprobada }}
         </div>
 
-        <div class="col-md-4">
+        <br><br><br><br>
+        <hr class="my-2">
+        
+        <div class="col-md-6">
+          <label class="form-label">Resolución de tutor (Url)</label>
+          {{ form.tutor_resolucion }}
+        </div>
+
+        <div class="col-md-6">
           <div class="form-check mt-4">
             {{ form.tutor_contratado }}
             <label class="form-check-label" for="{{ form.tutor_contratado.id_for_label }}">Tutor contratado</label>
           </div>
         </div>
-
-        <div class="col-md-6">
-          <label class="form-label">Resolución de tutor</label>
-          {{ form.tutor_resolucion }}
-        </div>
-        <div class="col-md-6">
+        <!-- <div class="col-md-6">
           <label class="form-label">Fecha de resolución</label>
           {{ form.tutor_resolucion_fecha }}
-        </div>
+        </div> -->
+        <br><br><br><br>
+        <hr class="my-2">
 
         <div class="col-md-4">
           <label class="form-label">Avance (%)</label>
@@ -112,15 +119,21 @@
           {{ form.fecha_aprob_complexivo }}
         </div>
 
-        <div class="col-md-6">
+        <br><br><br><br>
+        <hr class="my-2">
+        <div class="col-md-12">
           <label class="form-label">Estado de título</label>
           {{ form.estado_titulo }}
         </div>
 
         <div class="col-12 d-flex justify-content-end mt-3">
-          <button class="btn btn-primary" type="submit">
+          <a href="{% url 'estudiantes_programa_list' programa.id %}" class="btn btn-outline-secondary me-2">
+            <i class="fa fa-times"></i> Cancelar
+          </a>
+          <button class="btn btn-outline-primary" type="submit">
             <i class="fa fa-save"></i> Guardar
           </button>
+
         </div>
       </form>
     </div>

@@ -1,53 +1,82 @@
 {% extends 'layouts/base.html' %}
 {% block content %}
-<main class="container py-5">
-    <div class="d-flex align-items-center justify-content-between mb-3">
-        <h2 class="mb-0">Pagos de Coordinadores — <span class="text-primary">{{ programa }}</span></h2>
 
+<main class="container py-4">
+
+    <!-- Cabecera -->
+    <div class="programa-header mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <h3 >Pagos de Coordinadores</h3>
+            </div>
+            <div>
+                <a href="{% url 'informacionprogramaposgrado' programa.id %}" class="btn btn-light">
+                    <i class="fa fa-arrow-left me-1"></i> Volver
+                </a>
+            </div>
+             <div class="programa-meta mt-3">
+                    <span><b>Programa:</b> {{ programa }}</span>
+                </div>
+        </div>
     </div>
-    <a href="{% url 'informacionprogramaposgrado' programa.id %}" class="btn btn-secondary">
-        <i class="fa fa-arrow-left"></i> Volver
-    </a>
 
     {% if messages %}
-    <div class="mb-0">
+    <div class="mb-3">
         {% for message in messages %}
         <div class="alert alert-{{ message.tags|default:'info' }} mb-2">{{ message }}</div>
         {% endfor %}
     </div>
     {% endif %}
 
-    <br>
-    <br>
-    <div class="alert alert-info d-flex justify-content-between">
-        <strong>Total general del programa:</strong>
-        <span>{{ total_programa }} USD</span>
+    <!-- Total general -->
+    <div class="adminpos-total-panel">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <div class="label">Total general del programa</div>
+                <div class="text-muted small">Pagos registrados a coordinadores</div>
+            </div>
+            <div class="value">{{ total_programa }} USD</div>
+        </div>
     </div>
 
     {% if secciones %}
     {% for sec in secciones %}
     {% with contrato=sec.contrato u=sec.usuario lista=sec.pagos total=sec.total_contrato %}
-    <div class="card border-0 shadow-sm mb-3" id="contrato-{{ contrato.id }}">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <div>
-                <strong>Contrato:</strong> {{ contrato.numerocontrato }}
-                <br>
-                <small class="text-muted">
-                    Coordinador:
-                    {% if u %}{{ u.get_full_name|default:u.username }}{% else %}ID {{ contrato.coordinador }}{% endif %}
-                    — Cargo: {{ contrato.cargo }} — Honorario: {{ contrato.honorario }} USD
-                </small>
+
+    <div class="card adminpos-contract-card" id="contrato-{{ contrato.id }}">
+        <div class="card-header">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                <div>
+                    <div class="adminpos-contract-title">
+                        Contrato: {{ contrato.numerocontrato }}
+                    </div>
+
+                    <div class="adminpos-contract-meta">
+                        <strong>Coordinador:</strong>
+                        {% if u %}
+                            {{ u.get_full_name|default:u.username }}
+                        {% else %}
+                            ID {{ contrato.coordinador }}
+                        {% endif %}
+                        <br>
+                        <strong>Cargo:</strong> {{ contrato.cargo }}
+                        · <strong>Honorario:</strong> {{ contrato.honorario }} USD
+                    </div>
+                </div>
+
+                <div>
+                    <a class="btn btn-sm btn-success"
+                       href="{% url 'coordinadorpago_create_by_contrato' programa.id contrato.id %}">
+                        <i class="fa fa-plus me-1"></i> Registrar pago
+                    </a>
+                </div>
             </div>
-            <a class="btn btn-sm btn-success"
-                href="{% url 'coordinadorpago_create_by_contrato' programa.id contrato.id %}">
-                <i class="fa fa-plus"></i> Registrar pago
-            </a>
         </div>
 
         <div class="card-body">
             {% if lista and lista|length > 0 %}
             <div class="table-responsive">
-                <table class="table table-sm table-striped align-middle">
+                <table class="table table-sm table-striped table-bordered align-middle adminpos-payments-table">
                     <thead>
                         <tr>
                             <th>Fecha</th>
@@ -63,26 +92,29 @@
                         <tr>
                             <td>{{ p.mes_pago|date:"Y-m" }}</td>
                             <td>{{ p.numero_factura }}</td>
+
                             {% if p.urlfactura %}
-                            <td >
+                            <td>
                                 <a href="{{ p.urlfactura }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                <i class="fa-solid fa-file-pdf me-1"></i> Ver
+                                    <i class="fa-solid fa-file-pdf me-1"></i> Ver
                                 </a>
                             </td>
                             {% else %}
-                            <td >
+                            <td>
                                 <span class="text-muted">—</span>
                             </td>
                             {% endif %}
+
                             <td>{{ p.numero_oficio_tramite|default:"—" }}</td>
-                            <td class="text-end">{{ p.valor_total }} {{ p.moneda }}</td>
+                            <td class="text-end fw-semibold">{{ p.valor_total }} {{ p.moneda }}</td>
+
                             <td class="text-end">
                                 <a class="btn btn-xs btn-outline-secondary"
-                                    href="{% url 'coordinadorpago_update' programa.id p.id %}">
+                                   href="{% url 'coordinadorpago_update' programa.id p.id %}">
                                     <i class="fa fa-pen"></i>
                                 </a>
                                 <a class="btn btn-xs btn-outline-danger"
-                                    href="{% url 'coordinadorpago_delete' programa.id p.id %}">
+                                   href="{% url 'coordinadorpago_delete' programa.id p.id %}">
                                     <i class="fa fa-trash"></i>
                                 </a>
                             </td>
@@ -91,7 +123,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="3" class="text-end">Total contrato:</th>
+                            <th colspan="4" class="text-end">Total contrato:</th>
                             <th class="text-end">{{ total }} USD</th>
                             <th></th>
                         </tr>
@@ -99,15 +131,21 @@
                 </table>
             </div>
             {% else %}
-            <div class="alert alert-warning mb-0">Aún no hay pagos registrados para este contrato.</div>
+            <div class="alert alert-warning adminpos-empty-warning">
+                Aún no hay pagos registrados para este contrato.
+            </div>
             {% endif %}
         </div>
     </div>
+
     {% endwith %}
     {% endfor %}
     {% else %}
-    <div class="alert alert-info">No hay contratos registrados para este programa.</div>
+    <div class="alert alert-info">
+        No hay contratos registrados para este programa.
+    </div>
     {% endif %}
+
 </main>
 
 <script>

@@ -2,14 +2,22 @@
 
 {% block content %}
 <main class="container py-5">
-
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h2 class="mb-0">Contratos de Coordinadores — <span class="text-primary">{{ programa }}</span></h2>
-
+  
+  <div class="programa-header mb-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+    <div>
+      <h3 class="mb-0">Contratos de Coordinadores </h3>
+      
   </div>
-  <a href="{% url 'informacionprogramaposgrado' programa.id %}" class="btn btn-secondary">
+  <div>
+  <a href="{% url 'informacionprogramaposgrado' programa.id %}" class="btn btn-light">
     <i class="fa fa-arrow-left"></i> Volver
-  </a>
+  </a></div>
+
+  <div class="programa-meta mt-3" style="padding: 3px;"><span><b>{{ programa }}</b></span>
+      </div>
+  </div></div>
+
   <br><br>
 
   {% if messages %}

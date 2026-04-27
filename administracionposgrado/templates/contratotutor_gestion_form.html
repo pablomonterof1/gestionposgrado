@@ -1,14 +1,24 @@
 {% extends 'layouts/base.html' %}
 {% block content %}
 <main class="container py-5">
-  <div class="d-flex align-items-center justify-content-between mb-3">
+  <div class="programa-header mb-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+    <div>
     <h4 class="mb-0">
       {% if modo == 'crear' %}Agregar datos adicionales{% else %}Editar datos adicionales{% endif %}
-      — <span class="text-primary">{{ programa }}</span>
+      
     </h4>
-    <a href="{% url 'tutores_contratos_programa' programa.id %}" class="btn btn-secondary">
+    </div>
+    <div>
+    <a href="{% url 'tutores_contratos_programa' programa.id %}" class="btn btn-light">
       <i class="fa fa-arrow-left"></i> Volver
     </a>
+    </div>
+    <div class="programa-meta mt-3">
+          <span><b>Programa:</b> {{ programa }}</span>
+        </div>
+
+  </div>
   </div>
 
   {% if messages %}
@@ -84,7 +94,7 @@
           <button class="btn btn-primary" type="submit">
             <i class="fa fa-save"></i> Guardar
           </button>
-          <a class="btn btn-light" href="{% url 'tutores_contratos_programa' programa.id %}">Cancelar</a>
+          <a class="btn btn-outline-secondary" href="{% url 'tutores_contratos_programa' programa.id %}">Cancelar</a>
         </div>
       </form>
     </div>

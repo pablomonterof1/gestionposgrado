@@ -85,8 +85,8 @@
 
 .programa-meta span {
     background: rgba(255,255,255,.08);
-    padding: .4rem .8rem;
-    border-radius: 999px;
+    padding: 15px;
+    border-radius: 15px;
 }
 
 .programa-metaam {
@@ -1078,4 +1078,306 @@
         min-width: 100%;
         max-width: 100%;
     }
+}
+
+.adminpos-card {
+    background: #fff;
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 4px 18px rgba(0,0,0,.06);
+    transition: all .2s ease-in-out;
+    height: 100%;
+    overflow: hidden;
+}
+
+.adminpos-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(0,0,0,.10);
+}
+
+.adminpos-card .card-body {
+    padding: 1.25rem;
+}
+
+.adminpos-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: rgba(204, 153, 51, 0.12);
+    color: #cc9933;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+.adminpos-card .card-title {
+    color: #0e1424;
+    font-weight: 700;
+}
+
+.adminpos-finance-panel {
+    background: #fff;
+    border: none;
+    border-radius: 18px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.06);
+    overflow: hidden;
+}
+
+.adminpos-finance-header {
+    background: #0e1424;
+    color: #fff;
+    padding: 1.25rem;
+}
+
+.adminpos-finance-kpi {
+    border: 1px solid #eef0f2;
+    border-radius: 16px;
+    padding: 1.25rem;
+    height: 100%;
+    background: #f8f9fa;
+}
+
+.adminpos-finance-kpi .label {
+    font-weight: 700;
+    color: #0e1424;
+}
+
+.adminpos-finance-kpi .value {
+    font-weight: 700;
+    color: #0e1424;
+}
+
+.adminpos-values-panel {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.06);
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.adminpos-values-title {
+    color: #0e1424;
+    font-weight: 700;
+    margin-bottom: .75rem;
+}
+
+.adminpos-values-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .75rem 1rem;
+}
+
+.adminpos-table-wrap {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.06);
+    overflow: hidden;
+}
+
+.adminpos-table-header {
+    padding: 1.25rem 1.25rem 0 1.25rem;
+}
+
+.adminpos-table-title {
+    color: #0e1424;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: .35rem;
+}
+
+.adminpos-table-subtitle {
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+.adminpos-table {
+    margin-bottom: 0;
+    vertical-align: middle;
+}
+
+.adminpos-table thead th {
+    background: #0e1424;
+    color: #fff;
+    border-color: #494846 !important;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    /* white-space: nowrap; */
+}
+
+.adminpos-table tbody td {
+    vertical-align: middle;
+}
+
+.adminpos-table .name-cell {
+    font-weight: 700;
+    color: #0e1424;
+    min-width: 220px;
+}
+
+.adminpos-table .action-cell {
+    white-space: nowrap;
+}
+
+.adminpos-empty {
+    border-radius: 16px;
+    padding: 1.25rem;
+}
+
+.adminpos-total-panel {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.06);
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    border-left: 5px solid #cc9933;
+}
+
+.adminpos-total-panel .label {
+    color: #6c757d;
+    font-weight: 600;
+}
+
+.adminpos-total-panel .value {
+    color: #0e1424;
+    font-weight: 700;
+    font-size: 1.4rem;
+}
+
+.adminpos-contract-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.06);
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+}
+
+.adminpos-contract-card .card-header {
+    background: #fff;
+    border-bottom: 1px solid #eef0f2;
+    padding: 1.25rem;
+}
+
+.adminpos-contract-title {
+    color: #0e1424;
+    font-weight: 700;
+    margin-bottom: .25rem;
+}
+
+.adminpos-contract-meta {
+    color: #6c757d;
+    font-size: .92rem;
+}
+
+.adminpos-payments-table {
+    margin-bottom: 0;
+    vertical-align: middle;
+}
+
+.adminpos-payments-table thead th {
+    background: #0e1424;
+    color: #fff;
+    border-color: #0e1424 !important;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+.adminpos-payments-table tbody td {
+    vertical-align: middle;
+}
+
+.adminpos-payments-table tfoot th {
+    background: #f8f9fa;
+    vertical-align: middle;
+}
+
+.adminpos-empty-warning {
+    border-radius: 12px;
+    margin-bottom: 0;
+}
+
+.adminpos-docentes-summary {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.06);
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.adminpos-docentes-summary .summary-label {
+    color: #6c757d;
+    font-weight: 600;
+}
+
+.adminpos-docentes-summary .summary-value {
+    color: #0e1424;
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+.adminpos-docentes-table-wrap {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.06);
+    overflow: hidden;
+}
+
+.adminpos-docentes-table-header {
+    padding: 1.25rem 1.25rem 0 1.25rem;
+}
+
+.adminpos-docentes-table-title {
+    color: #0e1424;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: .35rem;
+}
+
+.adminpos-docentes-table-subtitle {
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+.adminpos-docentes-table {
+    margin-bottom: 0;
+    vertical-align: middle;
+}
+
+.adminpos-docentes-table thead th {
+    background: #0e1424;
+    color: #fff;
+    border-color: #494846 !important;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    /* white-space: nowrap; */
+}
+
+.adminpos-docentes-table tbody td {
+    vertical-align: middle;
+}
+
+.adminpos-docentes-table .name-cell {
+    font-weight: 700;
+    color: #0e1424;
+    min-width: 220px;
+}
+
+.adminpos-docentes-table tfoot td {
+    background: #f8f9fa;
+    font-weight: 700;
+    vertical-align: middle;
+}
+
+.adminpos-docentes-table .action-cell {
+    white-space: nowrap;
+    text-align: center;
+}
+
+.adminpos-docentes-empty {
+    border-radius: 16px;
+    padding: 1.25rem;
 }
