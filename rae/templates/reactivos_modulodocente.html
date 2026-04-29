@@ -61,7 +61,7 @@
                         d. {{ reactivo.opciond }}
                     </td>
                     <td>{{ reactivo.correcta }}</td>
-                    <td>{{ reactivo.justificacion }}</td>
+                    <td>{{ reactivo.justificacion|safe }}</td>
                     <td>{{ reactivo.usuario_obj.get_full_name }} </td>
                     {% if reactivo.estado == 2 %}
                     <td class="text-success">

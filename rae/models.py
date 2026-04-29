@@ -16,7 +16,7 @@ class ReactivosMultipleChoice(models.Model):
     opcionc = models.TextField()
     opciond = models.TextField()
     correcta = models.CharField(max_length=1, choices=[('A', 'Opción A'), ('B', 'Opción B'), ('C', 'Opción C'), ('D', 'Opción D')])
-    justificacion = models.TextField()
+    justificacion = HTMLField()
     bibliografia = models.TextField()
     palabras_clave = models.TextField()
     tiempo_estimado = models.IntegerField()

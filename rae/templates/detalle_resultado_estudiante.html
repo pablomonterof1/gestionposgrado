@@ -30,7 +30,7 @@
                 {% endif %}
             </p>
             {% endfor %}
-            <p><strong>Justificación:</strong> {{ resp.reactivo.justificacion }}</p>
+            <p><strong>Justificación:</strong> {{ resp.reactivo.justificacion|safe }}</p>
         </div>
     </div>
     {% endfor %}

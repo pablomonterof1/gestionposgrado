@@ -32,7 +32,7 @@ class ReactivosMultipleChoiceForm(forms.ModelForm):
             'opcionb': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Opción B'}),
             'opcionc': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Opción C'}),
             'opciond': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Opción D'}),
-            'justificacion': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Justificación'}),
+            'justificacion': TinyMCE(attrs={'cols': 80, 'rows': 10}),
             'bibliografia' : forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Bibliografía'}),
             'palabras_clave' : forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Palabras clave'}),
             'tiempo_estimado' : forms.NumberInput(attrs={'class': 'form-control',  }),

@@ -42,7 +42,7 @@
                     <span class="text-warning">- No respondida</span><br>
                     <strong>Respuesta correcta:</strong> {{ reactivo.reactivo.correcta }}
                     {% endif %}
-            <p><strong>Justificación:</strong> {{ reactivo.reactivo.justificacion }}</p>
+            <p><strong>Justificación:</strong> {{ reactivo.reactivo.justificacion|safe }}</p>
             <hr>
         </div>
     {% endfor %}
