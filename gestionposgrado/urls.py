@@ -60,7 +60,7 @@ urlpatterns = [
     path('password/change/done/', user_views.CustomPasswordChangeDoneView.as_view(), name='password_change_done'),
     path('usuarioscompletos/', user_views.CrearUsuarioCompleto, name='usuarioscompletos'),
     path('usuarios/<int:user_id>/editar/', user_views.usuario_editar, name='usuario_editar'),
-
+    path('programa/<int:programa_id>/matricular-excel/', user_views.usuariosmatricularprogramam_excel, name='usuariosmatricularprogramam_excel'),
 
     path('docentepm/create/<int:programa_id>', user_views.docentepm_create, name='docentepm_create'),
     path('estudiantepm/create/<int:programa_id>', user_views.estudiantepm_create, name='estudiantepm_create'),

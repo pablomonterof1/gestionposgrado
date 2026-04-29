@@ -697,7 +697,15 @@ def tutores_contratos_programa(request, programa_id):
     gestiones = {g.contrato_id: g for g in ContratoTutorGestion.objects.filter(
         contrato_id__in=[c.id for c in contratos]
     )}
-
+    # Obtener gestiones de estudiantes para este programa
+    gestiones_estudiantes = {
+        g.usuario_id: g
+        for g in EstudianteProgramaGestion.objects.filter(
+            usuario_id__in=est_ids,
+            programa_content_type=pf["programa_content_type"],
+            programa_object_id=pf["programa_object_id"]
+        ).select_related('modalidad')
+    }
     filas = []
     total_contratado = Decimal('0.00')
     total_pagado = Decimal('0.00')
@@ -713,6 +721,7 @@ def tutores_contratos_programa(request, programa_id):
         g = gestiones.get(c.id)
         if g and g.pago_realizado:
             total_pagado += valor_total
+        gestion_estudiante = gestiones_estudiantes.get(c.maestrante)
 
         filas.append({
             'contrato': c,
@@ -720,6 +729,8 @@ def tutores_contratos_programa(request, programa_id):
             'tutor_perfil': perfil_tutor,
             'estudiante_user': est,
             'gestion': g,
+            'gestion_estudiante': gestion_estudiante,
+            'modalidad': gestion_estudiante.modalidad if gestion_estudiante else None,
             'valor_total': valor_total,
         })
 

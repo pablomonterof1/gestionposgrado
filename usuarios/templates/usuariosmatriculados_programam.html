@@ -8,10 +8,8 @@
     <div class="programa-header">
         <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
             <div>
-                <h1 class="display-6">Estudiantes matriculados en el programa de maestría</h1>
-                <div class="programa-meta mt-3">
-                    <span><b>Programa:</b> {{ programa }}</span>
-                </div>
+                <h3>Estudiantes matriculados en el programa de maestría</h3>
+                
             </div>
 
             <div>
@@ -19,6 +17,9 @@
                     <i class="fa fa-arrow-left me-1"></i> Regresar
                 </a>
             </div>
+            <div class="programa-meta mt-3">
+                    <span><b>Programa:</b> {{ programa }}</span>
+                </div>
         </div>
     </div>
 
@@ -36,13 +37,17 @@
             <p class="matriculados-info-text">
                 Revise los estudiantes actualmente matriculados en el programa y gestione sus matrículas.
             </p>
+            
+        </div>
 
-            <div>
+        <div class="justify-content-end align-items-center mb-4 d-flex flex-wrap gap-2">
                 <a class="btn btn-info" href="{% url 'usuariosmatricularprogramam' programa.id %}">
-                    <i class="fa fa-user-plus me-1"></i> Matricular estudiantes
+                    <i class="fa fa-user-plus me-1"></i> Matricular estudiantes (individual)
+                </a>
+                <a class="btn btn-warning" href="{% url 'usuariosmatricularprogramam_excel' programa.id %}">
+                    <i class="fa fa-file-excel me-1"></i> Matricular estudiantes (Excel)
                 </a>
             </div>
-        </div>
     </div>
 
     <div class="matriculados-table-wrap">
@@ -88,11 +93,11 @@
                         </td>
                     </tr>
                     {% empty %}
-                    <tr>
+                    <!-- <tr>
                         <td colspan="7" class="matriculados-empty">
                             No existen estudiantes matriculados en este programa.
                         </td>
-                    </tr>
+                    </tr> -->
                     {% endfor %}
                 </tbody>
             </table>
@@ -108,6 +113,7 @@
             "language": {
                 "lengthMenu": "Mostrar _MENU_ registros por página",
                 "zeroRecords": "No se encontraron resultados",
+                "emptyTable": "No existen estudiantes matriculados en este programa.",
                 "info": "Mostrando página _PAGE_ de _PAGES_",
                 "infoEmpty": "No hay registros disponibles",
                 "infoFiltered": "(filtrado de _MAX_ registros totales)",

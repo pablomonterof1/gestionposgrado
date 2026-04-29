@@ -19,6 +19,7 @@ from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.db.models import Q
+import pandas as pd
 
 # Create your views here.
 
@@ -1133,4 +1134,130 @@ def usuario_editar(request, user_id):
         'user_obj': user,
         'perfil': perfil,
         'academico': academico,
+    })
+
+@transaction.atomic
+def usuariosmatricularprogramam_excel(request, programa_id):
+
+    # Detectar tipo de programa
+    programa = ProgramaPosgrado.objects.filter(id=programa_id).first()
+    if not programa:
+        programa = get_object_or_404(ProgramaPosgradoEM, id=programa_id)
+
+    if request.method == 'POST' and request.FILES.get('archivo_excel'):
+
+        archivo = request.FILES['archivo_excel']
+
+        try:
+            df = pd.read_excel(
+                archivo,
+                dtype={
+                    'ci': str,
+                    'nombres': str,
+                    'apellidos': str,
+                    'email': str,
+                }
+            )
+        except Exception:
+            messages.error(request, "Error al leer el archivo Excel.")
+            return redirect('usuariosmatriculadosprogramam', programa.id)
+
+        creados = 0
+        matriculados = 0
+        existentes = 0
+        errores = 0
+
+        ct = ContentType.objects.get_for_model(programa)
+
+        for i, row in df.iterrows():
+            try:
+                ci = str(row.get('ci', '')).strip().upper()
+
+                # 🔥 Manejo correcto de valores vacíos / NaN
+                if ci in ['NAN', 'NONE', '']:
+                    errores += 1
+                    continue
+
+                # 🔧 Quitar formato tipo 111.0 de Excel
+                if ci.endswith('.0'):
+                    ci = ci[:-2]
+
+                # 🔢 Si es solo números → es cédula
+                if ci.isdigit():
+                    ci = ci.zfill(10)
+
+                nombres = str(row.get('nombres', '')).strip()
+                apellidos = str(row.get('apellidos', '')).strip()
+                email = str(row.get('email', '')).strip()
+
+                # 🔥 Validación adicional de email
+                if email.upper() in ['NAN', 'NONE']:
+                    email = ''
+
+                if not ci:
+                    errores += 1
+                    continue
+
+                # 🔎 Buscar por CI
+                perfil = PerfilUsuario.objects.filter(ci=ci).select_related('user').first()
+
+                if perfil:
+                    user = perfil.user
+                else:
+                    # 🚨 VALIDACIÓN EMAIL DUPLICADO
+                    if email:
+                        if User.objects.filter(email=email).exists():
+                            errores += 1
+                            continue  # ❌ NO crear usuario
+
+                    username = ci
+                    password = ci  # puedes cambiar luego
+
+                    user = User.objects.create_user(
+                        username=username,
+                        password=password,
+                        first_name=nombres,
+                        last_name=apellidos,
+                        email=email if email else ''
+                    )
+
+                    PerfilUsuario.objects.create(
+                        user=user,
+                        ci=ci,
+                        rol=1
+                    )
+
+                    creados += 1
+
+                # 🔎 Verificar matrícula
+                existe_matricula = MatriculaUsuario.objects.filter(
+                    usuario=user,
+                    content_type=ct,
+                    object_id=programa.id,
+                    rol_en_programa='estudiante'
+                ).exists()
+
+                if not existe_matricula:
+                    MatriculaUsuario.objects.create(
+                        usuario=user,
+                        content_type=ct,
+                        object_id=programa.id,
+                        rol_en_programa='estudiante'
+                    )
+                    matriculados += 1
+                else:
+                    existentes += 1
+
+            except Exception:
+                errores += 1
+
+        messages.success(
+            request,
+            f"Proceso completado: {creados} creados, {matriculados} matriculados, {existentes} ya existentes, {errores} errores."
+        )
+
+        return redirect('usuariosmatriculadosprogramam', programa.id)
+
+    return render(request, 'matricular_excel.html', {
+        'programa': programa
     })

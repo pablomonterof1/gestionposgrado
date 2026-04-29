@@ -1,0 +1,43 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<main class="container py-4">
+
+    <div class="programa-header">
+    <h4>Matricular estudiantes desde Excel</h4>
+     <div class="programa-meta mt-3">
+                    <span><b>Programa:</b> {{ programa }}</span>
+                </div>
+    </div>
+    
+
+    <div class="card p-4">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label">Archivo Excel (.xlsx)</label>
+                <input type="file" name="archivo_excel" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                Subir y procesar
+            </button>
+
+            <a href="{% url 'usuariosmatriculadosprogramam' programa.id %}" class="btn btn-secondary">
+                Cancelar
+            </a>
+        </form>
+    </div>
+
+    <div class="mt-4">
+        <h6>Formato requerido (excel):</h6>
+        
+        <p><i><b>Nombres de las columnas:</b> ci | nombres | apellidos | email</i></p>
+    </div>
+    <a class="btn btn-info" href="https://ailectus.com/varios/plantilla1gp.xlsx" target="_blank">
+        <i class="fa fa-download me-1"></i> Descargar plantilla
+    </a>
+
+</main>
+{% endblock %}
