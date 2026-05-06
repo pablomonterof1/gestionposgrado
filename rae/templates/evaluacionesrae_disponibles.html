@@ -1,105 +1,145 @@
 {% extends 'layouts/base.html' %}
 {% block content %}
-<main class="container py-5">
-    <section class="card p-4">
-        <h3 class="mb-4">Evaluaciones disponibles</h3>
-        {% if messages %}
+
+<main class="container py-4">
+
+    <!-- Cabecera -->
+    <div class="programa-header">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <h1 class="display-6">Evaluaciones RAE disponibles</h1>
+                <div class="programa-meta mt-3">
+                    <span><b>Gestión:</b> Evaluaciones por realizar y evaluaciones realizadas</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
         {% for message in messages %}
         <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
             {{ message }}
         </div>
         {% endfor %}
-        {% endif %}
+    {% endif %}
 
-
-
+    <!-- Evaluaciones por realizar -->
+    <div class="rae-eval-table-wrap">
+        <div class="rae-eval-table-header">
+            <div class="rae-eval-table-title">
+                Evaluaciones por realizar
+            </div>
+            <p class="rae-eval-table-subtitle">
+                Revise las evaluaciones activas y disponibles para rendir.
+            </p>
+        </div>
 
         {% if evaluaciones %}
-        <p class="lead">
-            <strong class="text-primary">
-                Evaluaciones por realizar
-            </strong>
-        </p>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Programa</th>
-                    <th style="color: red;">Tipo</th>
-                    <th>Fecha disponible</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for eval in evaluaciones %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ eval.programa }}</td>
-                    <td>
-                        <strong>
-                            {{ eval.get_tipo_display }}
-                        </strong>
-                    </td>
-                    <td><span style="color: green;">Inicio: </span>{{ eval.fecha_inicio|date:"d/m/Y H:i" }} 
-                        <br>
-                        <span style="color: red;">Cierre: </span>{{ eval.fecha_fin|date:"d/m/Y H:i" }}
-                    </td>
-                    <td>
-                        <a href="{% url 'evaluacionrae_rendir' eval.id %}"
-                            class="btn btn-warning btn-sm">Rendir</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive p-3">
+            <table class="table table-striped table-bordered rae-eval-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Programa</th>
+                        <th>Tipo</th>
+                        <th>Fecha disponible</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for eval in evaluaciones %}
+                    <tr>
+                        <td class="text-center">{{ forloop.counter }}</td>
+                        <td class="programa-cell">{{ eval.programa }}</td>
+                        <td class="text-center">
+                            <span class="badge text-bg-warning text-dark">
+                                {{ eval.get_tipo_display }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="rae-date-start">Inicio:</span>
+                            {{ eval.fecha_inicio|date:"d/m/Y H:i" }}
+                            <br>
+                            <span class="rae-date-end">Cierre:</span>
+                            {{ eval.fecha_fin|date:"d/m/Y H:i" }}
+                        </td>
+                        <td class="text-center">
+                            <a href="{% url 'evaluacionrae_rendir' eval.id %}"
+                               class="btn btn-warning btn-sm">
+                                <i class="fa fa-pen-to-square me-1"></i> Rendir
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% else %}
-        <div class="alert alert-warning">No tienes evaluaciones por realizar disponibles en este momento.</div>
+        <div class="alert alert-warning rae-status-box mx-3 mb-3">
+            No tienes evaluaciones por realizar disponibles en este momento.
+        </div>
         {% endif %}
-        <hr style="border: solid 2px;">
-        {% if evaluacionesrealizadas %}
-        <p class="lead">
-            <strong class="text-success">
-                Evaluaciones realizadas
-            </strong>
-        </p>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Programa</th>
-                    <th style="color: red;">Tipo</th>
-                    <th>Fecha disponible</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for eval in evaluacionesrealizadas %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ eval.evaluacion.programa }}</td>
-                    <td>
-                        <strong>
-                            {{ eval.evaluacion.get_tipo_display }}
-                        </strong>
-                    </td>
-                    <td>
-                         <span style="color: green;" >Inicio: </span> {{ eval.evaluacion.fecha_inicio|date:"d/m/Y H:i" }} 
-                        <br>
-                        <span style="color: red;" >Cierre: </span> {{ eval.evaluacion.fecha_fin|date:"d/m/Y H:i" }}</td>
-                    <td>
-                        <a href="{% url 'resultadorae_estudiante' eval.evaluacion.id %}"
-                            class="btn btn-info btn-sm">Ver</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <div class="alert alert-warning">No tienes evaluaciones realizadas en este momento.</div>
-        {% endif %}
-    </section>
-</main>
+    </div>
 
+    <!-- Evaluaciones realizadas -->
+    <div class="rae-eval-table-wrap">
+        <div class="rae-eval-table-header">
+            <div class="rae-eval-table-title">
+                Evaluaciones realizadas
+            </div>
+            <p class="rae-eval-table-subtitle">
+                Consulte las evaluaciones que ya fueron rendidas y sus resultados.
+            </p>
+        </div>
+
+        {% if evaluacionesrealizadas %}
+        <div class="table-responsive p-3">
+            <table class="table table-striped table-bordered rae-eval-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Programa</th>
+                        <th>Tipo</th>
+                        <th>Fecha disponible</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for eval in evaluacionesrealizadas %}
+                    <tr>
+                        <td class="text-center">{{ forloop.counter }}</td>
+                        <td class="programa-cell">{{ eval.evaluacion.programa }}</td>
+                        <td class="text-center">
+                            <span class="badge text-bg-success">
+                                {{ eval.evaluacion.get_tipo_display }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="rae-date-start">Inicio:</span>
+                            {{ eval.evaluacion.fecha_inicio|date:"d/m/Y H:i" }}
+                            <br>
+                            <span class="rae-date-end">Cierre:</span>
+                            {{ eval.evaluacion.fecha_fin|date:"d/m/Y H:i" }}
+                        </td>
+                        <td class="text-center">
+                            <a href="{% url 'resultadorae_estudiante' eval.evaluacion.id %}"
+                               class="btn btn-info btn-sm">
+                                <i class="fa fa-eye me-1"></i> Ver
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-warning rae-status-box mx-3 mb-3">
+            No tienes evaluaciones realizadas en este momento.
+        </div>
+        {% endif %}
+    </div>
+
+</main>
 
 <script>
     window.addEventListener('pageshow', function (event) {

@@ -2,60 +2,71 @@
 
 {% block content %}
 
-<main class="container py-5 ">
+<main class="container py-4">
 
-    <section class="card" style="padding: 2%;">
-        <div class="text-center mb-4">
-            <p class="lead" style="font-size: 1.8em;">{{maestria}}</p>
-        </div>
-        <p class="lead" style="font-size: 1.5em;">
-            <b>Periodo académico:</b> {{periodoacademico.nombre}}<br>
-            <b>Cohorte:</b> {{programadeposgrado.get_cohorte_display}}
-        </p>
-        
-        <br>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark menuprogposgrado" style="border-radius: 5px;">
-            <div class="container-fluid">
-
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ">
-                        <div class="nav-divider"></div>
-                        <li class="nav-item">
-                            <a class="nav-link fs-5" aria-current="page" href="{% url 'evaluacionesrae_disponibles' programadeposgrado.id %}" style="color: white !important;">
-                                Evaluación RAE
-                            </a>
-                        </li>
-                        <div class="nav-divider"></div>
-
-
-
-                    </ul>
+    <div class="programa-header">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <h1 class="display-6">{{ maestria }}</h1>
+                <div class="programa-meta mt-3">
+                    <span><b>Periodo académico:</b> {{ periodoacademico.nombre }}</span>
+                    <span><b>Cohorte:</b> {{ programadeposgrado.get_cohorte_display }}</span>
                 </div>
             </div>
-        </nav>
-        <br>
-        <br>
+        </div>
+    </div>
 
-        <div class="list-group">
-
-
-            {% for modulos in modulos_list %}
-            <a href="#" class="list-group-item list-group-item-action" aria-current="true">
-                <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1">{{modulos.nombre}}</h5>
-                    <small>info</small>
-                </div>
-                <p class="mb-1">
-                    <b>Docente:</b> {{modulos.docente.get_full_name}}
-                </p>
-                <small>Información adicional</small>
-            </a>
-            
-            {% endfor %}
+    <div class="menu-programa-wrap">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <h5 class="mb-0 fw-bold" style="color:#0e1424;">Aula virtual del estudiante</h5>
+            <span class="badge-soft-warning">Módulos y evaluación</span>
         </div>
 
-    </section>
-</main>
+        <div class="menu-programa">
+            <a class="menu-item active"
+               href="{% url 'evaluacionesrae_disponibles' programadeposgrado.id %}">
+                <i class="fa fa-list-check me-2"></i>Evaluación RAE
+            </a>
+        </div>
+    </div>
 
+    <div class="dashboard-panel">
+        <div class="mb-4">
+            <div class="section-title">Módulos del programa</div>
+            <p class="text-muted mb-0">
+                Consulte los módulos del programa y la información del docente asignado.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            {% for modulos in modulos_list %}
+            <div class="col-12 col-md-6 col-xl-4">
+                <a href="#" class="aula-modulo-card">
+                    <div class="d-flex gap-3">
+                        <div class="aula-modulo-icon">
+                            <i class="fa fa-book-open"></i>
+                        </div>
+
+                        <div>
+                            <h5 class="aula-modulo-title">{{ modulos.nombre }}</h5>
+                            <div class="aula-modulo-meta mb-2">
+                                <b>Docente:</b> {{ modulos.docente.get_full_name }}
+                            </div>
+                            <small class="text-muted">Información adicional</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-light border text-center mb-0">
+                    No existen módulos disponibles para este programa.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</main>
 
 {% endblock %}
