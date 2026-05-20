@@ -65,6 +65,11 @@ urlpatterns = [
     path('docentepm/create/<int:programa_id>', user_views.docentepm_create, name='docentepm_create'),
     path('estudiantepm/create/<int:programa_id>', user_views.estudiantepm_create, name='estudiantepm_create'),
 
+    #cambio de contraseña por parte del usuario
+    path('password/reset/', user_views.password_reset_cedula, name='password_reset_cedula'),
+    path('password/reset/enviado/', user_views.password_reset_enviado, name='password_reset_enviado'),
+    path('password/reset/confirm/<uidb64>/<token>/', user_views.CustomPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('password/reset/completo/', user_views.CustomPasswordResetCompleteView.as_view(), name='password_reset_complete'),
 
     #Gestion de programas de posgrado
     path('maestrias/', programasposgrado_views.maestrias, name='maestrias'),

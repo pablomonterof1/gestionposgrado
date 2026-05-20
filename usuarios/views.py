@@ -15,11 +15,19 @@ from programasposgrado.models import ProgramaPosgrado, ProgramaPosgradoEM, Maest
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
-from django.urls import reverse
+from django.urls import reverse_lazy, reverse
 from django.utils.decorators import method_decorator
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.db.models import Q
 import pandas as pd
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.views import PasswordResetConfirmView, PasswordResetCompleteView
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.conf import settings
+from django.utils.html import strip_tags
 
 # Create your views here.
 
@@ -1261,3 +1269,107 @@ def usuariosmatricularprogramam_excel(request, programa_id):
     return render(request, 'matricular_excel.html', {
         'programa': programa
     })
+
+def ocultar_correo(email):
+    """
+    Oculta parcialmente un correo.
+    Ejemplo: pablo@gmail.com -> pa***@gmail.com
+    """
+    if not email or "@" not in email:
+        return ""
+
+    usuario, dominio = email.split("@", 1)
+
+    if len(usuario) <= 2:
+        usuario_oculto = usuario[0] + "***"
+    else:
+        usuario_oculto = usuario[:2] + "***"
+
+    return f"{usuario_oculto}@{dominio}"
+
+
+def obtener_usuario_por_cedula(cedula):
+    """
+    Busca primero por username y luego por PerfilUsuario.ci.
+    """
+    cedula = cedula.strip()
+
+    user = User.objects.filter(username=cedula, is_active=True).first()
+
+    if user:
+        return user
+
+    perfil = PerfilUsuario.objects.select_related("user").filter(
+        ci=cedula,
+        user__is_active=True
+    ).first()
+
+    if perfil:
+        return perfil.user
+
+    return None
+
+
+def password_reset_cedula(request):
+    correo_oculto = None
+
+    if request.method == "POST":
+        cedula = request.POST.get("cedula", "").strip()
+
+        user = obtener_usuario_por_cedula(cedula)
+
+        if user and user.email:
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+
+            reset_url = request.build_absolute_uri(
+                reverse("password_reset_confirm", kwargs={
+                    "uidb64": uid,
+                    "token": token
+                })
+            )
+
+            correo_oculto = ocultar_correo(user.email)
+
+            context = {
+                "user": user,
+                "reset_url": reset_url,
+            }
+
+            html_content = render_to_string(
+                "password_reset_email.html",
+                context
+            )
+            text_content = strip_tags(html_content)
+
+            email = EmailMultiAlternatives(
+                subject="Recuperación de contraseña - Gestión Posgrado",
+                body=text_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[user.email],
+            )
+            email.attach_alternative(html_content, "text/html")
+            email.send(fail_silently=False)
+
+        request.session["correo_recuperacion_oculto"] = correo_oculto
+
+        return redirect("password_reset_enviado")
+
+    return render(request, "password_reset_cedula.html")
+
+
+def password_reset_enviado(request):
+    correo_oculto = request.session.pop("correo_recuperacion_oculto", None)
+
+    return render(request, "password_reset_enviado.html", {
+        "correo_oculto": correo_oculto
+    })
+
+
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = "password_reset_confirm.html"
+    success_url = reverse_lazy("password_reset_complete")
+
+
+class CustomPasswordResetCompleteView(PasswordResetCompleteView):
+    template_name = "password_reset_complete.html"
