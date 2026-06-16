@@ -10,7 +10,7 @@ from .models import (
 )
 from .forms import (
     ValorProgramaPosgradoForm, CoordinadorProgramaForm, CoordinadorPagosForm,
-    ContratoDocenteGestionForm, ContratoTutorGestionForm, EstudianteProgramaGestionForm, ProgramaPAOForm
+    ContratoDocenteGestionForm, ContratoTutorGestionForm, EstudianteProgramaGestionForm, ProgramaPAOForm, EstudianteRetiroReingresoForm
 )
 from datosposgrado.models import ContratoCoordinador, ContratosDocentes, ContratoTutor
 from usuarios.models import PerfilUsuario, PerfilAcademicoUsuario
@@ -899,8 +899,8 @@ def estudiantes_programa_list(request, programa_id):
 
         total_pagado_est = Decimal('0.00')
         if vp and g:
-            if g.pago_inscripcion:
-                total_pagado_est += valores_programa['inscripcion']
+            # if g.pago_inscripcion:
+            #     total_pagado_est += valores_programa['inscripcion']
             if g.pago_matricula:
                 total_pagado_est += valores_programa['matricula']
 
@@ -953,6 +953,7 @@ def estudiante_programa_gestion_upsert(request, programa_id, user_id):
             g = form.save(commit=False)
             g.usuario = user
             g.programa = programa  # ✅ setea GFK
+            g.pago_inscripcion = True
 
             if plan_pago == getattr(vp, 'PLAN_2', '2_COLEGIATURAS'):
                 g.cuotas_pagadas = 0
@@ -987,6 +988,35 @@ def estudiante_programa_gestion_upsert(request, programa_id, user_id):
         'vp': vp,
     })
 
+@login_required
+@role_required([3, 4])
+def estudiante_retiro_reingreso_update(request, programa_id, user_id):
+    programa = _get_programa_or_404(programa_id)
+    pf = _programa_filter(programa)
+
+    user_obj = get_object_or_404(User, id=user_id)
+
+    gestion, created = EstudianteProgramaGestion.objects.get_or_create(
+        usuario=user_obj,
+        programa_content_type=pf["programa_content_type"],
+        programa_object_id=pf["programa_object_id"],
+    )
+
+    if request.method == 'POST':
+        form = EstudianteRetiroReingresoForm(request.POST, instance=gestion)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Retiro/Reingreso actualizado correctamente.")
+            return redirect('estudiantes_programa_list', programa_id=programa.id)
+    else:
+        form = EstudianteRetiroReingresoForm(instance=gestion)
+
+    return render(request, 'estudiante_retiro_reingreso_form.html', {
+        'form': form,
+        'programa': programa,
+        'user_obj': user_obj,
+    })
+
 
 def _calc_programa_finanzas(programa):
     cero = Decimal('0.00')
@@ -1007,25 +1037,41 @@ def _calc_programa_finanzas(programa):
         ).only(
             'pago_inscripcion', 'pago_matricula',
             'pago_primera_colegiatura', 'pago_segunda_colegiatura',
-            'cuotas_pagadas'
+            'cuotas_pagadas', 'beca_porcentaje'
         )
 
-        pagaron_insc = gestiones.filter(pago_inscripcion=True).count()
+        total_inscritos = vp.total_inscritos or 0
         pagaron_mat = gestiones.filter(pago_matricula=True).count()
 
-        ingresos_insc = (vp.valorinscripcion or cero) * Decimal(pagaron_insc)
+        ingresos_insc = (vp.valorinscripcion or cero) * Decimal(total_inscritos)
         ingresos_mat = (vp.valormatricula or cero) * Decimal(pagaron_mat)
 
-        if plan_pago == ValorProgramaPosgrado.PLAN_2:
-            pagaron_c1 = gestiones.filter(pago_primera_colegiatura=True).count()
-            pagaron_c2 = gestiones.filter(pago_segunda_colegiatura=True).count()
-            ingresos_cole1 = (vp.primeracolegiatura or cero) * Decimal(pagaron_c1)
-            ingresos_cole2 = (vp.segundacolegiatura or cero) * Decimal(pagaron_c2)
-        else:
-            total_cuotas_pagadas = sum((g.cuotas_pagadas or 0) for g in gestiones)
-            ingresos_cuotas10 = cuota_mensual * Decimal(total_cuotas_pagadas)
+        def aplicar_beca(valor, beca_porcentaje):
+            beca_porcentaje = beca_porcentaje or 0
+            valor_final = valor * (Decimal(100 - beca_porcentaje) / Decimal(100))
+            return valor_final.quantize(Decimal('0.01'))
 
-    total_ingresos = ingresos_insc + ingresos_mat + ingresos_cole1 + ingresos_cole2 + ingresos_cuotas10
+        if plan_pago == ValorProgramaPosgrado.PLAN_2:
+            for g in gestiones:
+                beca = g.beca_porcentaje or 0
+
+                if g.pago_primera_colegiatura:
+                    ingresos_cole1 += aplicar_beca(vp.primeracolegiatura or cero, beca)
+
+                if g.pago_segunda_colegiatura:
+                    ingresos_cole2 += aplicar_beca(vp.segundacolegiatura or cero, beca)
+
+        else:
+            for g in gestiones:
+                beca = g.beca_porcentaje or 0
+                cuotas = g.cuotas_pagadas or 0
+
+                if cuotas > 0:
+                    total_cuotas_pagadas += cuotas
+                    valor_cuotas = cuota_mensual * Decimal(cuotas)
+                    ingresos_cuotas10 += aplicar_beca(valor_cuotas, beca)
+
+    total_ingresos = (ingresos_insc + ingresos_mat + ingresos_cole1 + ingresos_cole2 + ingresos_cuotas10).quantize(Decimal('0.01'))
 
     eg_coordinadores = (
         CoordinadorPagos.objects
@@ -1066,8 +1112,8 @@ def _calc_programa_finanzas(programa):
             .aggregate(s=Sum('valorcontrato'))['s'] or cero
         )
 
-    total_egresos = eg_coordinadores + eg_docentes + eg_tutores
-    saldo = total_ingresos - total_egresos
+    total_egresos = (eg_coordinadores + eg_docentes + eg_tutores).quantize(Decimal('0.01'))
+    saldo = (total_ingresos - total_egresos).quantize(Decimal('0.01'))
 
     return {
         'moneda': moneda,

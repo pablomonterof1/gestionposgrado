@@ -45,6 +45,9 @@ class ValorProgramaPosgrado(models.Model):
     valorinscripcion = models.DecimalField(max_digits=10, decimal_places=2)
     valormatricula = models.DecimalField(max_digits=10, decimal_places=2)
 
+    # Total inscritos
+    total_inscritos  = models.PositiveIntegerField(default=0, help_text="Total de personas inscritas al programa, se hayan matriculado o no.")
+
     # Plan de pago
     plan_pago = models.CharField(max_length=20, choices=PLAN_PAGO_CHOICES, default=PLAN_10)
 
@@ -345,6 +348,24 @@ class EstudianteProgramaGestion(models.Model):
     ]
     estado_titulo = models.CharField(max_length=20, choices=ESTADO_TITULO_CHOICES, blank=True, null=True)
 
+    BECA_CHOICES = [
+        (0, 'Sin beca'),
+        (25, '25%'),
+        (50, '50%'),
+        (75, '75%'),
+        (100, '100%'),
+    ]
+    beca_porcentaje = models.PositiveSmallIntegerField(choices=BECA_CHOICES, default=0)
+    beca_documento_url = models.URLField( max_length=500, blank=True, null=True)
+
+    retirado = models.BooleanField(default=False)
+    retiro_fecha = models.DateField(blank=True, null=True)
+    retiro_documento_url = models.URLField(max_length=500, blank=True, null=True)
+
+    reingreso = models.BooleanField(default=False)
+    reingreso_fecha = models.DateField(blank=True, null=True)
+    reingreso_documento_url = models.URLField(max_length=500, blank=True, null=True)
+    
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 

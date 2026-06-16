@@ -1,13 +1,13 @@
 {% extends 'layouts/base.html' %}
 {% block content %}
-<main class="container py-4" >
+<main class="container py-4">
   <div class="programa-header mb-4">
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h4 class="mb-0">Editar datos — <span class="text-warning">{{ user_obj.get_full_name|default:user_obj.username }}</span></h4>
-    <a href="{% url 'estudiantes_programa_list' programa.id %}" class="btn btn-secondary">
-      <i class="fa fa-arrow-left"></i> Volver
-    </a>
-  </div>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h4 class="mb-0">Editar datos — <span class="text-warning">{{ user_obj.get_full_name|default:user_obj.username }}</span></h4>
+      <a href="{% url 'estudiantes_programa_list' programa.id %}" class="btn btn-secondary">
+        <i class="fa fa-arrow-left"></i> Volver
+      </a>
+    </div>
   </div>
 
   {% if messages %}
@@ -18,125 +18,154 @@
     </div>
   {% endif %}
 
-  <div class="card border-0 shadow-sm">
-    <div class="card-body">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <h6 class="text-primary m-0">Pagos</h6>
-        {% if vp %}
-          <small class="text-muted">Plan: {% if plan_pago == '10_CUOTAS' %}10 cuotas{% else %}2 colegiaturas{% endif %}</small>
-        {% endif %}
-      </div>
+  <form method="post">
+    {% csrf_token %}
 
-      <form method="post" class="row g-3">
-        {% csrf_token %}
-
-        <!-- Inscripción / Matrícula (siempre) -->
-        <div class="col-md-3">
-          <div class="form-check">
-            {{ form.pago_inscripcion }}
-            <label class="form-check-label" for="{{ form.pago_inscripcion.id_for_label }}">Inscripción</label>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="form-check">
-            {{ form.pago_matricula }}
-            <label class="form-check-label" for="{{ form.pago_matricula.id_for_label }}">Matrícula</label>
-          </div>
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="text-primary m-0">Pagos</h6>
+          {% if vp %}
+            <small class="text-muted">Plan: {% if plan_pago == '10_CUOTAS' %}10 cuotas{% else %}2 colegiaturas{% endif %}</small>
+          {% endif %}
         </div>
 
-        <!-- Plan 2: colegiaturas -->
-        {% if plan_pago == '2_COLEGIATURAS' %}
+        <div class="row g-3">
           <div class="col-md-3">
-            <div class="form-check">
-              {{ form.pago_primera_colegiatura }}
-              <label class="form-check-label" for="{{ form.pago_primera_colegiatura.id_for_label }}">1ª colegiatura</label>
+            <div class="alert alert-success py-2 mb-0">
+              <i class="fa fa-check-circle"></i> Inscripción pagada
             </div>
           </div>
+
           <div class="col-md-3">
             <div class="form-check">
-              {{ form.pago_segunda_colegiatura }}
-              <label class="form-check-label" for="{{ form.pago_segunda_colegiatura.id_for_label }}">2ª colegiatura</label>
+              {{ form.pago_matricula }}
+              <label class="form-check-label" for="{{ form.pago_matricula.id_for_label }}">Matrícula</label>
             </div>
           </div>
-        {% else %}
-          <!-- Plan 10: cuotas_pagadas -->
-          <div class="col-md-3">
-            <label class="form-label">Cuotas pagadas (0–10)</label>
-            {{ form.cuotas_pagadas }}
+
+          {% if plan_pago == '2_COLEGIATURAS' %}
+            <div class="col-md-3">
+              <div class="form-check">
+                {{ form.pago_primera_colegiatura }}
+                <label class="form-check-label" for="{{ form.pago_primera_colegiatura.id_for_label }}">1ª colegiatura</label>
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <div class="form-check">
+                {{ form.pago_segunda_colegiatura }}
+                <label class="form-check-label" for="{{ form.pago_segunda_colegiatura.id_for_label }}">2ª colegiatura</label>
+              </div>
+            </div>
+          {% else %}
+            <div class="col-md-3">
+              <label class="form-label">Cuotas pagadas (0–10)</label>
+              {{ form.cuotas_pagadas }}
+              <div class="form-text">
+                {% if vp %}Cuota mensual: {{ vp.cuota_mensual }} {{ vp.moneda }}{% endif %}
+              </div>
+            </div>
+          {% endif %}
+
+          <hr class="my-2">
+
+          <h6 class="text-primary mt-2">Proceso de Titulación</h6>
+
+          <div class="col-md-6">
+            <label class="form-label">Modalidad de titulación</label>
+            {{ form.modalidad }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Fecha de aprobación del tema</label>
+            {{ form.fecha_rubrica_aprobada }}
+          </div>
+
+          <hr class="my-2">
+
+          <div class="col-md-6">
+            <label class="form-label">Resolución de tutor (Url)</label>
+            {{ form.tutor_resolucion }}
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-check mt-4">
+              {{ form.tutor_contratado }}
+              <label class="form-check-label" for="{{ form.tutor_contratado.id_for_label }}">Tutor contratado</label>
+            </div>
+          </div>
+
+          <hr class="my-2">
+
+          <div class="col-md-4">
+            <label class="form-label">Avance (%)</label>
+            {{ form.avance_porcentaje }}
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Sustentación oral (fecha)</label>
+            {{ form.fecha_sustentacion_oral }}
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Aprobación complexivo (fecha)</label>
+            {{ form.fecha_aprob_complexivo }}
+          </div>
+
+          <hr class="my-2">
+
+          <div class="col-md-12">
+            <label class="form-label">Estado de título</label>
+            {{ form.estado_titulo }}
+          </div>
+
+          <hr class="my-2">
+
+          <h6 class="text-primary mt-2">Beca</h6>
+
+          <div class="col-md-4">
+            <label class="form-label">Porcentaje de beca</label>
+            {{ form.beca_porcentaje }}
             <div class="form-text">
-              {% if vp %}Cuota mensual: {{ vp.cuota_mensual }} {{ vp.moneda }}{% endif %}
+              Aplica solamente a colegiatura/cuotas.
             </div>
           </div>
-        {% endif %}
 
-        <hr class="my-2">
-
-        <h6 class="text-primary mt-2">Proceso de Titulación</h6>
-
-        <div class="col-md-6">
-          <label class="form-label">Modalidad de titulación</label>
-          {{ form.modalidad }}
-        </div>
-
-        <div class="col-md-6">
-          <label class="form-label">Fecha de aprobación del tema</label>
-          {{ form.fecha_rubrica_aprobada }}
-        </div>
-
-        <br><br><br><br>
-        <hr class="my-2">
-        
-        <div class="col-md-6">
-          <label class="form-label">Resolución de tutor (Url)</label>
-          {{ form.tutor_resolucion }}
-        </div>
-
-        <div class="col-md-6">
-          <div class="form-check mt-4">
-            {{ form.tutor_contratado }}
-            <label class="form-check-label" for="{{ form.tutor_contratado.id_for_label }}">Tutor contratado</label>
+          <div class="col-md-8">
+            <label class="form-label">Documento de beca (URL)</label>
+            {{ form.beca_documento_url }}
           </div>
         </div>
-        <!-- <div class="col-md-6">
-          <label class="form-label">Fecha de resolución</label>
-          {{ form.tutor_resolucion_fecha }}
-        </div> -->
-        <br><br><br><br>
-        <hr class="my-2">
-
-        <div class="col-md-4">
-          <label class="form-label">Avance (%)</label>
-          {{ form.avance_porcentaje }}
-        </div>
-
-        <div class="col-md-4">
-          <label class="form-label">Sustentación oral (fecha)</label>
-          {{ form.fecha_sustentacion_oral }}
-        </div>
-
-        <div class="col-md-4">
-          <label class="form-label">Aprobación complexivo (fecha)</label>
-          {{ form.fecha_aprob_complexivo }}
-        </div>
-
-        <br><br><br><br>
-        <hr class="my-2">
-        <div class="col-md-12">
-          <label class="form-label">Estado de título</label>
-          {{ form.estado_titulo }}
-        </div>
-
-        <div class="col-12 d-flex justify-content-end mt-3">
-          <a href="{% url 'estudiantes_programa_list' programa.id %}" class="btn btn-outline-secondary me-2">
-            <i class="fa fa-times"></i> Cancelar
-          </a>
-          <button class="btn btn-outline-primary" type="submit">
-            <i class="fa fa-save"></i> Guardar
-          </button>
-
-        </div>
-      </form>
+      </div>
     </div>
+
+    <br>
+
+    
+<div class="col-12 d-flex justify-content-between align-items-center mt-3">
+
+  <!-- Izquierda -->
+  <div>
+    <a href="{% url 'estudiante_retiro_reingreso_update' programa.id user_obj.id %}"
+      class="btn btn-outline-danger">
+      <i class="fa fa-right-from-bracket"></i> Retiro / Reingreso
+    </a>
   </div>
+
+  <!-- Derecha -->
+  <div>
+    <a href="{% url 'estudiantes_programa_list' programa.id %}"
+      class="btn btn-outline-secondary me-2">
+      <i class="fa fa-times"></i> Cancelar
+    </a>
+
+    <button class="btn btn-outline-primary" type="submit">
+      <i class="fa fa-save"></i> Guardar
+    </button>
+  </div>
+
+</div>
+  </form>
 </main>
 {% endblock %}

@@ -116,6 +116,7 @@ urlpatterns = [
 
     path('programa/<int:programa_id>/estudiantes/', administracionposgrado_views.estudiantes_programa_list, name='estudiantes_programa_list'),
     path('programa/<int:programa_id>/estudiantes/<int:user_id>/editar/', administracionposgrado_views.estudiante_programa_gestion_upsert, name='estudiante_programa_gestion_upsert'),
+    path('programa/<int:programa_id>/estudiante/<int:user_id>/retiro-reingreso/', administracionposgrado_views.estudiante_retiro_reingreso_update, name='estudiante_retiro_reingreso_update'),
 
     path("programa/<int:programa_id>/reporte.pdf", administracionposgrado_views.programa_reporte_pdf,  name="programa_reporte_pdf"),
 

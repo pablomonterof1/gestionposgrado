@@ -103,7 +103,6 @@
             <th>Correo</th>
             <th>N. celular</th>
 
-            <th class="text-center">Inscripción</th>
             <th class="text-center">Matrícula</th>
 
             {% if plan_pago == '2_COLEGIATURAS' %}
@@ -113,7 +112,10 @@
               <th class="text-center">Cuotas pagadas (0–10)</th>
             {% endif %}
 
-            <th class="text-end">TOTAL pagado</th>
+            <th class="text-end">Total pagado
+              <br>
+              <small style="font-size: 0.7em;" >Sin inscripción</small>
+            </th>
             <th>Modalidad titulación</th>
             <th>Fecha - Aprobación tema</th>
             <th>Tutor asignado (resolución)</th>
@@ -122,6 +124,8 @@
             <th>Sustentación oral (fecha)</th>
             <th>Aprobación complexivo (fecha)</th>
             <th style="white-space: nowrap;">Estado de título</th>
+            <th>Beca</th>
+            <th>Estado académico</th>
             <th style="width:75px;">Acciones</th>
           </tr>
         </thead>
@@ -133,15 +137,6 @@
             <td>{% if p and p.ci %}{{ p.ci }}{% else %}—{% endif %}</td>
             <td class="text-break">{{ u.email|default:"—" }}</td>
             <td>{{ p.telefono|default:"—" }}</td>
-
-            <!-- Inscripción -->
-            <td class="text-center">
-              {% if g and g.pago_inscripcion %}
-                <span class="badge text-bg-success">Sí</span>
-              {% else %}
-                <span class="badge text-bg-warning text-dark">No</span>
-              {% endif %}
-            </td>
 
             <!-- Matrícula -->
             <td class="text-center">
@@ -199,7 +194,48 @@
             <td class="text-center">{% if g and g.fecha_sustentacion_oral %}{{ g.fecha_sustentacion_oral }}{% else %}—{% endif %}</td>
             <td class="text-center">{% if g and g.fecha_aprob_complexivo %}{{ g.fecha_aprob_complexivo }}{% else %}—{% endif %}</td>
             <td>{% if g and g.estado_titulo %}{{ g.get_estado_titulo_display }}{% else %}—{% endif %}</td>
+            <td class="text-center">
+              {% if g and g.beca_porcentaje %}
+                <span class="badge text-bg-info">{{ g.beca_porcentaje }}% beca</span>
+                <a href="{{ g.beca_documento_url  }}" class="btn btn-sm btn-outline-info" target="_blank">
+                  <i class="fa fa-file"></i> Ver 
+                </a>
+              {% else %}
+                <span class="badge text-bg-secondary">Sin beca</span>
+              {% endif %}
+            </td>
+            <td class="text-center" style="white-space: nowrap;">
+              {% if g and g.reingreso %}
+                <span class="badge text-bg-warning">Reingreso</span>
+                <br>
+                <small>{{ g.reingreso_fecha|date:"d/m/Y" }}</small>
 
+                {% if g.reingreso_documento_url %}
+                  <a href="{{ g.reingreso_documento_url }}" target="_blank"
+                    class="btn btn-sm btn-outline-warning mt-1"
+                    title="Ver documento de reingreso">
+                    <i class="fa fa-file-lines"></i>
+                  </a>
+                {% endif %}
+
+              {% elif g and g.retirado %}
+                <span class="badge text-bg-danger">Retirado</span>
+                <br>
+                <small>{{ g.retiro_fecha|date:"d/m/Y" }}</small>
+
+                {% if g.retiro_documento_url %}
+                  <a href="{{ g.retiro_documento_url }}" target="_blank"
+                    class="btn btn-sm btn-outline-danger mt-1"
+                    title="Ver documento de retiro">
+                    <i class="fa fa-file-lines"></i>
+                  </a>
+                {% endif %}
+
+              {% else %}
+                <span class="badge text-bg-success">Activo</span>
+              {% endif %}
+
+            </td>
             <td class="text-end action-cell">
               <a class="btn btn-sm btn-outline-primary" href="{% url 'estudiante_programa_gestion_upsert' programa.id u.id %}">
                 <i class="fa fa-pen"></i> Editar

@@ -1,0 +1,108 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<main class="container py-4">
+
+  <div class="programa-header mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h4 class="mb-0">
+        Retiro / Reingreso —
+        <span class="text-warning">{{ user_obj.get_full_name|default:user_obj.username }}</span>
+      </h4>
+
+      <a href="{% url 'estudiantes_programa_list' programa.id %}" class="btn btn-secondary">
+        <i class="fa fa-arrow-left"></i> Volver
+      </a>
+    </div>
+  </div>
+
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} mb-2">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="card border-1 shadow-sm" style="border-style: dashed; border-color: #dc3545;">
+      <div class="card-body">
+        <h6 class="text-danger mb-3">
+          <i class="fa fa-right-from-bracket"></i> Retiro
+        </h6>
+
+        <div class="row g-3">
+          <div class="col-md-3">
+            <div class="form-check mt-2">
+              {{ form.retirado }}
+              <label class="form-check-label" for="{{ form.retirado.id_for_label }}">
+                Estudiante retirado
+              </label>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Fecha de retiro</label>
+            {{ form.retiro_fecha }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Documento de retiro (URL)</label>
+            {{ form.retiro_documento_url }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <br>
+
+    <div class="card border-1 shadow-sm" style="border-style: dashed; border-color: #198754;">
+      <div class="card-body">
+        <h6 class="text-success mb-3">
+          <i class="fa fa-rotate-left"></i> Reingreso
+        </h6>
+
+        <div class="row g-3">
+          <div class="col-md-3">
+            <div class="form-check mt-2">
+              {{ form.reingreso }}
+              <label class="form-check-label" for="{{ form.reingreso.id_for_label }}">
+                Reingresó al programa
+              </label>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Fecha de reingreso</label>
+            {{ form.reingreso_fecha }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Documento de reingreso (URL)</label>
+            {{ form.reingreso_documento_url }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-light border mt-3">
+      <small>
+        <strong>Nota:</strong> Este registro es administrativo. Los pagos de matrícula,
+        colegiaturas o cuotas se controlan de forma independiente.
+      </small>
+    </div>
+
+    <div class="d-flex justify-content-end mt-3">
+      <a href="{% url 'estudiantes_programa_list' programa.id %}" class="btn btn-outline-secondary me-2">
+        <i class="fa fa-times"></i> Cancelar
+      </a>
+
+      <button class="btn btn-outline-primary" type="submit">
+        <i class="fa fa-save"></i> Guardar
+      </button>
+    </div>
+
+  </form>
+</main>
+{% endblock %}

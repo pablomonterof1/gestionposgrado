@@ -199,7 +199,11 @@ def reactivosdocente_create(request, programa_id, modulo_id):
 def reactivosmc_update(request, reactivo_id):
     reactivo = ReactivosMultipleChoice.objects.get(id=reactivo_id)
     programadeposgrado = reactivo.programadeposgrado
-    modulo_id = reactivo.modulo
+    maestria = programadeposgrado.maestria
+    maestrianombre = Maestrias.objects.get(id=maestria)
+    modulo_id = reactivo.modulo.id
+    modulo = Modulos.objects.get(id=modulo_id)
+    modulonombre = modulo.nombre
     if request.method == 'POST':
         form = ReactivosMultipleChoiceForm(request.POST, instance=reactivo)
         if form.is_valid():
@@ -212,6 +216,8 @@ def reactivosmc_update(request, reactivo_id):
         'reactivo': reactivo,
         'programadeposgrado': programadeposgrado,
         'modulo_id': modulo_id,
+        'maestrianombre': maestrianombre,
+        'modulonombre': modulonombre,
     })
 
 
@@ -219,7 +225,11 @@ def reactivosmc_update(request, reactivo_id):
 def reactivosdocente_update(request, reactivo_id):
     reactivo = ReactivosMultipleChoice.objects.get(id=reactivo_id)
     programadeposgrado = reactivo.programadeposgrado
-    modulo_id = reactivo.modulo
+    maestria = programadeposgrado.maestria
+    maestrianombre = Maestrias.objects.get(id=maestria)
+    modulo_id = reactivo.modulo.id
+    modulo = Modulos.objects.get(id=modulo_id)
+    modulonombre = modulo.nombre
     if request.method == 'POST':
         form = ReactivosMultipleChoiceForm(request.POST, instance=reactivo)
         if form.is_valid():
@@ -232,6 +242,8 @@ def reactivosdocente_update(request, reactivo_id):
         'reactivo': reactivo,
         'programadeposgrado': programadeposgrado,
         'modulo_id': modulo_id,
+        'maestrianombre': maestrianombre,
+        'modulonombre': modulonombre,
     })
 
 
@@ -239,7 +251,11 @@ def reactivosdocente_update(request, reactivo_id):
 def reactivosmc_validate(request, reactivo_id):
     reactivo = ReactivosMultipleChoice.objects.get(id=reactivo_id)
     programadeposgrado = reactivo.programadeposgrado
-    modulo_id = reactivo.modulo
+    maestria = programadeposgrado.maestria
+    maestrianombre = Maestrias.objects.get(id=maestria)
+    modulo_id = reactivo.modulo.id
+    modulo = Modulos.objects.get(id=modulo_id)
+    modulonombre = modulo.nombre
     action = request.POST.get('action')
     if request.method == 'POST':
         form = ReactivosMultipleChoiceForm(request.POST, instance=reactivo)
@@ -259,6 +275,8 @@ def reactivosmc_validate(request, reactivo_id):
         'reactivo': reactivo,
         'programadeposgrado': programadeposgrado,
         'modulo_id': modulo_id,
+        'maestrianombre': maestrianombre,
+        'modulonombre': modulonombre,
     })
 
 

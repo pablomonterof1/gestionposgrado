@@ -10,6 +10,7 @@ class ValorProgramaPosgradoForm(forms.ModelForm):
         model = ValorProgramaPosgrado
         fields = [
             'valorinscripcion', 'valormatricula',
+            'total_inscritos',
             'plan_pago',
             'primeracolegiatura', 'segundacolegiatura',
             'valor_total', 'cuota_mensual',
@@ -18,6 +19,7 @@ class ValorProgramaPosgradoForm(forms.ModelForm):
         widgets = {
             'valorinscripcion': forms.NumberInput(attrs={'class':'form-control', 'step':'0.01', 'min':'0'}),
             'valormatricula': forms.NumberInput(attrs={'class':'form-control', 'step':'0.01', 'min':'0'}),
+            'total_inscritos': forms.NumberInput(attrs={'class':'form-control', 'min':'0'}),
             'plan_pago': forms.Select(attrs={'class':'form-select'}),
             'primeracolegiatura': forms.NumberInput(attrs={'class':'form-control', 'step':'0.01', 'min':'0'}),
             'segundacolegiatura': forms.NumberInput(attrs={'class':'form-control', 'step':'0.01', 'min':'0'}),
@@ -170,6 +172,8 @@ class EstudianteProgramaGestionForm(forms.ModelForm):
             'avance_porcentaje',
             'fecha_sustentacion_oral', 'fecha_aprob_complexivo',
             'estado_titulo',
+            'beca_porcentaje','beca_documento_url',
+
         ]
         widgets = {
             'pago_inscripcion': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
@@ -186,6 +190,9 @@ class EstudianteProgramaGestionForm(forms.ModelForm):
             'fecha_sustentacion_oral': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'fecha_aprob_complexivo': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'estado_titulo': forms.Select(attrs={'class': 'form-select'}),
+            'beca_porcentaje': forms.Select(attrs={ 'class': 'form-select'}),
+            'beca_documento_url': forms.URLInput(attrs={'class': 'form-control','placeholder': 'https://...'}),
+
         }
         labels = {
             'pago_inscripcion': 'Inscripción pagada',
@@ -207,6 +214,24 @@ class EstudianteProgramaGestionForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Nunca requerido: el modelo ya valida rango y la vista lo normaliza a 0 si aplica
         self.fields['cuotas_pagadas'].required = False
+
+class EstudianteRetiroReingresoForm(forms.ModelForm):
+    class Meta:
+        model = EstudianteProgramaGestion
+        fields = [
+            'retirado',
+            'retiro_fecha',
+            'retiro_documento_url',
+            'reingreso',
+            'reingreso_fecha',
+            'reingreso_documento_url',
+        ]
+        widgets = {
+            'retiro_fecha': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'reingreso_fecha': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'retiro_documento_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://...'}),
+            'reingreso_documento_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://...'}),
+        }
 
 class ProgramaPAOForm(forms.Form):
     fechainicio = forms.DateField(

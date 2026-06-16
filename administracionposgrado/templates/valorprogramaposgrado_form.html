@@ -101,6 +101,20 @@
           <div class="form-text">Se calcula automáticamente.</div>
         </div>
 
+        <!-- Total inscritos -->
+        <div class="col-md-4">
+          <label class="form-label">Inscritos en el programa</label>
+          {{ form.total_inscritos }}
+          {% if form.total_inscritos.errors %}
+            <div class="text-danger small">{{ form.total_inscritos.errors }}</div>
+          {% endif %}
+            <div class="form-text">
+              Incluye inscritos matriculados y no matriculados.
+            </div>
+        </div>
+
+        <br>
+        <br>
         <!-- Moneda -->
         <div class="col-md-4">
           <label class="form-label">Moneda</label>
