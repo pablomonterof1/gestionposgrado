@@ -208,7 +208,7 @@ def reactivosmc_update(request, reactivo_id):
         form = ReactivosMultipleChoiceForm(request.POST, instance=reactivo)
         if form.is_valid():
             form.save()
-            return redirect('reactivosmodulo', programa_id=programadeposgrado.id, modulo_id=modulo_id.id)
+            return redirect('reactivosmodulo', programa_id=programadeposgrado.id, modulo_id=modulo_id)
     else:
         form = ReactivosMultipleChoiceForm(instance=reactivo)
     return render(request, 'reactivosmc_update.html', {
@@ -234,7 +234,7 @@ def reactivosdocente_update(request, reactivo_id):
         form = ReactivosMultipleChoiceForm(request.POST, instance=reactivo)
         if form.is_valid():
             form.save()
-            return redirect('reactivosmodulodocente', programa_id=programadeposgrado.id, modulo_id=modulo_id.id)
+            return redirect('reactivosmodulodocente', programa_id=programadeposgrado.id, modulo_id=modulo_id)
     else:
         form = ReactivosMultipleChoiceForm(instance=reactivo)
     return render(request, 'reactivosdocente_update.html', {
@@ -267,7 +267,7 @@ def reactivosmc_validate(request, reactivo_id):
             if action == 'rechazar':
                 reactivo.estado = 3
                 reactivo.save()
-            return redirect('reactivosmodulo', programa_id=programadeposgrado.id, modulo_id=modulo_id.id)
+            return redirect('reactivosmodulo', programa_id=programadeposgrado.id, modulo_id=modulo_id)
     else:
         form = ReactivosMultipleChoiceForm(instance=reactivo)
     return render(request, 'reactivosmc_validate.html', {
