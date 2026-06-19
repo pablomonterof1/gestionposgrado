@@ -22,6 +22,7 @@ from django.views.decorators.http import require_POST
 from django.template.loader import get_template
 from django.http import HttpResponse
 from xhtml2pdf import pisa
+from django.core.paginator import Paginator
 
 # Create your views here.
 
@@ -1642,7 +1643,13 @@ def dashboard_contrataciones_general(request):
 
     resumen = _get_global_contract_summary()
     counter = resumen['counter']
-    top_ids = resumen['top_ids']
+    todos_top_ids = [uid for uid, _ in counter.most_common()]
+
+    paginator = Paginator(todos_top_ids, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    top_ids = list(page_obj.object_list)
     role_counters = _build_role_counters()
     doc_counter = role_counters['docente']
     tut_counter = role_counters['tutor']
@@ -1792,6 +1799,7 @@ def dashboard_contrataciones_general(request):
         'resultados_busqueda': resultados_busqueda,
         'q': q,
         'recientes': recientes,
+        'page_obj': page_obj,
     })
 
 @role_required([4, 7, 8])
