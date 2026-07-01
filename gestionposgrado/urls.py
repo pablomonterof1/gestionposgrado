@@ -229,6 +229,7 @@ urlpatterns = [
     #Reportes
     path('dashboard/contrataciones/', datosposgrado_views.dashboard_contrataciones_general, name='dashboard_contrataciones_general'),
     path('dashboard/contrataciones/persona/<int:user_id>/', datosposgrado_views.detalle_contrataciones_persona, name='detalle_contrataciones_persona'),
+    path('dashboard/contrataciones/detallado/', datosposgrado_views.dashboard_contrataciones_detallado, name='dashboard_contrataciones_detallado'),
     #Seleccion de perfiles
     path('seleccionp/<int:periodo_id>/<int:modulo_id>/', seleccionperfiles_views.seleccionp, name='seleccionp'),
     path('periodosacademicosp/', seleccionperfiles_views.periodosacademicosp, name='periodosacademicosp'),    

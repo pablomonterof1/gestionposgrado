@@ -1,0 +1,135 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<main class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-1">Resumen detallado de contrataciones</h2>
+      <p class="text-muted mb-0">
+        Docentes, tutores, coordinadores y personas con más de un rol contractual
+      </p>
+    </div>
+
+    <a href="{% url 'dashboard_contrataciones_general' %}" class="btn btn-outline-secondary">
+      <i class="fa fa-arrow-left me-1"></i> Volver
+    </a>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small">Docentes contratados</div>
+          <div class="fs-3 fw-bold">{{ data.total_docentes_personas }}</div>
+          <div class="small text-muted">{{ data.total_contratos_docentes }} contratos docentes</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small">Tutores contratados</div>
+          <div class="fs-3 fw-bold">{{ data.total_tutores_personas }}</div>
+          <div class="small text-muted">{{ data.total_contratos_tutores }} contratos de tutoría</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small">Coordinadores contratados</div>
+          <div class="fs-3 fw-bold">{{ data.total_coordinadores_personas }}</div>
+          <div class="small text-muted">{{ data.total_contratos_coordinadores }} contratos coordinación</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <div class="text-muted small">Personas con contrataciones múltiples</div>
+          <div class="fs-3 fw-bold">{{ data.total_combinados }}</div>
+          <div class="small text-muted">Docente / Tutor / Coordinador</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="card border-0 shadow-sm">
+    <div class="card-header bg-white">
+      <ul class="nav nav-tabs card-header-tabs" id="contratosTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="docentes-tab" data-bs-toggle="tab" data-bs-target="#docentes" type="button" role="tab">
+            Docentes
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tutores-tab" data-bs-toggle="tab" data-bs-target="#tutores" type="button" role="tab">
+            Tutores
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="coordinadores-tab" data-bs-toggle="tab" data-bs-target="#coordinadores" type="button" role="tab">
+            Coordinadores
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="combinados-tab" data-bs-toggle="tab" data-bs-target="#combinados" type="button" role="tab">
+           Contrataciones múltiples
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="tab-content">
+
+        <div class="tab-pane fade show active" id="docentes" role="tabpanel">
+          {% include 'partials/tabla_contratos_detallado.html' with filas=data.docentes_rows tipo='docentes' %}
+        </div>
+
+        <div class="tab-pane fade" id="tutores" role="tabpanel">
+          {% include 'partials/tabla_contratos_detallado.html' with filas=data.tutores_rows tipo='tutores' %}
+        </div>
+
+        <div class="tab-pane fade" id="coordinadores" role="tabpanel">
+          {% include 'partials/tabla_contratos_detallado.html' with filas=data.coordinadores_rows tipo='coordinadores' %}
+        </div>
+
+        <div class="tab-pane fade" id="combinados" role="tabpanel">
+          {% include 'partials/tabla_contratos_detallado.html' with filas=data.combinados_rows tipo='combinados' %}
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  $(document).ready(function () {
+    $('.tabla-detallada-contratos').DataTable({
+      pageLength: 15,
+      lengthMenu: [15, 25, 50, 100],
+      order: [],
+      language: {
+        lengthMenu: "Mostrar _MENU_ registros por página",
+        zeroRecords: "No se encontraron resultados",
+        info: "Mostrando página _PAGE_ de _PAGES_",
+        infoEmpty: "No hay registros disponibles",
+        infoFiltered: "(filtrado de _MAX_ registros totales)",
+        search: "Buscar:",
+        paginate: {
+          first: "Primera",
+          last: "Última",
+          next: "Siguiente",
+          previous: "Anterior"
+        },
+      }
+    });
+  });
+</script>
+{% endblock %}

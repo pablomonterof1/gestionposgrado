@@ -1596,14 +1596,14 @@ def _get_global_contract_summary():
     """
     docentes_ids = list(ContratosDocentes.objects.values_list('docente', flat=True))
     tutores_ids = list(ContratoTutor.objects.values_list('tutor', flat=True))
-    maestrantes_ids = list(ContratoTutor.objects.values_list('maestrante', flat=True))
+    # maestrantes_ids = list(ContratoTutor.objects.values_list('maestrante', flat=True))
     coordinadores_ids = list(ContratoCoordinador.objects.values_list('coordinador', flat=True))
 
     contratos_doc_count = len(docentes_ids)
     contratos_tut_count = ContratoTutor.objects.count()
     contratos_coord_count = len(coordinadores_ids)
 
-    todos_ids = docentes_ids + tutores_ids + maestrantes_ids + coordinadores_ids
+    todos_ids = docentes_ids + tutores_ids + coordinadores_ids
     user_counter = Counter(todos_ids)
 
     return {
@@ -1624,13 +1624,13 @@ def _build_role_counters():
     """
     docentes_ids = list(ContratosDocentes.objects.values_list('docente', flat=True))
     tutores_ids = list(ContratoTutor.objects.values_list('tutor', flat=True))
-    maestrantes_ids = list(ContratoTutor.objects.values_list('maestrante', flat=True))
+    # maestrantes_ids = list(ContratoTutor.objects.values_list('maestrante', flat=True))
     coordinadores_ids = list(ContratoCoordinador.objects.values_list('coordinador', flat=True))
 
     return {
         'docente': Counter(docentes_ids),
         'tutor': Counter(tutores_ids),
-        'maestrante': Counter(maestrantes_ids),
+        # 'maestrante': Counter(maestrantes_ids),
         'coordinador': Counter(coordinadores_ids),
     }
 
@@ -1653,7 +1653,7 @@ def dashboard_contrataciones_general(request):
     role_counters = _build_role_counters()
     doc_counter = role_counters['docente']
     tut_counter = role_counters['tutor']
-    mae_counter = role_counters['maestrante']
+    # mae_counter = role_counters['maestrante']
     coord_counter = role_counters['coordinador']
 
     # usuarios top
@@ -1676,7 +1676,7 @@ def dashboard_contrataciones_general(request):
             'total': counter.get(uid, 0),
             'como_docente': doc_counter.get(uid, 0),
             'como_tutor': tut_counter.get(uid, 0),
-            'como_maestrante': mae_counter.get(uid, 0),
+            # 'como_maestrante': mae_counter.get(uid, 0),
             'como_coordinador': coord_counter.get(uid, 0),
         })
 
@@ -1711,10 +1711,10 @@ def dashboard_contrataciones_general(request):
         for uid in user_ids_posibles:
             total_doc = doc_counter.get(uid, 0)
             total_tut = tut_counter.get(uid, 0)
-            total_mae = mae_counter.get(uid, 0)
+            # total_mae = mae_counter.get(uid, 0)
             total_coord = coord_counter.get(uid, 0)
 
-            total = total_doc + total_tut + total_mae + total_coord
+            total = total_doc + total_tut + total_coord
             if total == 0:
                 continue
 
@@ -1729,7 +1729,7 @@ def dashboard_contrataciones_general(request):
                 'total': total,
                 'como_docente': total_doc,
                 'como_tutor': total_tut,
-                'como_maestrante': total_mae,
+                # 'como_maestrante': total_mae,
                 'como_coordinador': total_coord,
             })
 
@@ -1800,6 +1800,105 @@ def dashboard_contrataciones_general(request):
         'q': q,
         'recientes': recientes,
         'page_obj': page_obj,
+    })
+
+def _build_dashboard_contrataciones_detallado():
+    """
+    Dashboard detallado:
+    - Docentes
+    - Tutores
+    - Coordinadores
+    - Personas combinadas: docente/tutor/coordinador
+    No incluye maestrantes como contratados.
+    """
+
+    docentes_ids = list(ContratosDocentes.objects.values_list('docente', flat=True))
+    tutores_ids = list(ContratoTutor.objects.values_list('tutor', flat=True))
+    coordinadores_ids = list(ContratoCoordinador.objects.values_list('coordinador', flat=True))
+
+    doc_counter = Counter(docentes_ids)
+    tut_counter = Counter(tutores_ids)
+    coord_counter = Counter(coordinadores_ids)
+
+    todos_ids = set(docentes_ids + tutores_ids + coordinadores_ids)
+
+    users_map = {
+        u.id: u for u in User.objects.filter(id__in=todos_ids)
+    }
+    cedulas_map = _get_user_cedula_map(todos_ids)
+
+    docentes_rows = []
+    tutores_rows = []
+    coordinadores_rows = []
+    combinados_rows = []
+
+    for uid in todos_ids:
+        user = users_map.get(uid)
+        if not user:
+            continue
+
+        total_doc = doc_counter.get(uid, 0)
+        total_tut = tut_counter.get(uid, 0)
+        total_coord = coord_counter.get(uid, 0)
+        total = total_doc + total_tut + total_coord
+
+        base = {
+            'user_id': uid,
+            'nombre': _safe_full_name(user),
+            'cedula': cedulas_map.get(uid, ''),
+            'total_docente': total_doc,
+            'total_tutor': total_tut,
+            'total_coordinador': total_coord,
+            'total': total,
+        }
+
+        if total_doc > 0:
+            docentes_rows.append(base)
+
+        if total_tut > 0:
+            tutores_rows.append(base)
+
+        if total_coord > 0:
+            coordinadores_rows.append(base)
+
+        roles = []
+        if total_doc > 0:
+            roles.append('Docente')
+        if total_tut > 0:
+            roles.append('Tutor')
+        if total_coord > 0:
+            roles.append('Coordinador')
+
+        if len(roles) >= 2:
+            item = base.copy()
+            item['roles'] = ' / '.join(roles)
+            combinados_rows.append(item)
+
+    docentes_rows.sort(key=lambda x: (-x['total_docente'], x['nombre']))
+    tutores_rows.sort(key=lambda x: (-x['total_tutor'], x['nombre']))
+    coordinadores_rows.sort(key=lambda x: (-x['total_coordinador'], x['nombre']))
+    combinados_rows.sort(key=lambda x: (-x['total'], x['nombre']))
+
+    return {
+        'total_docentes_personas': len(docentes_rows),
+        'total_tutores_personas': len(tutores_rows),
+        'total_coordinadores_personas': len(coordinadores_rows),
+        'total_combinados': len(combinados_rows),
+        'total_contratos_docentes': len(docentes_ids),
+        'total_contratos_tutores': len(tutores_ids),
+        'total_contratos_coordinadores': len(coordinadores_ids),
+        'docentes_rows': docentes_rows,
+        'tutores_rows': tutores_rows,
+        'coordinadores_rows': coordinadores_rows,
+        'combinados_rows': combinados_rows,
+    }
+
+@role_required([4, 7, 8])
+def dashboard_contrataciones_detallado(request):
+    data = _build_dashboard_contrataciones_detallado()
+
+    return render(request, 'dashboard_contrataciones_detallado.html', {
+        'data': data,
     })
 
 @role_required([4, 7, 8])
